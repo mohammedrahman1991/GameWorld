@@ -265,26 +265,35 @@ const GOOFY_LINES = {
   slicer: ['Sliiice!', 'Chop chop!', 'Ultra slice!', 'Razor sharp!', 'Snip snip!'],
 };
 
+// ─── ANNOUNCER VOICE ─────────────────────────────────────────────────────────
+let _announcerVoice = null;
+function _loadAnnouncerVoice() {
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return;
+  _announcerVoice = voices.find(v => /male/i.test(v.name)) ||
+                    voices.find(v => /david|alex|daniel|fred|jorge|diego|thomas/i.test(v.name)) ||
+                    voices[0];
+}
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = _loadAnnouncerVoice;
+  _loadAnnouncerVoice();
+}
+
 function speakAnnouncer(text, delay = 0) {
   if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
   setTimeout(() => {
-    const utt   = new SpeechSynthesisUtterance(text);
-    utt.pitch   = 0.6;   // deep male voice
-    utt.rate    = 0.88;  // slow and dramatic
-    utt.volume  = 1.0;
-    // prefer a male voice if available
-    const voices = window.speechSynthesis.getVoices();
-    const male   = voices.find(v => /male/i.test(v.name)) ||
-                   voices.find(v => /david|alex|daniel|fred|jorge|diego/i.test(v.name));
-    if (male) utt.voice = male;
+    const utt  = new SpeechSynthesisUtterance(text);
+    utt.pitch  = 0.6;
+    utt.rate   = 0.85;
+    utt.volume = 1.0;
+    if (_announcerVoice) utt.voice = _announcerVoice;
     window.speechSynthesis.speak(utt);
   }, delay);
 }
 
 function speakGoofyHit(fighterId) {
   if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
+  if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
   const lines = GOOFY_LINES[fighterId] || ['POW!'];
   const text  = lines[Math.floor(Math.random() * lines.length)];
   const utt   = new SpeechSynthesisUtterance(text);
@@ -672,7 +681,7 @@ class FightScene extends Phaser.Scene {
   }
 
   _showFight() {
-    speakAnnouncer('Fight!', 200);
+    speakAnnouncer('Fight!');
     if (sfx) sfx.play('fight');
     if (music) music.start();
     const txt = this.add.text(W/2, H/2, 'FIGHT!', {
