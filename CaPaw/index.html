@@ -265,6 +265,23 @@ const GOOFY_LINES = {
   slicer: ['Sliiice!', 'Chop chop!', 'Ultra slice!', 'Razor sharp!', 'Snip snip!'],
 };
 
+function speakAnnouncer(text, delay = 0) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  setTimeout(() => {
+    const utt   = new SpeechSynthesisUtterance(text);
+    utt.pitch   = 0.6;   // deep male voice
+    utt.rate    = 0.88;  // slow and dramatic
+    utt.volume  = 1.0;
+    // prefer a male voice if available
+    const voices = window.speechSynthesis.getVoices();
+    const male   = voices.find(v => /male/i.test(v.name)) ||
+                   voices.find(v => /david|alex|daniel|fred|jorge|diego/i.test(v.name));
+    if (male) utt.voice = male;
+    window.speechSynthesis.speak(utt);
+  }, delay);
+}
+
 function speakGoofyHit(fighterId) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
@@ -633,6 +650,7 @@ class FightScene extends Phaser.Scene {
   }
 
   _showRoundBanner() {
+    speakAnnouncer(`Round ${this.round}`);
     if (sfx) sfx.play(`round${this.round}`);
     this.roundLabel.setText(`ROUND ${this.round}`);
     const banner = this.add.text(W/2, H/2, `ROUND ${this.round}`, {
@@ -654,6 +672,7 @@ class FightScene extends Phaser.Scene {
   }
 
   _showFight() {
+    speakAnnouncer('Fight!', 200);
     if (sfx) sfx.play('fight');
     if (music) music.start();
     const txt = this.add.text(W/2, H/2, 'FIGHT!', {
@@ -699,6 +718,7 @@ class FightScene extends Phaser.Scene {
     if (winner === 'p1') { this.p1WinDots[this.p1Wins].setFillStyle(0x4caf50); this.p1Wins++; }
     else                 { this.p2WinDots[this.p2Wins].setFillStyle(0xe53935); this.p2Wins++; }
 
+    if (reason === 'ko') speakAnnouncer('K... O!');
     if (sfx) sfx.play(reason === 'ko' ? 'ko' : 'time');
     const ko = this.add.text(W/2, H/2, reason === 'ko' ? 'KO!' : 'TIME!', {
       fontSize: '80px', fill: '#e53935', fontFamily: 'monospace', fontStyle: 'bold',
@@ -750,6 +770,7 @@ class FightScene extends Phaser.Scene {
   _endMatch() {
     if (music) music.stop();
     const winner = this.p1Wins >= 2 ? 'p1' : 'p2';
+    speakAnnouncer(winner === 'p1' ? 'Player 1 Wins!' : 'Player 2 Wins!');
     this.cameras.main.fadeOut(800, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.scene.start('Win', {
@@ -882,6 +903,7 @@ class WinScene extends Phaser.Scene {
   create() {
     this.cameras.main.fadeIn(500, 0, 0, 0);
     if (sfx) sfx.play(this.winner === 'p1' ? 'p1wins' : 'p2wins');
+    speakAnnouncer('Want to play again?', 2200);
 
     this.add.graphics().fillGradientStyle(0x0a0a1a, 0x0a0a1a, 0x1a0a2e, 0x1a0a2e, 1).fillRect(0, 0, W, H);
 
