@@ -1,0 +1,8 @@
+{
+  "name": "dji-drone-simulator",
+  "version": "1.0.0",
+  "description": "DJI Drone Simulator - Island Paradise",
+  "scripts": {
+    "start": "npx serve . -p 3021"
+  }
+}

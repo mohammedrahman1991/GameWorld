@@ -1,0 +1,44 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: radial-gradient(ellipse at center, #1a0a2e 0%, #0d0520 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+    font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+}
+
+#game-container {
+    position: relative;
+    box-shadow:
+        0 0 60px rgba(255, 100, 0, 0.5),
+        0 0 120px rgba(255, 50, 0, 0.2),
+        inset 0 0 30px rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 3px solid rgba(255, 150, 50, 0.3);
+}
+
+canvas {
+    display: block;
+}
+
+/* Loading indicator shown before Phaser takes over */
+#game-container::before {
+    content: '🚛 Loading...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #FF6D00;
+    font-size: 24px;
+    font-weight: bold;
+    z-index: -1;
+    white-space: nowrap;
+}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ninja Raccoons</title>
+  <link rel="stylesheet" href="ui/hud.css">
+  <style>
+    body {
+      margin: 0;
+      background: #0a0a0a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  <script type="module">
+    import { TitleScene }           from './game/scenes/TitleScene.js';
+    import { CharacterSelectScene } from './game/scenes/CharacterSelectScene.js';
+    import { FightScene }           from './game/scenes/FightScene.js';
+    import { WinScene }             from './game/scenes/WinScene.js';
+    import { GAME }                 from './config.js';
+
+    const config = {
+      type: Phaser.AUTO,
+      width: GAME.width,
+      height: GAME.height,
+      backgroundColor: '#1a1a2e',
+      physics: {
+        default: 'arcade',
+        arcade: { gravity: { y: 800 }, debug: false },
+      },
+      input: {
+        keyboard: { target: window },
+      },
+      scene: [TitleScene, CharacterSelectScene, FightScene, WinScene],
+    };
+
+    new Phaser.Game(config);
+  </script>
+</body>
+</html>

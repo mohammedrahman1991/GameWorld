@@ -1,0 +1,326 @@
+/* ─── Reset ─────────────────────────────────────────────────── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #000;
+  overflow: hidden;
+  font-family: 'Courier New', Courier, monospace;
+  user-select: none;
+}
+
+#canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* ─── HUD Root ──────────────────────────────────────────────── */
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  color: #00ffaa;
+}
+
+/* ─── Top Bar ───────────────────────────────────────────────── */
+#hud-top {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  white-space: nowrap;
+}
+
+.hud-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(0,255,170,0.35);
+  border-radius: 20px;
+  padding: 5px 14px;
+  backdrop-filter: blur(6px);
+}
+
+.hud-label {
+  font-size: 10px;
+  color: rgba(0,255,170,0.6);
+  letter-spacing: 1px;
+}
+
+.hud-value { font-size: 12px; font-weight: bold; }
+
+.battery-bar {
+  width: 48px;
+  height: 8px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(0,255,170,0.3);
+}
+
+#battery-fill {
+  height: 100%;
+  width: 100%;
+  background: #00ffaa;
+  border-radius: 4px;
+  transition: width 0.5s, background-color 0.5s;
+}
+
+#hud-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(0,255,170,0.35);
+  border-radius: 20px;
+  padding: 6px 20px;
+  backdrop-filter: blur(6px);
+}
+
+.dji-logo {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: #fff;
+  text-shadow: 0 0 12px rgba(0,255,170,0.9);
+}
+
+#flight-mode {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #ffcc00;
+}
+
+#signal-bars {
+  font-size: 14px;
+  color: #00ffaa;
+  letter-spacing: 2px;
+}
+
+/* ─── Left Telemetry ────────────────────────────────────────── */
+#hud-left {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#hud-right {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: right;
+}
+
+.telem-block {
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(0,255,170,0.25);
+  border-radius: 6px;
+  padding: 8px 12px;
+  backdrop-filter: blur(4px);
+  min-width: 110px;
+}
+
+.telem-label {
+  display: block;
+  font-size: 9px;
+  color: rgba(0,255,170,0.55);
+  letter-spacing: 1px;
+  margin-bottom: 3px;
+}
+
+.telem-value {
+  display: block;
+  font-size: 16px;
+  font-weight: bold;
+  color: #00ffcc;
+  text-shadow: 0 0 8px rgba(0,255,200,0.6);
+}
+
+/* ─── Bottom Bar ────────────────────────────────────────────── */
+#hud-bottom {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+  gap: 30px;
+}
+
+/* Attitude indicator (artificial horizon) */
+#attitude-indicator {
+  width: 80px;
+  height: 80px;
+  border: 2px solid rgba(0,255,170,0.6);
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #1a6aaa 50%, #8B6914 50%);
+}
+
+#horizon-line {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: rgba(0,255,170,0.8);
+  top: 50%;
+  transform: translateY(-50%);
+  transition: top 0.1s, transform 0.1s;
+}
+
+#drone-cross {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* Controls hint */
+#controls-hint {
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(0,255,170,0.2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  backdrop-filter: blur(4px);
+}
+
+.ctrl-row {
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 4px;
+  line-height: 1.5;
+}
+
+kbd {
+  background: rgba(0,255,170,0.15);
+  border: 1px solid rgba(0,255,170,0.4);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-size: 10px;
+  color: #00ffaa;
+  font-family: inherit;
+}
+
+/* ─── Camera Badge ──────────────────────────────────────────── */
+#cam-badge {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.7);
+  border: 1px solid rgba(0,255,170,0.4);
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #00ffaa;
+  letter-spacing: 2px;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+/* ─── Event Banner ──────────────────────────────────────────── */
+#event-banner {
+  position: fixed;
+  top: 110px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.82);
+  border: 2px solid #ff4400;
+  border-radius: 12px;
+  padding: 10px 28px;
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  font-weight: bold;
+  color: #ff6622;
+  letter-spacing: 2px;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s;
+  text-shadow: 0 0 14px rgba(255,100,0,0.9);
+  z-index: 100;
+  white-space: nowrap;
+}
+#event-banner.show { opacity: 1; }
+
+/* ─── FPV Crosshair ─────────────────────────────────────────── */
+#crosshair {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
+  color: rgba(0,255,170,0.7);
+  pointer-events: none;
+  display: none;
+  text-shadow: 0 0 10px rgba(0,255,170,0.8);
+}
+
+/* ─── Speed Mode Button ─────────────────────────────────────── */
+#mode-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: rgba(0,0,0,0.72);
+  color: #00ffaa;
+  border: 1px solid #00ffaa;
+  border-radius: 6px;
+  padding: 9px 20px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  cursor: pointer;
+  z-index: 200;
+  backdrop-filter: blur(6px);
+  transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+  text-shadow: 0 0 8px rgba(0,255,170,0.6);
+  box-shadow: 0 0 10px rgba(0,255,170,0.2);
+}
+#mode-btn:hover {
+  background: rgba(0,255,170,0.12);
+  box-shadow: 0 0 18px rgba(0,255,170,0.5);
+}
+#mode-btn.sport {
+  color: #ff8800;
+  border-color: #ff8800;
+  text-shadow: 0 0 8px rgba(255,136,0,0.6);
+  box-shadow: 0 0 10px rgba(255,136,0,0.2);
+}
+#mode-btn.sport:hover {
+  background: rgba(255,136,0,0.12);
+  box-shadow: 0 0 18px rgba(255,136,0,0.5);
+}
+
+/* ─── Scanning line effect on HUD ───────────────────────────── */
+#hud::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events: none;
+}

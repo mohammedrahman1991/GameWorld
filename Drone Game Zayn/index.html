@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zayn's World</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+
+  <!-- DJI-style HUD -->
+  <div id="hud">
+
+    <!-- Top bar -->
+    <div id="hud-top">
+      <div class="hud-pill" id="battery-panel">
+        <span class="hud-label">BATT</span>
+        <div class="battery-bar">
+          <div id="battery-fill"></div>
+        </div>
+        <span id="battery-value" class="hud-value">100%</span>
+      </div>
+
+      <div id="hud-title">
+        <span class="dji-logo">DRONE PRO</span>
+        <span id="flight-mode">NORMAL MODE</span>
+      </div>
+
+      <div class="hud-pill" id="signal-panel">
+        <span class="hud-label">SIGNAL</span>
+        <span id="signal-bars">▌▌▌▌▌</span>
+      </div>
+    </div>
+
+    <!-- Left telemetry -->
+    <div id="hud-left">
+      <div class="telem-block">
+        <span class="telem-label">ALTITUDE</span>
+        <span class="telem-value" id="altitude-value">0.0 m</span>
+      </div>
+      <div class="telem-block">
+        <span class="telem-label">V.SPEED</span>
+        <span class="telem-value" id="vspeed-value">0.0 m/s</span>
+      </div>
+      <div class="telem-block">
+        <span class="telem-label">DISTANCE</span>
+        <span class="telem-value" id="distance-value">0 m</span>
+      </div>
+    </div>
+
+    <!-- Right telemetry -->
+    <div id="hud-right">
+      <div class="telem-block">
+        <span class="telem-label">H.SPEED</span>
+        <span class="telem-value" id="hspeed-value">0.0 m/s</span>
+      </div>
+      <div class="telem-block">
+        <span class="telem-label">HEADING</span>
+        <span class="telem-value" id="heading-value">N 0°</span>
+      </div>
+      <div class="telem-block">
+        <span class="telem-label">GPS</span>
+        <span class="telem-value" id="gps-value">63.4°N 19.0°W</span>
+      </div>
+    </div>
+
+    <!-- Bottom: controls + attitude indicator -->
+    <div id="hud-bottom">
+      <div id="attitude-indicator">
+        <div id="horizon-line"></div>
+        <div id="drone-cross">✛</div>
+      </div>
+
+      <div id="controls-hint">
+        <div class="ctrl-row"><kbd>W/S</kbd> Forward / Back</div>
+        <div class="ctrl-row"><kbd>A/D</kbd> Strafe Left / Right</div>
+        <div class="ctrl-row"><kbd>Q/E</kbd> Yaw Left / Right</div>
+        <div class="ctrl-row"><kbd>SPACE</kbd> Ascend &nbsp;<kbd>SHIFT</kbd> Descend</div>
+        <div class="ctrl-row"><kbd>C</kbd> Toggle Camera</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Event alert banner -->
+  <div id="event-banner"></div>
+
+  <!-- Speed mode toggle button -->
+  <button id="mode-btn">NORMAL MODE</button>
+
+  <!-- Camera mode badge -->
+  <div id="cam-badge">📷 3RD PERSON</div>
+
+  <!-- Crosshair (FPV mode) -->
+  <div id="crosshair">+</div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

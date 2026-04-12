@@ -1,0 +1,12 @@
+.cortex/
+
+# context-mem
+.context-mem/
+
+# Environment files — never commit secrets
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/

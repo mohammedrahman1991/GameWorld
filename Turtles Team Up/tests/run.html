@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ninja Raccoons — Tests</title>
+  <style>
+    body { font-family: monospace; background: #0f0f0f; color: #e5e5e5; padding: 24px; }
+    .pass { color: #22c55e; }
+    .fail { color: #ef4444; }
+    h2 { color: #a78bfa; margin: 16px 0 8px; }
+    #summary { margin-top: 20px; font-size: 18px; font-weight: bold; }
+  </style>
+</head>
+<body>
+<h1>Test Results</h1>
+<div id="output"></div>
+<div id="summary"></div>
+<script type="module">
+  const results = [];
+
+  function test(name, fn) {
+    try {
+      fn();
+      results.push({ name, pass: true });
+    } catch (e) {
+      results.push({ name, pass: false, error: e.message });
+    }
+  }
+
+  function assert(condition, msg) {
+    if (!condition) throw new Error(msg || 'Assertion failed');
+  }
+
+  function assertEqual(a, b) {
+    if (a !== b) throw new Error(`Expected ${b}, got ${a}`);
+  }
+
+  // ── CombatSystem tests ────────────────────────────────────────────────
+  import {
+    calcDamage,
+    updateSpecialMeter,
+    checkRoundEnd,
+    applyKnockback,
+  } from '../game/systems/CombatSystem.js';
+
+  test('calcDamage: full damage when not blocking', () => {
+    assertEqual(calcDamage(10, false), 10);
+  });
+
+  test('calcDamage: 30% damage when blocking', () => {
+    assertEqual(calcDamage(10, true), 3);
+  });
+
+  test('calcDamage: rounds down', () => {
+    assertEqual(calcDamage(7, true), 2);
+  });
+
+  test('updateSpecialMeter: adds per hit dealt', () => {
+    assertEqual(updateSpecialMeter(0, 10, 0), 10);
+  });
+
+  test('updateSpecialMeter: adds per hit received', () => {
+    assertEqual(updateSpecialMeter(0, 0, 10), 10);
+  });
+
+  test('updateSpecialMeter: caps at 100', () => {
+    assertEqual(updateSpecialMeter(95, 10, 0), 100);
+  });
+
+  test('updateSpecialMeter: does not go below 0', () => {
+    assertEqual(updateSpecialMeter(0, 0, 0), 0);
+  });
+
+  test('checkRoundEnd: returns null when both fighters alive', () => {
+    assert(checkRoundEnd(50, 50, 30) === null);
+  });
+
+  test('checkRoundEnd: returns 0 when p2 hp is 0', () => {
+    assertEqual(checkRoundEnd(50, 0, 30), 0);
+  });
+
+  test('checkRoundEnd: returns 1 when p1 hp is 0', () => {
+    assertEqual(checkRoundEnd(0, 50, 30), 1);
+  });
+
+  test('checkRoundEnd: returns winner by hp when timer hits 0', () => {
+    assertEqual(checkRoundEnd(80, 40, 0), 0);
+    assertEqual(checkRoundEnd(20, 90, 0), 1);
+  });
+
+  test('checkRoundEnd: timer 0 with equal hp returns null', () => {
+    assert(checkRoundEnd(50, 50, 0) === null);
+  });
+
+  test('applyKnockback: positive offset for p1 hitting p2', () => {
+    const { dx } = applyKnockback(0);
+    assert(dx > 0);
+  });
+
+  test('applyKnockback: negative offset for p2 hitting p1', () => {
+    const { dx } = applyKnockback(1);
+    assert(dx < 0);
+  });
+
+  // ── VoiceSystem tests ─────────────────────────────────────────────────
+  import { VoiceSystem } from '../game/systems/VoiceSystem.js';
+
+  test('VoiceSystem: caches audio by voiceId+text key', () => {
+    const vs = new VoiceSystem('fake-key');
+    vs._cache.set('voice1:hello', new Blob(['fake'], { type: 'audio/mpeg' }));
+    assert(vs._cache.has('voice1:hello'), 'Cache should contain injected entry');
+  });
+
+  test('VoiceSystem: cache key format is voiceId:text', () => {
+    const vs = new VoiceSystem('fake-key');
+    assertEqual(vs._cacheKey('abc123', 'Hello!'), 'abc123:Hello!');
+  });
+
+  test('VoiceSystem: isCached returns true for cached line', () => {
+    const vs = new VoiceSystem('fake-key');
+    vs._cache.set('v:line', new Blob([], { type: 'audio/mpeg' }));
+    assert(vs.isCached('v', 'line') === true);
+  });
+
+  test('VoiceSystem: isCached returns false for uncached line', () => {
+    const vs = new VoiceSystem('fake-key');
+    assert(vs.isCached('v', 'not-cached') === false);
+  });
+
+  // ── Render results ────────────────────────────────────────────────────
+  const out = document.getElementById('output');
+  const byGroup = {};
+  for (const r of results) {
+    const group = r.name.split(':')[0];
+    if (!byGroup[group]) byGroup[group] = [];
+    byGroup[group].push(r);
+  }
+
+  for (const [group, items] of Object.entries(byGroup)) {
+    const h = document.createElement('h2');
+    h.textContent = group;
+    out.appendChild(h);
+    for (const r of items) {
+      const p = document.createElement('p');
+      p.className = r.pass ? 'pass' : 'fail';
+      p.textContent = r.pass
+        ? `✅ ${r.name}`
+        : `❌ ${r.name} — ${r.error}`;
+      out.appendChild(p);
+    }
+  }
+
+  const passed = results.filter(r => r.pass).length;
+  const total  = results.length;
+  const sum = document.getElementById('summary');
+  sum.className = passed === total ? 'pass' : 'fail';
+  sum.textContent = `${passed}/${total} tests passed`;
+</script>
+</body>
+</html>
