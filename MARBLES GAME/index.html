@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marble Ringer — 2 Player</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 50% 30%, #1e2a4a 0%, #0d0d1a 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', system-ui, Arial, sans-serif;
+      color: #fff;
+      user-select: none;
+      overflow: hidden;
+    }
+
+    #scoreboard {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+      width: 820px;
+      max-width: 100vw;
+      padding: 0 10px;
+    }
+
+    .panel {
+      flex: 1;
+      padding: 10px 18px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: opacity 0.3s, box-shadow 0.3s;
+    }
+
+    #p1panel {
+      background: rgba(220, 50, 50, 0.12);
+      border: 2px solid rgba(220, 80, 80, 0.5);
+    }
+    #p1panel.active {
+      box-shadow: 0 0 18px rgba(232, 64, 64, 0.45);
+      border-color: rgba(232, 100, 100, 0.9);
+    }
+
+    #p2panel {
+      background: rgba(50, 130, 220, 0.12);
+      border: 2px solid rgba(60, 140, 220, 0.5);
+      flex-direction: row-reverse;
+      text-align: right;
+    }
+    #p2panel.active {
+      box-shadow: 0 0 18px rgba(64, 144, 232, 0.45);
+      border-color: rgba(100, 170, 232, 0.9);
+    }
+
+    .pinfo { flex: 1; }
+    .pname { font-size: 12px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1.5px; }
+    .pscore { font-size: 34px; font-weight: 800; line-height: 1.05; }
+    #p1score { color: #ff7070; }
+    #p2score { color: #70b8ff; }
+
+    .marble-dot {
+      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    }
+    #m1dot { background: radial-gradient(circle at 35% 35%, #ff9999, #e84040, #6b0000); }
+    #m2dot { background: radial-gradient(circle at 35% 35%, #aad4ff, #4090e8, #00266b); }
+
+    #statusbox {
+      flex: 0 0 auto;
+      min-width: 150px;
+      text-align: center;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      line-height: 1.5;
+    }
+    #turn-label  { font-size: 16px; font-weight: 700; }
+    #action-hint { font-size: 11px; opacity: 0.55; margin-top: 1px; }
+
+    canvas { border-radius: 12px; display: block; cursor: crosshair; }
+
+    #footer {
+      margin-top: 9px;
+      font-size: 11px;
+      opacity: 0.28;
+      letter-spacing: 0.4px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="scoreboard">
+  <div class="panel" id="p1panel">
+    <div class="marble-dot" id="m1dot"></div>
+    <div class="pinfo">
+      <div class="pname">Player 1</div>
+      <div class="pscore" id="p1score">0</div>
+    </div>
+  </div>
+
+  <div id="statusbox">
+    <div id="turn-label">Player 1</div>
+    <div id="action-hint">Drag to aim</div>
+  </div>
+
+  <div class="panel" id="p2panel">
+    <div class="marble-dot" id="m2dot"></div>
+    <div class="pinfo">
+      <div class="pname">Player 2</div>
+      <div class="pscore" id="p2score">0</div>
+    </div>
+  </div>
+</div>
+
+<canvas id="c" width="820" height="530"></canvas>
+<div id="footer">Knock marbles out of the ring to score &nbsp;·&nbsp; Score a marble and take another turn!</div>
+
+<script>
+// ── Setup ────────────────────────────────────────────────────────────────────
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+const W = 820, H = 530, CX = W / 2, CY = H / 2;
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+const RING_R   = 132;   // ring radius in px
+const MR       = 12;    // marble radius
+const FRICTION = 0.987;
+const STOP     = 0.08;  // speed threshold → "stopped"
+const MAX_PWR  = 15;    // max launch speed (px/frame)
+const SUBSTEPS = 4;     // physics sub-steps per frame
+const PAUSE_F  = 80;    // frames to pause between turns
+
+// ── Colours ───────────────────────────────────────────────────────────────────
+const PC = ['#e84040', '#4090e8'];          // player colours
+const PG = ['rgba(232,64,64,0.55)', 'rgba(64,144,232,0.55)']; // glow
+const TC = [
+  '#2ecc71','#f39c12','#9b59b6','#e67e22',
+  '#1abc9c','#e74c3c','#3498db','#f1c40f',
+  '#27ae60','#8e44ad','#16a085','#d35400'
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let gs   = 'aim'; // 'aim' | 'shoot' | 'pause' | 'over'
+let cp   = 0;     // current player 0 or 1
+let scores      = [0, 0];
+let pauseTimer  = 0;
+let scoredThisTurn = 0;
+let particles   = [];
+
+// ── Marbles ───────────────────────────────────────────────────────────────────
+let targets  = [];
+const HOMES  = [{ x: CX - 220, y: CY }, { x: CX + 220, y: CY }];
+let shooters = [
+  { x: HOMES[0].x, y: HOMES[0].y, vx: 0, vy: 0 },
+  { x: HOMES[1].x, y: HOMES[1].y, vx: 0, vy: 0 }
+];
+
+function initGame() {
+  // Marble layout inside ring (cross + diamond)
+  const pts = [
+    [0,0],
+    [30,0],[-30,0],[0,30],[0,-30],
+    [58,20],[58,-20],[-58,20],[-58,-20],
+    [0,60],[0,-60],[30,46]
+  ];
+  targets = pts.map((p, i) => ({
+    x: CX + p[0], y: CY + p[1], vx: 0, vy: 0,
+    color: TC[i % TC.length], out: false, owner: -1
+  }));
+
+  scores = [0, 0];
+  cp     = 0;
+  gs     = 'aim';
+  particles = [];
+  scoredThisTurn = 0;
+
+  shooters.forEach((s, i) => { s.x = HOMES[i].x; s.y = HOMES[i].y; s.vx = 0; s.vy = 0; });
+  refreshUI();
+}
+
+// ── Input ─────────────────────────────────────────────────────────────────────
+let dragStart = null, dragCurr = null, dragging = false;
+
+function canvasPt(e) {
+  const r = canvas.getBoundingClientRect();
+  const t = e.touches ? e.touches[0] : e;
+  return { x: (t.clientX - r.left) * W / r.width, y: (t.clientY - r.top) * H / r.height };
+}
+
+function onDown(e) {
+  e.preventDefault();
+  if (gs === 'over') { initGame(); return; }
+  if (gs !== 'aim')  return;
+  const p = canvasPt(e);
+  // Restrict to player's own half (with small margin)
+  if (cp === 0 && p.x > CX - 10) return;
+  if (cp === 1 && p.x < CX + 10) return;
+  // Prevent clicking inside the ring
+  if (Math.hypot(p.x - CX, p.y - CY) < RING_R - MR) return;
+  dragStart = p; dragCurr = { ...p }; dragging = true;
+}
+
+function onMove(e) {
+  e.preventDefault();
+  if (!dragging) return;
+  dragCurr = canvasPt(e);
+}
+
+function onUp(e) {
+  e.preventDefault();
+  if (!dragging || gs !== 'aim') { dragging = false; return; }
+  dragging = false;
+  if (!dragStart || !dragCurr) return;
+
+  const dx   = dragCurr.x - dragStart.x;
+  const dy   = dragCurr.y - dragStart.y;
+  const dist = Math.hypot(dx, dy);
+  const sx   = dragStart.x, sy = dragStart.y;
+  dragStart = null; dragCurr = null;
+
+  if (dist < 8) return;
+
+  const speed = Math.min(dist * 0.15, MAX_PWR);
+  const s = shooters[cp];
+  s.x  = sx; s.y  = sy;
+  s.vx = (dx / dist) * speed;
+  s.vy = (dy / dist) * speed;
+
+  scoredThisTurn = 0;
+  gs = 'shoot';
+}
+
+canvas.addEventListener('mousedown',  onDown);
+canvas.addEventListener('mousemove',  onMove);
+canvas.addEventListener('mouseup',    onUp);
+canvas.addEventListener('touchstart', onDown, { passive: false });
+canvas.addEventListener('touchmove',  onMove, { passive: false });
+canvas.addEventListener('touchend',   onUp,   { passive: false });
+
+// ── Physics ───────────────────────────────────────────────────────────────────
+function elasticCollide(a, b) {
+  const dx  = b.x - a.x, dy = b.y - a.y;
+  const d2  = dx * dx + dy * dy;
+  const min = MR * 2;
+  if (d2 >= min * min || d2 < 0.001) return;
+
+  const d  = Math.sqrt(d2);
+  const nx = dx / d, ny = dy / d;
+  const ov = (min - d) * 0.5;
+
+  // Separate
+  a.x -= nx * ov; a.y -= ny * ov;
+  b.x += nx * ov; b.y += ny * ov;
+
+  // Equal-mass elastic velocity exchange along normal
+  const va = a.vx * nx + a.vy * ny;
+  const vb = b.vx * nx + b.vy * ny;
+  if (va - vb <= 0) return; // already separating
+
+  a.vx += (vb - va) * nx; a.vy += (vb - va) * ny;
+  b.vx += (va - vb) * nx; b.vy += (va - vb) * ny;
+}
+
+function update() {
+  if (gs === 'pause') {
+    if (--pauseTimer <= 0) { gs = 'aim'; refreshUI(); }
+    return;
+  }
+  if (gs !== 'shoot') return;
+
+  const alive = targets.filter(t => !t.out);
+  const all   = [shooters[cp], ...alive];
+
+  for (let sub = 0; sub < SUBSTEPS; sub++) {
+    for (const m of all) { m.x += m.vx / SUBSTEPS; m.y += m.vy / SUBSTEPS; }
+    for (let i = 0; i < all.length; i++)
+      for (let j = i + 1; j < all.length; j++)
+        elasticCollide(all[i], all[j]);
+  }
+
+  for (const m of all) {
+    m.vx *= FRICTION; m.vy *= FRICTION;
+    if (Math.abs(m.vx) < STOP * 0.4) m.vx = 0;
+    if (Math.abs(m.vy) < STOP * 0.4) m.vy = 0;
+    // Wall bounce
+    if (m.x - MR < 0)  { m.x = MR;     m.vx =  Math.abs(m.vx) * 0.6; }
+    if (m.x + MR > W)  { m.x = W - MR; m.vx = -Math.abs(m.vx) * 0.6; }
+    if (m.y - MR < 0)  { m.y = MR;     m.vy =  Math.abs(m.vy) * 0.6; }
+    if (m.y + MR > H)  { m.y = H - MR; m.vy = -Math.abs(m.vy) * 0.6; }
+  }
+
+  // Capture marbles that left the ring
+  for (const t of alive) {
+    if (Math.hypot(t.x - CX, t.y - CY) > RING_R + MR) {
+      t.out   = true;
+      t.owner = cp;
+      scores[cp]++;
+      scoredThisTurn++;
+      spawnParticles(t.x, t.y, t.color);
+    }
+  }
+
+  // Check if everything stopped
+  const stillMoving = all.some(m => Math.abs(m.vx) > STOP || Math.abs(m.vy) > STOP);
+  if (!stillMoving) endTurn();
+}
+
+function endTurn() {
+  // Return shooter home
+  const s = shooters[cp];
+  s.x = HOMES[cp].x; s.y = HOMES[cp].y; s.vx = 0; s.vy = 0;
+
+  refreshScores();
+
+  if (targets.every(t => t.out)) { gs = 'over'; refreshUI(); return; }
+
+  if (scoredThisTurn === 0) cp = 1 - cp; // switch player only if no score
+  scoredThisTurn = 0;
+
+  gs = 'pause';
+  pauseTimer = PAUSE_F;
+  refreshUI();
+}
+
+// ── Particles ─────────────────────────────────────────────────────────────────
+function spawnParticles(x, y, color) {
+  for (let i = 0; i < 10; i++) {
+    const angle = (Math.PI * 2 * i / 10) + (Math.random() - 0.5) * 0.6;
+    particles.push({
+      x, y, color,
+      vx: Math.cos(angle) * (2 + Math.random() * 4),
+      vy: Math.sin(angle) * (2 + Math.random() * 4) - 1,
+      life: 1, r: 2.5 + Math.random() * 3
+    });
+  }
+}
+
+function tickParticles() {
+  particles = particles.filter(p => p.life > 0);
+  for (const p of particles) {
+    p.x += p.vx; p.y += p.vy;
+    p.vy += 0.18;
+    p.life -= 0.035;
+  }
+}
+
+// ── Drawing helpers ───────────────────────────────────────────────────────────
+function hexToRgb(hex) {
+  return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)];
+}
+function adjustHex(hex, amt) {
+  const [r,g,b] = hexToRgb(hex);
+  const cl = v => Math.max(0, Math.min(255, Math.round(v + amt)));
+  return `rgb(${cl(r)},${cl(g)},${cl(b)})`;
+}
+
+function drawMarble(x, y, r, color, glowColor) {
+  ctx.save();
+  if (glowColor) { ctx.shadowBlur = 22; ctx.shadowColor = glowColor; }
+
+  const g = ctx.createRadialGradient(x - r*0.32, y - r*0.32, r*0.04, x, y, r);
+  g.addColorStop(0, adjustHex(color, 75));
+  g.addColorStop(0.45, color);
+  g.addColorStop(1,  adjustHex(color, -55));
+
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = g;
+  ctx.fill();
+
+  ctx.shadowBlur = 0;
+
+  // Primary specular highlight
+  const hl = ctx.createRadialGradient(x - r*0.38, y - r*0.38, 0, x - r*0.38, y - r*0.38, r*0.48);
+  hl.addColorStop(0, 'rgba(255,255,255,0.88)');
+  hl.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = hl;
+  ctx.fill();
+
+  // Small secondary reflection
+  const sl = ctx.createRadialGradient(x + r*0.3, y + r*0.28, 0, x + r*0.3, y + r*0.28, r*0.22);
+  sl.addColorStop(0, 'rgba(255,255,255,0.22)');
+  sl.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = sl;
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function rrect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);    ctx.quadraticCurveTo(x + w, y,     x + w, y + r);
+  ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);     ctx.quadraticCurveTo(x,     y + h, x,     y + h - r);
+  ctx.lineTo(x, y + r);         ctx.quadraticCurveTo(x,     y,     x + r, y);
+  ctx.closePath();
+}
+
+// ── Scene drawing ─────────────────────────────────────────────────────────────
+function drawBackground() {
+  // Asphalt base
+  ctx.fillStyle = '#1c2030';
+  ctx.fillRect(0, 0, W, H);
+
+  // Player half tints
+  ctx.fillStyle = 'rgba(232,64,64,0.045)';
+  ctx.fillRect(0, 0, CX, H);
+  ctx.fillStyle = 'rgba(64,144,232,0.045)';
+  ctx.fillRect(CX, 0, CX, H);
+
+  // Centre divider
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([12, 10]);
+  ctx.beginPath(); ctx.moveTo(CX, 0); ctx.lineTo(CX, H); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+function drawRing() {
+  ctx.save();
+
+  // Soft filled arena
+  const arena = ctx.createRadialGradient(CX, CY, 0, CX, CY, RING_R);
+  arena.addColorStop(0,   'rgba(255,255,255,0.06)');
+  arena.addColorStop(0.75,'rgba(255,255,255,0.03)');
+  arena.addColorStop(1,   'rgba(255,255,255,0)');
+  ctx.beginPath();
+  ctx.arc(CX, CY, RING_R, 0, Math.PI * 2);
+  ctx.fillStyle = arena;
+  ctx.fill();
+
+  // Chalk ring
+  ctx.shadowBlur = 24;
+  ctx.shadowColor = 'rgba(255,255,255,0.2)';
+  ctx.beginPath();
+  ctx.arc(CX, CY, RING_R, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  ctx.restore();
+
+  // Ring label
+  ctx.fillStyle = 'rgba(255,255,255,0.1)';
+  ctx.font = 'bold 10px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('MARBLE RING', CX, CY + RING_R + 16);
+}
+
+function drawCaptured() {
+  [0, 1].forEach(player => {
+    const mine = targets.filter(t => t.out && t.owner === player);
+    mine.forEach((t, i) => {
+      const col = i % 5, row = Math.floor(i / 5);
+      const bx  = player === 0 ? 16 + col * 28 : W - 16 - col * 28;
+      const by  = 50 + row * 28;
+      drawMarble(bx, by, MR * 0.78, t.color, null);
+    });
+    if (mine.length) {
+      ctx.fillStyle = player === 0 ? 'rgba(255,112,112,0.4)' : 'rgba(112,184,255,0.4)';
+      ctx.font = '10px monospace';
+      ctx.textAlign = player === 0 ? 'left' : 'right';
+      ctx.fillText(`${mine.length} captured`, player === 0 ? 10 : W - 10, 38);
+    }
+  });
+}
+
+function drawAimGuide() {
+  if (!dragging || !dragStart || !dragCurr) return;
+
+  const dx   = dragCurr.x - dragStart.x;
+  const dy   = dragCurr.y - dragStart.y;
+  const dist = Math.hypot(dx, dy);
+  if (dist < 2) return;
+
+  const power = Math.min(dist * 0.15, MAX_PWR) / MAX_PWR;
+  const nx = dx / dist, ny = dy / dist;
+  const pColor = power < 0.35 ? '#2ecc71' : power < 0.68 ? '#f39c12' : '#e74c3c';
+
+  ctx.save();
+
+  // Dashed line start→cursor
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.lineWidth = 1.5; ctx.setLineDash([6, 7]);
+  ctx.beginPath(); ctx.moveTo(dragStart.x, dragStart.y); ctx.lineTo(dragCurr.x, dragCurr.y);
+  ctx.stroke(); ctx.setLineDash([]);
+
+  // Direction arrow from launch point
+  const arrowLen = 52 + power * 38;
+  const ex = dragStart.x + nx * arrowLen;
+  const ey = dragStart.y + ny * arrowLen;
+
+  ctx.strokeStyle = pColor; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(dragStart.x, dragStart.y); ctx.lineTo(ex, ey); ctx.stroke();
+
+  // Arrowhead
+  const ang = Math.atan2(ny, nx);
+  ctx.fillStyle = pColor;
+  ctx.beginPath();
+  ctx.moveTo(ex, ey);
+  ctx.lineTo(ex - 13 * Math.cos(ang - 0.38), ey - 13 * Math.sin(ang - 0.38));
+  ctx.lineTo(ex - 13 * Math.cos(ang + 0.38), ey - 13 * Math.sin(ang + 0.38));
+  ctx.closePath(); ctx.fill();
+
+  // Power bar
+  const bw = 62, bh = 7, bx = dragStart.x - bw / 2, by = dragStart.y + 22;
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  rrect(bx, by, bw, bh, 3); ctx.fill();
+  ctx.fillStyle = pColor;
+  rrect(bx, by, bw * power, bh, 3); ctx.fill();
+
+  ctx.restore();
+
+  // Ghost marble at launch point
+  drawMarble(dragStart.x, dragStart.y, MR, PC[cp], PG[cp]);
+}
+
+function drawParticles() {
+  for (const p of particles) {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, p.life);
+    ctx.fillStyle = p.color;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+}
+
+function drawPauseBanner() {
+  if (gs !== 'pause') return;
+  const t = pauseTimer / PAUSE_F;
+  // bell-curve alpha: peaks in middle of pause
+  const alpha = Math.sin(Math.PI * (1 - t)) * 0.92;
+  if (alpha <= 0) return;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = 'rgba(0,0,0,0.65)';
+  rrect(CX - 140, CY - 34, 280, 68, 12); ctx.fill();
+  ctx.strokeStyle = PC[cp]; ctx.lineWidth = 2;
+  rrect(CX - 140, CY - 34, 280, 68, 12); ctx.stroke();
+
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 20px "Segoe UI", sans-serif';
+  ctx.textAlign = 'center';
+
+  const msg = (pauseTimer > PAUSE_F * 0.6 && scoredThisTurn > 0)
+    ? `Nice! Go again, Player ${cp + 1}!`
+    : `Player ${cp + 1}'s turn`;
+  ctx.fillText(msg, CX, CY + 7);
+  ctx.restore();
+}
+
+function drawGameOver() {
+  const w = scores[0] > scores[1] ? 0 : scores[1] > scores[0] ? 1 : -1;
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.72)';
+  rrect(CX - 190, CY - 105, 380, 210, 18); ctx.fill();
+  ctx.strokeStyle = w >= 0 ? PC[w] : '#f1c40f'; ctx.lineWidth = 3;
+  rrect(CX - 190, CY - 105, 380, 210, 18); ctx.stroke();
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#fff';
+
+  // Stars
+  ctx.font = '32px sans-serif';
+  ctx.fillText(w >= 0 ? '🏆' : '🤝', CX, CY - 52);
+
+  ctx.font = 'bold 26px "Segoe UI", sans-serif';
+  ctx.fillText(w >= 0 ? `Player ${w + 1} Wins!` : "It's a Tie!", CX, CY - 16);
+
+  ctx.font = '15px "Segoe UI", sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.65)';
+  ctx.fillText(`P1: ${scores[0]} marbles   vs   P2: ${scores[1]} marbles`, CX, CY + 18);
+
+  ctx.fillStyle = '#f1c40f';
+  ctx.font = 'bold 14px "Segoe UI", sans-serif';
+  ctx.fillText('Click anywhere to play again', CX, CY + 60);
+  ctx.restore();
+}
+
+function drawShooters() {
+  if (gs === 'shoot') {
+    // Active shooter is wherever it flew to
+    drawMarble(shooters[cp].x, shooters[cp].y, MR + 2, PC[cp], PG[cp]);
+    return;
+  }
+
+  // Show idle shooter at home (with label)
+  const s = shooters[cp];
+  drawMarble(s.x, s.y, MR + 2, PC[cp], gs === 'aim' ? PG[cp] : null);
+
+  if (gs === 'aim') {
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 10px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`P${cp + 1}`, s.x, s.y + 4);
+  }
+
+  // Show waiting player's shooter dimly
+  if (gs === 'over') {
+    shooters.forEach((sh, i) => drawMarble(sh.x, sh.y, MR + 2, PC[i], null));
+  }
+}
+
+function drawHint() {
+  if (gs !== 'aim' || dragging) return;
+  const side = cp === 0 ? 'left half' : 'right half';
+  ctx.save();
+  ctx.font = '12px "Segoe UI", sans-serif';
+  ctx.textAlign = cp === 0 ? 'left' : 'right';
+  ctx.fillStyle = `rgba(${cp===0?'232,100,100':'100,170,232'},0.45)`;
+  ctx.fillText(`Drag on the ${side} to aim & shoot`, cp === 0 ? 10 : W - 10, H - 10);
+  ctx.restore();
+}
+
+// ── Main render ───────────────────────────────────────────────────────────────
+function draw() {
+  drawBackground();
+  drawRing();
+  drawCaptured();
+
+  for (const t of targets)
+    if (!t.out) drawMarble(t.x, t.y, MR, t.color, null);
+
+  drawShooters();
+  drawAimGuide();
+  drawParticles();
+  drawHint();
+  drawPauseBanner();
+  if (gs === 'over') drawGameOver();
+}
+
+// ── UI ────────────────────────────────────────────────────────────────────────
+function refreshScores() {
+  document.getElementById('p1score').textContent = scores[0];
+  document.getElementById('p2score').textContent = scores[1];
+}
+
+function refreshUI() {
+  const tl = document.getElementById('turn-label');
+  const ah = document.getElementById('action-hint');
+
+  tl.textContent  = gs === 'over'  ? 'Game Over!'       : `Player ${cp + 1}`;
+  tl.style.color  = gs === 'over'  ? '#f1c40f'          : cp === 0 ? '#ff7070' : '#70b8ff';
+  ah.textContent  = gs === 'over'  ? 'Click to restart' :
+                    gs === 'shoot' ? 'Shooting…'         :
+                    gs === 'pause' ? 'Nice shot!'        : 'Drag to aim & shoot';
+
+  document.getElementById('p1panel').classList.toggle('active', cp === 0 && gs !== 'over');
+  document.getElementById('p2panel').classList.toggle('active', cp === 1 && gs !== 'over');
+  refreshScores();
+}
+
+// ── Game loop ─────────────────────────────────────────────────────────────────
+function loop() {
+  update();
+  tickParticles();
+  draw();
+  refreshUI();
+  requestAnimationFrame(loop);
+}
+
+initGame();
+loop();
+</script>
+</body>
+</html>

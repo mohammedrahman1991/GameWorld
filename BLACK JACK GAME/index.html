@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blackjack — Two Players</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 50% -10%, #1e7a46 0%, #0c4422 55%, #071f10 100%);
+      font-family: Georgia, 'Times New Roman', serif;
+      color: #f0e6c8;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    /* ── Felt texture overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        repeating-linear-gradient(45deg, rgba(0,0,0,.04) 0, rgba(0,0,0,.04) 1px, transparent 1px, transparent 6px),
+        repeating-linear-gradient(-45deg, rgba(0,0,0,.04) 0, rgba(0,0,0,.04) 1px, transparent 1px, transparent 6px);
+      z-index: 0;
+    }
+
+    body > * { position: relative; z-index: 1; }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      padding: 18px 0 12px;
+      background: rgba(0,0,0,.38);
+      border-bottom: 2px solid #b8952a;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-size: clamp(2rem, 6vw, 3.4rem);
+      color: #d4a832;
+      letter-spacing: .22em;
+      text-shadow: 0 0 30px rgba(212,168,50,.35), 2px 2px 0 rgba(0,0,0,.7);
+      font-variant: small-caps;
+    }
+    .header p {
+      font-size: .72rem;
+      letter-spacing: .28em;
+      color: #9a8050;
+      margin-top: 3px;
+      text-transform: uppercase;
+    }
+
+    /* ── Scoreboard ── */
+    .scoreboard {
+      display: flex;
+      justify-content: center;
+      background: rgba(0,0,0,.28);
+      border-bottom: 1px solid rgba(184,149,42,.3);
+      flex-shrink: 0;
+    }
+    .score-cell {
+      flex: 1;
+      max-width: 200px;
+      text-align: center;
+      padding: 10px 0;
+      transition: background .3s;
+    }
+    .score-cell + .score-cell {
+      border-left: 1px solid rgba(184,149,42,.22);
+    }
+    .score-label {
+      font-size: .62rem;
+      letter-spacing: .22em;
+      color: #8a7040;
+      text-transform: uppercase;
+    }
+    .score-value {
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: #d4a832;
+      line-height: 1.15;
+      transition: transform .2s;
+    }
+    .score-value.bump {
+      animation: scoreBump .35s ease-out;
+    }
+    @keyframes scoreBump {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.35); color: #f0c040; }
+      100% { transform: scale(1); }
+    }
+
+    /* ── Message area ── */
+    .msg-area {
+      text-align: center;
+      padding: 10px 16px 4px;
+      flex-shrink: 0;
+      min-height: 56px;
+    }
+    #message {
+      font-size: clamp(.9rem, 2.5vw, 1.25rem);
+      color: #d4a832;
+      font-variant: small-caps;
+      letter-spacing: .12em;
+      min-height: 1.6em;
+      transition: color .2s;
+    }
+    #message.msg-win  { color: #2ecc71; }
+    #message.msg-bust { color: #e74c3c; }
+    #message.msg-tie  { color: #e67e22; }
+    #turn-label {
+      font-size: .72rem;
+      color: #8a7040;
+      letter-spacing: .18em;
+      min-height: 1.2em;
+      margin-top: 3px;
+    }
+
+    /* ── Table layout ── */
+    .table {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 18px;
+      padding: 22px 18px 10px;
+      max-width: 1000px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* ── Player panel ── */
+    .panel {
+      flex: 1;
+      background: rgba(0,0,0,.22);
+      border: 2px solid rgba(184,149,42,.28);
+      border-radius: 16px;
+      padding: 18px 16px;
+      transition: border-color .3s, box-shadow .3s, background .3s;
+      min-width: 0;
+    }
+    .panel.active {
+      border-color: #d4a832;
+      box-shadow: 0 0 36px rgba(212,168,50,.18), inset 0 0 20px rgba(212,168,50,.04);
+    }
+    .panel.result-win {
+      border-color: #27ae60;
+      background: rgba(39,174,96,.09);
+      box-shadow: 0 0 32px rgba(39,174,96,.18);
+    }
+    .panel.result-lose {
+      border-color: #c0392b;
+      background: rgba(192,57,43,.08);
+    }
+    .panel.result-tie {
+      border-color: #d4821a;
+      background: rgba(212,130,26,.07);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 6px;
+    }
+    .dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: #d4a832;
+      flex-shrink: 0;
+      opacity: 0;
+      transition: opacity .25s;
+    }
+    .panel.active .dot {
+      opacity: 1;
+      animation: dotPulse 1.1s ease-in-out infinite;
+    }
+    @keyframes dotPulse {
+      0%,100% { transform: scale(1);   opacity: 1; }
+      50%      { transform: scale(.65); opacity: .4; }
+    }
+    .player-name {
+      font-size: 1.05rem;
+      font-variant: small-caps;
+      letter-spacing: .1em;
+      color: #e0d0a0;
+    }
+
+    .hand-total {
+      font-size: .78rem;
+      color: #8a7040;
+      margin-bottom: 10px;
+      min-height: 1.1em;
+    }
+    .hand-total b { color: #d4a832; font-size: 1.2em; }
+
+    /* ── Cards area ── */
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      min-height: 112px;
+      align-content: flex-start;
+      padding: 2px 0;
+    }
+
+    /* ── Individual card ── */
+    .card {
+      width: 66px;
+      height: 100px;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #bbb;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      padding: 4px 5px;
+      box-shadow: 2px 3px 8px rgba(0,0,0,.5);
+      flex-shrink: 0;
+      animation: dealIn .3s cubic-bezier(.22,.61,.36,1) both;
+    }
+    @keyframes dealIn {
+      from { opacity: 0; transform: translateY(-22px) rotate(-4deg) scale(.92); }
+      to   { opacity: 1; transform: none; }
+    }
+    .card.red   { color: #c0392b; }
+    .card.black { color: #111; }
+
+    .card-tl {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      font-size: .68rem;
+      font-weight: bold;
+      line-height: 1.15;
+    }
+    .card-mid {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.55rem;
+      line-height: 1;
+    }
+    .card-br {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      font-size: .68rem;
+      font-weight: bold;
+      line-height: 1.15;
+      transform: rotate(180deg);
+    }
+
+    /* ── Status badge ── */
+    .badge {
+      margin-top: 10px;
+      min-height: 26px;
+      font-variant: small-caps;
+      letter-spacing: .09em;
+      font-size: .88rem;
+    }
+    .badge.bust  { color: #e74c3c; font-weight: bold; animation: shakeX .4s ease; }
+    .badge.bj    { color: #f1c40f; font-weight: bold; font-size: 1rem; animation: glowPop .5s ease; }
+    .badge.win   { color: #2ecc71; font-weight: bold; animation: glowPop .4s ease; }
+    .badge.lose  { color: #c0392b; }
+    .badge.tie   { color: #e67e22; }
+    .badge.stood { color: #5dade2; }
+
+    @keyframes shakeX {
+      0%,100% { transform: translateX(0); }
+      20%     { transform: translateX(-6px); }
+      40%     { transform: translateX(6px); }
+      60%     { transform: translateX(-4px); }
+      80%     { transform: translateX(4px); }
+    }
+    @keyframes glowPop {
+      0%   { transform: scale(.85); opacity: .6; }
+      60%  { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+
+    /* ── VS divider ── */
+    .vs {
+      display: flex;
+      align-items: flex-start;
+      padding-top: 58px;
+      color: rgba(212,168,50,.38);
+      font-size: 1.3rem;
+      font-variant: small-caps;
+      letter-spacing: .1em;
+      flex-shrink: 0;
+    }
+
+    /* ── Controls ── */
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 16px 16px 22px;
+      flex-shrink: 0;
+    }
+
+    .btn {
+      padding: 13px 32px;
+      font-family: inherit;
+      font-size: .88rem;
+      font-variant: small-caps;
+      letter-spacing: .14em;
+      border: none;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: transform .14s, box-shadow .14s, opacity .14s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background .15s;
+    }
+    .btn:not(:disabled):hover::after { background: rgba(255,255,255,.08); }
+    .btn:not(:disabled):active::after { background: rgba(0,0,0,.12); }
+    .btn:disabled { opacity: .32; cursor: default; }
+    .btn:not(:disabled):hover { transform: translateY(-2px); }
+    .btn:not(:disabled):active { transform: translateY(0); }
+
+    .btn-hit {
+      background: linear-gradient(145deg, #d4a832 0%, #a87820 100%);
+      color: #1a0f00;
+      font-weight: bold;
+      box-shadow: 0 3px 10px rgba(0,0,0,.35);
+    }
+    .btn-hit:not(:disabled):hover { box-shadow: 0 5px 18px rgba(212,168,50,.5); }
+
+    .btn-stand {
+      background: linear-gradient(145deg, #2c3e50 0%, #1a252f 100%);
+      color: #d4a832;
+      border: 1px solid rgba(212,168,50,.6);
+      box-shadow: 0 3px 10px rgba(0,0,0,.35);
+    }
+    .btn-stand:not(:disabled):hover { box-shadow: 0 5px 14px rgba(0,0,0,.5); }
+
+    .btn-deal {
+      background: linear-gradient(145deg, #27ae60 0%, #1a7a40 100%);
+      color: #fff;
+      font-weight: bold;
+      box-shadow: 0 3px 10px rgba(0,0,0,.35);
+    }
+    .btn-deal:not(:disabled):hover { box-shadow: 0 5px 18px rgba(39,174,96,.5); }
+
+    .btn-reset {
+      background: rgba(255,255,255,.06);
+      color: #7a6438;
+      border: 1px solid rgba(184,149,42,.22);
+      box-shadow: 0 2px 6px rgba(0,0,0,.25);
+    }
+    .btn-reset:not(:disabled):hover { background: rgba(255,255,255,.1); }
+
+    /* ── Responsive ── */
+    @media (max-width: 580px) {
+      .table { flex-direction: column; align-items: center; padding-top: 14px; }
+      .panel { width: 100%; max-width: 380px; }
+      .vs { padding-top: 0; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Blackjack</h1>
+    <p>Two Player Classic &nbsp;·&nbsp; Beat 21</p>
+  </div>
+
+  <div class="scoreboard">
+    <div class="score-cell">
+      <div class="score-label">Player 1</div>
+      <div class="score-value" id="s-p1">0</div>
+    </div>
+    <div class="score-cell">
+      <div class="score-label">Ties</div>
+      <div class="score-value" id="s-tie">0</div>
+    </div>
+    <div class="score-cell">
+      <div class="score-label">Player 2</div>
+      <div class="score-value" id="s-p2">0</div>
+    </div>
+  </div>
+
+  <div class="msg-area">
+    <div id="message">Press Deal to start a new round.</div>
+    <div id="turn-label"></div>
+  </div>
+
+  <div class="table">
+
+    <div class="panel" id="panel-0">
+      <div class="panel-header">
+        <div class="dot" id="dot-0"></div>
+        <div class="player-name">Player 1</div>
+      </div>
+      <div class="hand-total" id="total-0">Hand: <b>—</b></div>
+      <div class="cards" id="cards-0"></div>
+      <div class="badge" id="badge-0"></div>
+    </div>
+
+    <div class="vs">VS</div>
+
+    <div class="panel" id="panel-1">
+      <div class="panel-header">
+        <div class="dot" id="dot-1"></div>
+        <div class="player-name">Player 2</div>
+      </div>
+      <div class="hand-total" id="total-1">Hand: <b>—</b></div>
+      <div class="cards" id="cards-1"></div>
+      <div class="badge" id="badge-1"></div>
+    </div>
+
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-hit"   id="btn-hit"   onclick="hit()"      disabled>Hit</button>
+    <button class="btn btn-stand" id="btn-stand" onclick="doStand()"  disabled>Stand</button>
+    <button class="btn btn-deal"  id="btn-deal"  onclick="deal()">Deal</button>
+    <button class="btn btn-reset" onclick="resetGame()">Reset Scores</button>
+  </div>
+
+<script>
+'use strict';
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+const SUITS = ['♠', '♥', '♦', '♣'];
+const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let deck      = [];
+let players   = [];   // [{hand, stood, bust, blackjack, result}]
+let cur       = 0;    // active player index
+let roundOver = false;
+let tally     = { p1: 0, ties: 0, p2: 0 };
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function makeDeck() {
+  const d = [];
+  for (const s of SUITS) for (const r of RANKS) d.push({ s, r });
+  for (let i = d.length - 1; i > 0; i--) {
+    const j = (Math.random() * (i + 1)) | 0;
+    [d[i], d[j]] = [d[j], d[i]];
+  }
+  return d;
+}
+
+function draw() { return deck.pop(); }
+
+function total(hand) {
+  let t = 0, aces = 0;
+  for (const { r } of hand) {
+    if (r === 'A')              { t += 11; aces++; }
+    else if ('JQK'.includes(r)) { t += 10; }
+    else                        { t += +r; }
+  }
+  while (t > 21 && aces) { t -= 10; aces--; }
+  return t;
+}
+
+function isRed(s) { return s === '♥' || s === '♦'; }
+
+// ── DOM helpers ───────────────────────────────────────────────────────────────
+function cardEl({ s, r }) {
+  const el = document.createElement('div');
+  el.className = `card ${isRed(s) ? 'red' : 'black'}`;
+  el.innerHTML = `
+    <div class="card-tl"><span>${r}</span><span>${s}</span></div>
+    <div class="card-mid">${s}</div>
+    <div class="card-br"><span>${r}</span><span>${s}</span></div>`;
+  return el;
+}
+
+function setMsg(text, cls = '') {
+  const el = document.getElementById('message');
+  el.textContent = text;
+  el.className = cls ? `msg-${cls}` : '';
+}
+
+function setTurn(text) {
+  document.getElementById('turn-label').textContent = text;
+}
+
+// ── Rendering ─────────────────────────────────────────────────────────────────
+function renderPlayer(i) {
+  const p   = players[i];
+  const pid = i + 1;
+  const t_  = p.hand.length ? total(p.hand) : null;
+
+  // Cards
+  const cardsDiv = document.getElementById(`cards-${i}`);
+  cardsDiv.innerHTML = '';
+  for (const c of p.hand) cardsDiv.appendChild(cardEl(c));
+
+  // Total
+  document.getElementById(`total-${i}`).innerHTML =
+    t_ !== null ? `Hand: <b>${t_}</b>` : 'Hand: <b>—</b>';
+
+  // Panel class
+  const panel = document.getElementById(`panel-${i}`);
+  panel.className = 'panel';
+  if (!roundOver && cur === i && !p.stood && !p.bust) panel.classList.add('active');
+  if (p.result === 'win')  panel.classList.add('result-win');
+  if (p.result === 'lose') panel.classList.add('result-lose');
+  if (p.result === 'tie')  panel.classList.add('result-tie');
+
+  // Badge
+  const badge = document.getElementById(`badge-${i}`);
+  badge.className = 'badge';
+  badge.textContent = '';
+
+  if (p.result === 'win') {
+    badge.classList.add('win');
+    badge.textContent = p.blackjack ? '★ Blackjack — Winner! ★' : '★ Winner! ★';
+  } else if (p.result === 'lose') {
+    badge.classList.add('lose');
+    badge.textContent = p.bust ? 'Bust — Loses' : 'Loses';
+  } else if (p.result === 'tie') {
+    badge.classList.add('tie');
+    badge.textContent = p.blackjack ? '★ Blackjack — Tie ★' : 'Tie';
+  } else if (p.bust) {
+    badge.classList.add('bust');
+    badge.textContent = 'Bust!';
+  } else if (p.blackjack) {
+    badge.classList.add('bj');
+    badge.textContent = '★ Blackjack! ★';
+  } else if (p.stood) {
+    badge.classList.add('stood');
+    badge.textContent = 'Standing';
+  }
+}
+
+function updateButtons() {
+  const hasCards = players.length && players[0].hand.length > 0;
+  const inPlay   = hasCards && !roundOver;
+
+  const hitBtn   = document.getElementById('btn-hit');
+  const standBtn = document.getElementById('btn-stand');
+  const dealBtn  = document.getElementById('btn-deal');
+
+  hitBtn.disabled   = !inPlay || players[cur].stood || players[cur].bust;
+  standBtn.disabled = !inPlay || players[cur].stood || players[cur].bust;
+  dealBtn.disabled  = inPlay;
+  dealBtn.textContent = (roundOver && hasCards) ? 'New Round' : 'Deal';
+}
+
+function render() {
+  renderPlayer(0);
+  renderPlayer(1);
+  updateButtons();
+}
+
+// ── Core actions ──────────────────────────────────────────────────────────────
+function deal() {
+  deck    = makeDeck();
+  players = [0, 1].map(() => ({ hand: [], stood: false, bust: false, blackjack: false, result: '' }));
+  cur     = 0;
+  roundOver = false;
+
+  // Deal 2 to each player
+  players[0].hand.push(draw(), draw());
+  players[1].hand.push(draw(), draw());
+
+  // Detect initial blackjacks
+  for (const p of players) {
+    if (total(p.hand) === 21) p.blackjack = true;
+  }
+
+  // Both blackjack — instant tie
+  if (players[0].blackjack && players[1].blackjack) {
+    players[0].stood = true;
+    players[1].stood = true;
+    endRound();
+    render();
+    return;
+  }
+
+  // Player 1 blackjack — auto-stand, skip to Player 2
+  if (players[0].blackjack) {
+    players[0].stood = true;
+    render();
+    cur = 1;
+    render();
+    setMsg("Player 1 has Blackjack! Now Player 2's turn.");
+    setTurn('▶ Player 2');
+    updateButtons();
+    return;
+  }
+
+  render();
+  setMsg("Player 1's turn — Hit or Stand?");
+  setTurn('▶ Player 1');
+}
+
+function hit() {
+  if (roundOver || !players[cur] || players[cur].stood || players[cur].bust) return;
+
+  players[cur].hand.push(draw());
+  const t_ = total(players[cur].hand);
+
+  if (t_ > 21) {
+    players[cur].bust = true;
+    render();
+    setMsg(`Player ${cur + 1} busts with ${t_}!`, 'bust');
+    setTimeout(nextTurn, 500);
+  } else if (t_ === 21) {
+    players[cur].stood = true;   // auto-stand on 21
+    render();
+    setMsg(`Player ${cur + 1} hits exactly 21 — standing!`);
+    setTimeout(nextTurn, 500);
+  } else {
+    render();
+    setMsg(`Player ${cur + 1}: ${t_} — Hit or Stand?`);
+    setTurn(`▶ Player ${cur + 1}`);
+  }
+}
+
+function doStand() {
+  if (roundOver || !players[cur] || players[cur].stood || players[cur].bust) return;
+  const t_ = total(players[cur].hand);
+  players[cur].stood = true;
+  render();
+  setMsg(`Player ${cur + 1} stands at ${t_}.`);
+  setTimeout(nextTurn, 380);
+}
+
+function nextTurn() {
+  if (cur === 0) {
+    cur = 1;
+
+    // Player 2 already has blackjack from the initial deal
+    if (players[1].blackjack) {
+      players[1].stood = true;
+      endRound();
+      render();
+      return;
+    }
+
+    render();
+    setMsg(`Player 2's turn — Hit or Stand?`);
+    setTurn('▶ Player 2');
+    updateButtons();
+  } else {
+    endRound();
+    render();
+  }
+}
+
+function endRound() {
+  roundOver = true;
+
+  const t1  = total(players[0].hand);
+  const t2  = total(players[1].hand);
+  const b1  = players[0].bust;
+  const b2  = players[1].bust;
+  const bj1 = players[0].blackjack;
+  const bj2 = players[1].blackjack;
+
+  // Determine winner (0-indexed)
+  let winner;
+  if      (b1 && b2)      winner = 'tie';
+  else if (b1)            winner = 1;
+  else if (b2)            winner = 0;
+  else if (bj1 && !bj2)  winner = 0;
+  else if (bj2 && !bj1)  winner = 1;
+  else if (t1 > t2)      winner = 0;
+  else if (t2 > t1)      winner = 1;
+  else                    winner = 'tie';
+
+  if (winner === 'tie') {
+    players[0].result = 'tie';
+    players[1].result = 'tie';
+    tally.ties++;
+    setMsg("It's a Tie!", 'tie');
+  } else {
+    players[winner].result     = 'win';
+    players[1 - winner].result = 'lose';
+    if (winner === 0) tally.p1++; else tally.p2++;
+    setMsg(`★  Player ${winner + 1} Wins!  ★`, 'win');
+  }
+
+  setTurn('');
+  updateScoreboard(winner);
+}
+
+function updateScoreboard(winner) {
+  document.getElementById('s-p1').textContent  = tally.p1;
+  document.getElementById('s-tie').textContent = tally.ties;
+  document.getElementById('s-p2').textContent  = tally.p2;
+
+  // Bump animation on winning cell
+  if (winner === 0)     bump('s-p1');
+  else if (winner === 1) bump('s-p2');
+  else if (winner === 'tie') { bump('s-tie'); }
+}
+
+function bump(id) {
+  const el = document.getElementById(id);
+  el.classList.remove('bump');
+  // force reflow
+  void el.offsetWidth;
+  el.classList.add('bump');
+}
+
+// ── Reset ─────────────────────────────────────────────────────────────────────
+function resetGame() {
+  tally     = { p1: 0, ties: 0, p2: 0 };
+  deck      = [];
+  players   = [0, 1].map(() => ({ hand: [], stood: false, bust: false, blackjack: false, result: '' }));
+  cur       = 0;
+  roundOver = false;
+
+  for (let i = 0; i < 2; i++) {
+    document.getElementById(`cards-${i}`).innerHTML = '';
+    document.getElementById(`total-${i}`).innerHTML = 'Hand: <b>—</b>';
+    document.getElementById(`badge-${i}`).className = 'badge';
+    document.getElementById(`badge-${i}`).textContent = '';
+    document.getElementById(`panel-${i}`).className = 'panel';
+  }
+  document.getElementById('s-p1').textContent  = 0;
+  document.getElementById('s-tie').textContent = 0;
+  document.getElementById('s-p2').textContent  = 0;
+
+  setMsg('Press Deal to start a new round.');
+  setTurn('');
+  updateButtons();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+players = [0, 1].map(() => ({ hand: [], stood: false, bust: false, blackjack: false, result: '' }));
+updateButtons();
+</script>
+
+</body>
+</html>
