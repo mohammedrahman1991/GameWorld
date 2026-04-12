@@ -126,34 +126,39 @@ function createAllTextures(scene) {
   createSlicerTextures(scene);
 }
 
-// ─── CHIPTUNE PLAYER ──────────────────────────────────────────────────────────
+// ─── BATTLE MUSIC PLAYER ──────────────────────────────────────────────────────
 class ChiptunePlayer {
   static FREQ = {
-    C3:130.81,D3:146.83,E3:164.81,F3:174.61,G3:196.00,A3:220.00,B3:246.94,
-    C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392.00,A4:440.00,B4:493.88,
-    C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99,A5:880.00,B5:987.77,
+    C3:130.81,D3:146.83,Eb3:155.56,E3:164.81,F3:174.61,G3:196.00,Ab3:207.65,A3:220.00,Bb3:233.08,B3:246.94,
+    C4:261.63,D4:293.66,Eb4:311.13,E4:329.63,F4:349.23,G4:392.00,Ab4:415.30,A4:440.00,Bb4:466.16,B4:493.88,
+    C5:523.25,D5:587.33,Eb5:622.25,E5:659.25,F5:698.46,G5:783.99,Ab5:830.61,A5:880.00,Bb5:932.33,
     _:0,
   };
 
-  // 64 sixteenth-note battle melody (loops)
+  // Aggressive E-minor battle melody — 64 sixteenth notes
   static MELODY = [
-    'G5','E5','G5','A5','G5','E5','D5','E5',
-    'G5','E5','G5','A5','B5','A5','G5','_',
-    'E5','G5','A5','G5','E5','D5','E5','G5',
-    'A5','G5','E5','D5','C5','D5','E5','_',
-    'C5','E5','G5','E5','C5','D5','E5','D5',
-    'C5','E5','G5','A5','G5','E5','D5','_',
-    'G4','A4','B4','C5','D5','E5','G5','E5',
-    'D5','E5','G5','E5','D5','C5','_','_',
+    'E5','_','G5','_','A5','_','B5','A5',   // phrase 1 — drive up
+    'G5','E5','_','D5','E5','_','G5','_',
+    'A5','_','G5','E5','D5','_','C5','D5',   // phrase 2 — tension
+    'E5','_','G5','A5','B5','_','A5','G5',
+    'E5','D5','E5','G5','A5','B5','_','A5',  // phrase 3 — build
+    'G5','E5','D5','_','E5','_','D5','C5',
+    'B4','_','E5','_','G5','_','A5','G5',    // phrase 4 — resolve
+    'E5','D5','_','B4','_','D5','E5','_',
   ];
 
-  // One bass note every 4 melody notes (16 bass notes per loop)
+  // Heavy sawtooth bass line
   static BASS = [
-    'G3','G3','G3','G3',
-    'C3','C3','D3','C3',
+    'E3','E3','G3','E3',
+    'A3','A3','G3','A3',
     'F3','F3','G3','F3',
-    'G3','A3','_','_',
+    'E3','B3','E3','_',
   ];
+
+  // Kick pattern (1 = kick, 0 = silent) — 16 steps per loop
+  static KICK = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,1,0];
+  // Snare on beats 2 & 4
+  static SNARE = [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0];
 
   constructor() { this.ctx = null; this.playing = false; this.idx = 0; this._t = null; }
 
@@ -167,27 +172,36 @@ class ChiptunePlayer {
 
   stop() {
     this.playing = false;
-    if (this._t)   clearTimeout(this._t);
+    if (this._t) clearTimeout(this._t);
     if (this.ctx) { this.ctx.close(); this.ctx = null; }
   }
 
   _tick() {
     if (!this.playing || !this.ctx) return;
-    const BPM  = 172;
+    const BPM   = 198;
     const sixMs = (60000 / BPM) / 4;
+    const beat  = this.idx % 16;
 
+    // Melody — square wave lead
     const mNote = ChiptunePlayer.MELODY[this.idx % ChiptunePlayer.MELODY.length];
     const mFreq = ChiptunePlayer.FREQ[mNote] || 0;
-    if (mFreq) this._note(mFreq, sixMs / 1000 * 0.75, 'square', 0.055);
+    if (mFreq) this._note(mFreq, sixMs / 1000 * 0.7, 'square', 0.06);
 
+    // Bass — sawtooth every 4 steps
     if (this.idx % 4 === 0) {
       const bNote = ChiptunePlayer.BASS[Math.floor(this.idx / 4) % ChiptunePlayer.BASS.length];
       const bFreq = ChiptunePlayer.FREQ[bNote] || 0;
-      if (bFreq) this._note(bFreq, sixMs / 1000 * 3.2, 'sawtooth', 0.03);
+      if (bFreq) this._note(bFreq, sixMs / 1000 * 3.5, 'sawtooth', 0.045);
     }
 
-    // Hi-hat click every 2 notes
-    if (this.idx % 2 === 0) this._noise(0.008, sixMs / 1000 * 0.08);
+    // Kick drum — punchy low thud
+    if (ChiptunePlayer.KICK[beat]) this._kick(sixMs / 1000 * 0.18);
+
+    // Snare — sharp crack
+    if (ChiptunePlayer.SNARE[beat]) this._snare(sixMs / 1000 * 0.12);
+
+    // Hi-hat — every step, quiet
+    this._noise(0.006, sixMs / 1000 * 0.04);
 
     this.idx++;
     this._t = setTimeout(() => this._tick(), sixMs);
@@ -201,6 +215,32 @@ class ChiptunePlayer {
     g.gain.setValueAtTime(vol, this.ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
     o.start(); o.stop(this.ctx.currentTime + dur + 0.02);
+  }
+
+  _kick(dur) {
+    const o = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    o.connect(g); g.connect(this.ctx.destination);
+    o.type = 'sine';
+    o.frequency.setValueAtTime(160, this.ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + dur);
+    g.gain.setValueAtTime(0.9, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
+    o.start(); o.stop(this.ctx.currentTime + dur + 0.01);
+  }
+
+  _snare(dur) {
+    // White noise + tone blend for snare crack
+    const buf  = this.ctx.createBuffer(1, this.ctx.sampleRate * dur, this.ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    const src = this.ctx.createBufferSource();
+    const g   = this.ctx.createGain();
+    src.buffer = buf;
+    src.connect(g); g.connect(this.ctx.destination);
+    g.gain.setValueAtTime(0.25, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
+    src.start(); src.stop(this.ctx.currentTime + dur + 0.01);
   }
 
   _noise(vol, dur) {
@@ -265,14 +305,44 @@ const GOOFY_LINES = {
   slicer: ['Sliiice!', 'Chop chop!', 'Ultra slice!', 'Razor sharp!', 'Snip snip!'],
 };
 
-// ─── ANNOUNCER VOICE ─────────────────────────────────────────────────────────
+// ─── VOICE SYSTEM ─────────────────────────────────────────────────────────────
 let _announcerVoice = null;
+let _voicesReady    = false;
+
+// Per-character voice profiles: [pitchMin, pitchMax, rateMin, rateMax, preferredNames]
+const FIGHTER_VOICE_PROFILES = {
+  cluck:  { pitch: [1.15, 1.30], rate: [1.05, 1.15], prefer: ['Google UK English Female','Samantha','Victoria','Karen','Moira','Tessa'] },
+  wing:   { pitch: [1.00, 1.15], rate: [1.10, 1.20], prefer: ['Google US English','Alex','Daniel','Gordon','Rishi'] },
+  peck:   { pitch: [1.20, 1.35], rate: [1.05, 1.15], prefer: ['Google UK English Female','Fiona','Veena','Kyoko'] },
+  talons: { pitch: [0.90, 1.05], rate: [0.95, 1.10], prefer: ['Google US English','Alex','Daniel','Fred','Thomas'] },
+  sensei: { pitch: [0.85, 1.00], rate: [0.90, 1.00], prefer: ['Google UK English Male','Daniel','Rishi','Xander'] },
+  slicer: { pitch: [1.10, 1.25], rate: [1.10, 1.25], prefer: ['Google UK English Female','Samantha','Karen','Tessa'] },
+};
+
+function _pickVoice(preferredNames) {
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return null;
+  for (const name of preferredNames) {
+    const v = voices.find(v => v.name === name);
+    if (v) return v;
+  }
+  // Fallback: any Google/Apple natural voice, then default
+  return voices.find(v => /google|apple/i.test(v.name) && /en/i.test(v.lang)) ||
+         voices.find(v => /en/i.test(v.lang)) ||
+         voices[0];
+}
+
 function _loadAnnouncerVoice() {
   const voices = window.speechSynthesis.getVoices();
   if (!voices.length) return;
-  _announcerVoice = voices.find(v => /male/i.test(v.name)) ||
-                    voices.find(v => /david|alex|daniel|fred|jorge|diego|thomas/i.test(v.name)) ||
-                    voices[0];
+  _voicesReady = true;
+  _announcerVoice =
+    voices.find(v => v.name === 'Google US English') ||
+    voices.find(v => v.name === 'Alex') ||
+    voices.find(v => v.name === 'Daniel') ||
+    voices.find(v => /male/i.test(v.name) && /en/i.test(v.lang)) ||
+    voices.find(v => /en/i.test(v.lang)) ||
+    voices[0];
 }
 if (window.speechSynthesis) {
   window.speechSynthesis.onvoiceschanged = _loadAnnouncerVoice;
@@ -293,13 +363,16 @@ function speakAnnouncer(text, delay = 0) {
 
 function speakGoofyHit(fighterId) {
   if (!window.speechSynthesis) return;
+  // Cancel only non-announcer speech; let announcer finish
   if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
-  const lines = GOOFY_LINES[fighterId] || ['POW!'];
-  const text  = lines[Math.floor(Math.random() * lines.length)];
-  const utt   = new SpeechSynthesisUtterance(text);
-  utt.pitch   = 1.8 + Math.random() * 0.4;  // high & goofy
-  utt.rate    = 1.4 + Math.random() * 0.3;  // fast & punchy
-  utt.volume  = 0.9;
+  const lines   = GOOFY_LINES[fighterId] || ['POW!'];
+  const text    = lines[Math.floor(Math.random() * lines.length)];
+  const profile = FIGHTER_VOICE_PROFILES[fighterId] || { pitch:[1.0,1.2], rate:[1.0,1.1], prefer:[] };
+  const utt     = new SpeechSynthesisUtterance(text);
+  utt.pitch     = profile.pitch[0] + Math.random() * (profile.pitch[1] - profile.pitch[0]);
+  utt.rate      = profile.rate[0]  + Math.random() * (profile.rate[1]  - profile.rate[0]);
+  utt.volume    = 1.0;
+  utt.voice     = _pickVoice(profile.prefer);
   window.speechSynthesis.speak(utt);
 }
 
@@ -810,10 +883,10 @@ class FightScene extends Phaser.Scene {
       if (window.speechSynthesis) {
         if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
         const utt  = new SpeechSynthesisUtterance('BOOM SHAKALAKA!!!');
-        utt.pitch  = 2.0;
-        utt.rate   = 1.6;
+        utt.pitch  = 1.25;
+        utt.rate   = 1.05;
         utt.volume = 1.0;
-        if (_announcerVoice) utt.voice = _announcerVoice;
+        utt.voice  = _pickVoice(['Google US English','Alex','Daniel','Samantha']);
         window.speechSynthesis.speak(utt);
       }
     } else {
