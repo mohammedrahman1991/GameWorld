@@ -12,7 +12,7 @@ class GameOverScene extends Phaser.Scene {
 
     // Winner
     this.add.text(W / 2, H * 0.22,
-      winner === 'curry' ? 'CURRY WINS!' : 'ANT-MAN WINS!', {
+      winner === 'curry' ? 'CHEF WINS!' : 'ANT-MAN WINS!', {
       fontSize: '66px', color: '#ffffff', fontStyle: 'bold',
       fontFamily: 'Impact, Arial Black, sans-serif',
       stroke: '#000000', strokeThickness: 6
@@ -25,7 +25,7 @@ class GameOverScene extends Phaser.Scene {
       fontStyle: 'bold', stroke: '#000000', strokeThickness: 4
     }).setOrigin(0.5);
 
-    this.add.text(W / 2 - 80, H * 0.56, 'CURRY',   { fontSize: '13px', color: '#aaaaaa' }).setOrigin(0.5);
+    this.add.text(W / 2 - 80, H * 0.56, 'CHEF',   { fontSize: '13px', color: '#aaaaaa' }).setOrigin(0.5);
     this.add.text(W / 2 + 80, H * 0.56, 'ANT-MAN', { fontSize: '13px', color: '#aaaaaa' }).setOrigin(0.5);
 
     // Play Again

@@ -7,7 +7,7 @@ class Curry extends Player {
       { speed: 88, threePoint: 99, midRange: 92, dribble: 96, steal: 77, dunk: 45 },
       'curry'
     );
-    this.label.setText('CURRY #30');
+    this.label.setText('CHEF');
     this.label.setStyle({ fontSize: '10px', color: '#FFC72C', stroke: '#000', strokeThickness: 3 });
   }
 

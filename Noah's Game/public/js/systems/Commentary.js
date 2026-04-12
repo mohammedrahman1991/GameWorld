@@ -1,10 +1,10 @@
 var Commentary = (function() {
   var LINES = {
-    curry_three:   "Splash! Steph Curry from way downtown! That's money!",
-    curry_two:     "Curry with the mid-range — automatic!",
+    curry_three:   "Splash! Chef from way downtown! That's money!",
+    curry_two:     "Chef with the mid-range — automatic!",
     edwards_dunk:  "ANT-MAN throws it DOWN! What an athlete!",
-    edwards_three: "Edwards from three — he has range tonight!",
-    edwards_two:   "Anthony Edwards scores two — Ant-Man is cooking!",
+    edwards_three: "Ant-Man from three — he has range tonight!",
+    edwards_two:   "Ant-Man scores two — he's cooking!",
     steal:         "Picked his pocket! Turnover!",
     block:         "Rejection! Get that outta here!",
     miss:          "No good — but the crowd is loving this!"

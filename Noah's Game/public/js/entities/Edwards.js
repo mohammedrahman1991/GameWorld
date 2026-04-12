@@ -7,7 +7,7 @@ class Edwards extends Player {
       { speed: 92, threePoint: 82, midRange: 88, dribble: 86, steal: 85, dunk: 95 },
       'edwards'
     );
-    this.label.setText('ANT-MAN #5');
+    this.label.setText('ANT-MAN #01');
     this.label.setStyle({ fontSize: '10px', color: '#ffffff', stroke: '#c8102e', strokeThickness: 3 });
     this.facingRight = false;
   }

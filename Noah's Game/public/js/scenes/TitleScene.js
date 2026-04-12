@@ -36,7 +36,7 @@ class TitleScene extends Phaser.Scene {
       stroke: '#000000', strokeThickness: 7
     }).setOrigin(0.5);
 
-    this.add.text(W / 2, H * 0.53, 'Steph Curry  vs  Ant-Man  |  First to 21', {
+    this.add.text(W / 2, H * 0.53, 'Chef  vs  Ant-Man  |  First to 21', {
       fontSize: '20px', color: '#ffffff', stroke: '#000000', strokeThickness: 3
     }).setOrigin(0.5);
 
