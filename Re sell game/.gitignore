@@ -1,0 +1,14 @@
+.cortex/
+
+# context-mem
+.context-mem/
+
+# git worktrees
+.worktrees/
+
+# env
+.env
+
+# build output
+dist/
+node_modules/

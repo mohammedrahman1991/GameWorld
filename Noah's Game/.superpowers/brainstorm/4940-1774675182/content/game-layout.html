@@ -1,0 +1,197 @@
+<h2>Noah's House — Game Screen Layout</h2>
+<p class="subtitle">Full game UI mockup. Does this look right to you?</p>
+
+<div class="mockup">
+  <div class="mockup-header">Game Screen — Isometric Beach Court</div>
+  <div class="mockup-body" style="background:#1a1a2e;padding:0;overflow:hidden;border-radius:0 0 8px 8px;">
+
+    <!-- TOP HUD -->
+    <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.85);padding:8px 16px;border-bottom:2px solid #FFC72C;">
+      <!-- Curry score -->
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#1d428a;border:2px solid #FFC72C;display:flex;align-items:center;justify-content:center;color:#FFC72C;font-weight:900;font-size:11px;">SC</div>
+        <div>
+          <div style="color:#FFC72C;font-size:9px;font-weight:bold;letter-spacing:1px;">CURRY #30</div>
+          <div style="color:#fff;font-size:22px;font-weight:900;line-height:1;">12</div>
+        </div>
+      </div>
+      <!-- Center timer + quarter -->
+      <div style="text-align:center;">
+        <div style="color:#aaa;font-size:9px;letter-spacing:2px;">NOAH'S HOUSE</div>
+        <div style="color:#fff;font-size:20px;font-weight:900;font-family:monospace;">2:34</div>
+        <div style="color:#FFC72C;font-size:9px;letter-spacing:1px;">Q2 • SHOT CLOCK: 8</div>
+      </div>
+      <!-- Ant score -->
+      <div style="display:flex;align-items:center;gap:10px;flex-direction:row-reverse;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#c8102e;border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:11px;">AE</div>
+        <div style="text-align:right;">
+          <div style="color:#ef5350;font-size:9px;font-weight:bold;letter-spacing:1px;">ANT-MAN #5</div>
+          <div style="color:#fff;font-size:22px;font-weight:900;line-height:1;">9</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GAME WORLD -->
+    <div style="position:relative;height:260px;overflow:hidden;">
+
+      <!-- Sky / Beach background -->
+      <div style="position:absolute;inset:0;background:linear-gradient(180deg,#87CEEB 0%,#87CEEB 45%,#f4d03f 45%,#e8c547 55%,#c4a070 55%,#b09060 100%);"></div>
+
+      <!-- Sun -->
+      <div style="position:absolute;top:10px;right:40px;width:40px;height:40px;background:radial-gradient(circle,#fff7a1,#f9ca24);border-radius:50%;box-shadow:0 0 20px #f9ca24;"></div>
+
+      <!-- Ocean waves hint -->
+      <div style="position:absolute;top:42%;left:0;right:0;height:8px;background:rgba(100,180,255,0.4);border-radius:50%;"></div>
+
+      <!-- GRAFFITI WALL - left -->
+      <div style="position:absolute;left:0;top:15%;width:70px;height:55%;background:#888;border-right:3px solid #555;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;overflow:hidden;">
+        <div style="color:#e74c3c;font-size:14px;font-weight:900;transform:rotate(-5deg);text-shadow:1px 1px 0 #000;font-family:Impact;">NOAH</div>
+        <div style="color:#f9ca24;font-size:10px;font-weight:900;transform:rotate(3deg);text-shadow:1px 1px 0 #000;">🏀HOUSE🏀</div>
+        <div style="color:#27ae60;font-size:9px;font-weight:bold;transform:rotate(-2deg);">#SPLASH</div>
+        <div style="color:#9b59b6;font-size:8px;transform:rotate(2deg);">WARRIORS</div>
+      </div>
+
+      <!-- FANS LEFT -->
+      <div style="position:absolute;left:70px;top:15%;display:flex;gap:3px;align-items:flex-end;">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="width:14px;height:14px;border-radius:50%;background:#ffe0b2;border:1px solid #333;"></div>
+          <div style="width:14px;height:18px;background:#1d428a;border-radius:2px;"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:4px;">
+          <div style="width:12px;height:12px;border-radius:50%;background:#8B5E3C;border:1px solid #333;"></div>
+          <div style="width:12px;height:16px;background:#FFC72C;border-radius:2px;"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="width:14px;height:14px;border-radius:50%;background:#ffe0b2;border:1px solid #333;"></div>
+          <div style="width:14px;height:18px;background:#c8102e;border-radius:2px;"></div>
+        </div>
+      </div>
+
+      <!-- ISOMETRIC COURT -->
+      <div style="position:absolute;bottom:30px;left:50%;transform:translateX(-50%);width:380px;">
+        <!-- Court surface isometric illusion -->
+        <div style="position:relative;margin:0 auto;">
+          <!-- Top edge of court (far side) -->
+          <div style="width:280px;height:12px;background:linear-gradient(180deg,#c4a95b,#b8944a);margin:0 auto;transform:perspective(300px) rotateX(60deg);border:2px solid #8B6914;border-radius:2px;"></div>
+          <!-- Court face (bottom) -->
+          <div style="width:320px;height:60px;background:linear-gradient(180deg,#d4b96b 0%,#c4a95b 100%);margin:0 auto;border:2px solid #8B6914;position:relative;overflow:hidden;">
+            <!-- Center line -->
+            <div style="position:absolute;top:0;bottom:0;left:50%;width:2px;background:rgba(255,255,255,0.5);transform:translateX(-50%);"></div>
+            <!-- 3-point lines hint -->
+            <div style="position:absolute;left:20px;top:0;bottom:0;width:2px;background:rgba(255,255,255,0.4);transform:skewX(-5deg);"></div>
+            <div style="position:absolute;right:20px;top:0;bottom:0;width:2px;background:rgba(255,255,255,0.4);transform:skewX(5deg);"></div>
+          </div>
+        </div>
+
+        <!-- HOOP LEFT -->
+        <div style="position:absolute;left:10px;bottom:20px;">
+          <div style="width:3px;height:40px;background:#aaa;margin:0 auto;"></div>
+          <div style="width:24px;height:4px;background:#e67e22;border-radius:2px;border:1px solid #333;"></div>
+        </div>
+
+        <!-- HOOP RIGHT -->
+        <div style="position:absolute;right:10px;bottom:20px;">
+          <div style="width:3px;height:40px;background:#aaa;margin:0 auto;"></div>
+          <div style="width:24px;height:4px;background:#e67e22;border-radius:2px;border:1px solid #333;"></div>
+        </div>
+
+        <!-- CURRY player -->
+        <div style="position:absolute;left:60px;bottom:40px;display:flex;flex-direction:column;align-items:center;">
+          <div style="width:24px;height:24px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ffe0b2,#d4956b);border:2px solid #333;"></div>
+          <div style="width:26px;height:30px;background:#1d428a;border-radius:3px 3px 0 0;border:2px solid #333;display:flex;align-items:center;justify-content:center;color:#FFC72C;font-weight:900;font-size:9px;">30</div>
+          <div style="display:flex;gap:1px;">
+            <div style="width:11px;height:16px;background:#1d428a;border:1px solid #333;border-radius:0 0 2px 2px;"></div>
+            <div style="width:11px;height:16px;background:#1d428a;border:1px solid #333;border-radius:0 0 2px 2px;"></div>
+          </div>
+          <div style="color:#FFC72C;font-size:7px;font-weight:bold;text-shadow:0 0 4px #000;margin-top:1px;">CURRY</div>
+        </div>
+
+        <!-- BALL -->
+        <div style="position:absolute;left:50%;bottom:55px;transform:translateX(-50%);">
+          <div style="width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#f39c12,#e67e22);border:2px solid #333;box-shadow:2px 2px 4px rgba(0,0,0,0.5);"></div>
+        </div>
+
+        <!-- ANT player -->
+        <div style="position:absolute;right:60px;bottom:40px;display:flex;flex-direction:column;align-items:center;">
+          <div style="width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#8B5E3C,#6B3F2A);border:2px solid #333;"></div>
+          <div style="width:30px;height:34px;background:#c8102e;border-radius:3px 3px 0 0;border:2px solid #333;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:9px;">5</div>
+          <div style="display:flex;gap:1px;">
+            <div style="width:13px;height:18px;background:#c8102e;border:1px solid #333;border-radius:0 0 2px 2px;"></div>
+            <div style="width:13px;height:18px;background:#c8102e;border:1px solid #333;border-radius:0 0 2px 2px;"></div>
+          </div>
+          <div style="color:#ef5350;font-size:7px;font-weight:bold;text-shadow:0 0 4px #000;margin-top:1px;">ANT-MAN</div>
+        </div>
+      </div>
+
+      <!-- FANS RIGHT -->
+      <div style="position:absolute;right:70px;top:15%;display:flex;gap:3px;align-items:flex-end;">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="width:14px;height:14px;border-radius:50%;background:#ffe0b2;border:1px solid #333;"></div>
+          <div style="width:14px;height:18px;background:#c8102e;border-radius:2px;"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:6px;">
+          <div style="width:12px;height:12px;border-radius:50%;background:#d4956b;border:1px solid #333;"></div>
+          <div style="width:12px;height:16px;background:#1d428a;border-radius:2px;"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="width:14px;height:14px;border-radius:50%;background:#8B5E3C;border:1px solid #333;"></div>
+          <div style="width:14px;height:18px;background:#FFC72C;border-radius:2px;"></div>
+        </div>
+      </div>
+
+      <!-- GRAFFITI WALL - right -->
+      <div style="position:absolute;right:0;top:15%;width:70px;height:55%;background:#888;border-left:3px solid #555;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;overflow:hidden;">
+        <div style="color:#3498db;font-size:12px;font-weight:900;transform:rotate(3deg);text-shadow:1px 1px 0 #000;font-family:Impact;">STEPH</div>
+        <div style="color:#e74c3c;font-size:11px;font-weight:900;transform:rotate(-4deg);text-shadow:1px 1px 0 #000;font-family:Impact;">CURRY</div>
+        <div style="color:#f9ca24;font-size:9px;font-weight:bold;transform:rotate(2deg);">BEACH COURT</div>
+        <div style="color:#27ae60;font-size:8px;transform:rotate(-3deg);">💪 MVP 💪</div>
+      </div>
+
+      <!-- Shot meter (example) -->
+      <div style="position:absolute;left:78px;bottom:90px;display:flex;flex-direction:column;align-items:center;gap:2px;">
+        <div style="width:8px;height:40px;background:#333;border:1px solid #555;border-radius:4px;overflow:hidden;position:relative;">
+          <div style="position:absolute;bottom:0;left:0;right:0;height:70%;background:linear-gradient(180deg,#27ae60,#f9ca24,#e74c3c);border-radius:0 0 4px 4px;"></div>
+        </div>
+        <div style="color:#fff;font-size:7px;">SHOOT</div>
+      </div>
+
+    </div>
+
+    <!-- BOTTOM CONTROLS HUD -->
+    <div style="background:rgba(0,0,0,0.9);padding:8px 12px;border-top:1px solid #333;display:flex;justify-content:space-between;align-items:center;">
+      <!-- P1 controls -->
+      <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
+        <span style="color:#FFC72C;font-size:8px;font-weight:bold;margin-right:2px;">P1:</span>
+        <span style="background:#1d428a;color:#FFC72C;font-size:8px;padding:2px 4px;border-radius:2px;border:1px solid #FFC72C;">WASD move</span>
+        <span style="background:#333;color:#aaa;font-size:8px;padding:2px 4px;border-radius:2px;">G shoot</span>
+        <span style="background:#333;color:#aaa;font-size:8px;padding:2px 4px;border-radius:2px;">F pass</span>
+        <span style="background:#333;color:#aaa;font-size:8px;padding:2px 4px;border-radius:2px;">T dribble</span>
+      </div>
+      <!-- P2 controls -->
+      <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
+        <span style="color:#ef5350;font-size:8px;font-weight:bold;margin-right:2px;">P2:</span>
+        <span style="background:#7f1d1d;color:#ef5350;font-size:8px;padding:2px 4px;border-radius:2px;border:1px solid #ef5350;">↑↓←→ move</span>
+        <span style="background:#333;color:#aaa;font-size:8px;padding:2px 4px;border-radius:2px;">/ shoot</span>
+        <span style="background:#333;color:#aaa;font-size:8px;padding:2px 4px;border-radius:2px;">. pass</span>
+        <span style="background:#333;color:#aaa;font-size:8px;padding:2px 4px;border-radius:2px;">, dribble</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section" style="margin-top:16px;">
+  <h3>Key Features</h3>
+  <ul style="color:#ccc;font-size:13px;line-height:1.8;">
+    <li>🏀 <strong>Shot meter</strong> — vertical bar, release at green zone for best accuracy</li>
+    <li>🌊 <strong>Beach setting</strong> — sky, sand, ocean horizon in background</li>
+    <li>🎨 <strong>Graffiti walls</strong> on both sides — "NOAH'S HOUSE", "STEPH CURRY", tags</li>
+    <li>👥 <strong>Fan crowd</strong> along both sidelines, animated cheering</li>
+    <li>⭐ <strong>Curry stat bonus</strong> — 3-pt shot arc turns gold when in range</li>
+    <li>💪 <strong>Ant stat bonus</strong> — speed burst, contact layup animations</li>
+    <li>🎤 <strong>ElevenLabs commentary</strong> — voice calls out big plays</li>
+    <li>📋 <strong>Controls always visible</strong> in bottom HUD bar</li>
+  </ul>
+</div>
+
+<p class="subtitle">Does this layout look good? Any changes before I write the spec?</p>

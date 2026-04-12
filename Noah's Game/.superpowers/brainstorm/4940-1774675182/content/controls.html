@@ -1,0 +1,112 @@
+<h2>Controls Layout</h2>
+<p class="subtitle">How should the two players control their characters?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="split-keyboard" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#111;padding:16px;border-radius:8px;font-family:monospace;">
+      <div style="display:flex;justify-content:space-between;gap:12px;">
+        <!-- Player 1 -->
+        <div style="flex:1;">
+          <div style="color:#FFC72C;font-size:9px;font-weight:bold;margin-bottom:6px;text-align:center;">CURRY (P1)</div>
+          <div style="display:flex;flex-direction:column;gap:3px;align-items:center;">
+            <div style="display:flex;gap:3px;">
+              <div style="background:#1d428a;border:1px solid #FFC72C;border-radius:3px;padding:3px 5px;font-size:9px;color:#FFC72C;">W</div>
+            </div>
+            <div style="display:flex;gap:3px;">
+              <div style="background:#1d428a;border:1px solid #FFC72C;border-radius:3px;padding:3px 5px;font-size:9px;color:#FFC72C;">A</div>
+              <div style="background:#1d428a;border:1px solid #FFC72C;border-radius:3px;padding:3px 5px;font-size:9px;color:#FFC72C;">S</div>
+              <div style="background:#1d428a;border:1px solid #FFC72C;border-radius:3px;padding:3px 5px;font-size:9px;color:#FFC72C;">D</div>
+            </div>
+            <div style="display:flex;gap:3px;margin-top:3px;">
+              <div style="background:#333;border:1px solid #555;border-radius:3px;padding:2px 4px;font-size:8px;color:#aaa;">G=shoot</div>
+              <div style="background:#333;border:1px solid #555;border-radius:3px;padding:2px 4px;font-size:8px;color:#aaa;">F=pass</div>
+            </div>
+            <div style="display:flex;gap:3px;">
+              <div style="background:#333;border:1px solid #555;border-radius:3px;padding:2px 4px;font-size:8px;color:#aaa;">T=dribble</div>
+            </div>
+          </div>
+        </div>
+        <!-- Divider -->
+        <div style="width:1px;background:#333;"></div>
+        <!-- Player 2 -->
+        <div style="flex:1;">
+          <div style="color:#ef5350;font-size:9px;font-weight:bold;margin-bottom:6px;text-align:center;">ANT-MAN (P2)</div>
+          <div style="display:flex;flex-direction:column;gap:3px;align-items:center;">
+            <div style="display:flex;gap:3px;">
+              <div style="background:#7f1d1d;border:1px solid #ef5350;border-radius:3px;padding:3px 5px;font-size:9px;color:#ef5350;">↑</div>
+            </div>
+            <div style="display:flex;gap:3px;">
+              <div style="background:#7f1d1d;border:1px solid #ef5350;border-radius:3px;padding:3px 5px;font-size:9px;color:#ef5350;">←</div>
+              <div style="background:#7f1d1d;border:1px solid #ef5350;border-radius:3px;padding:3px 5px;font-size:9px;color:#ef5350;">↓</div>
+              <div style="background:#7f1d1d;border:1px solid #ef5350;border-radius:3px;padding:3px 5px;font-size:9px;color:#ef5350;">→</div>
+            </div>
+            <div style="display:flex;gap:3px;margin-top:3px;">
+              <div style="background:#333;border:1px solid #555;border-radius:3px;padding:2px 4px;font-size:8px;color:#aaa;">/=shoot</div>
+              <div style="background:#333;border:1px solid #555;border-radius:3px;padding:2px 4px;font-size:8px;color:#aaa;">.=pass</div>
+            </div>
+            <div style="display:flex;gap:3px;">
+              <div style="background:#333;border:1px solid #555;border-radius:3px;padding:2px 4px;font-size:8px;color:#aaa;">,=dribble</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Split Keyboard (WASD + Arrows)</h3>
+      <p>Player 1 uses WASD + nearby keys. Player 2 uses Arrow keys + numpad/punctuation. Both play on same keyboard simultaneously.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="single-keyboard" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#111;padding:16px;border-radius:8px;font-family:monospace;">
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:center;">
+        <div style="color:#4fc3f7;font-size:9px;font-weight:bold;">ONE PLAYER AT A TIME (TAKE TURNS)</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
+          <div style="background:#1a3a5c;border:1px solid #4fc3f7;border-radius:3px;padding:3px 6px;font-size:9px;color:#4fc3f7;">← → move</div>
+          <div style="background:#1a3a5c;border:1px solid #4fc3f7;border-radius:3px;padding:3px 6px;font-size:9px;color:#4fc3f7;">↑ jump</div>
+          <div style="background:#1a5c1a;border:1px solid #4caf50;border-radius:3px;padding:3px 6px;font-size:9px;color:#4caf50;">SPACE shoot</div>
+          <div style="background:#5c3a1a;border:1px solid #ff9800;border-radius:3px;padding:3px 6px;font-size:9px;color:#ff9800;">Z dribble</div>
+          <div style="background:#5c1a1a;border:1px solid #ef5350;border-radius:3px;padding:3px 6px;font-size:9px;color:#ef5350;">X pass/steal</div>
+        </div>
+        <div style="background:#1a1a2e;border:1px solid #9c27b0;border-radius:4px;padding:6px 10px;font-size:9px;color:#ce93d8;text-align:center;">
+          AI controls the other player<br>OR offense/defense swap each possession
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Single Keyboard + AI Opponent</h3>
+      <p>One human plays, AI controls the other. Simpler controls, more polished solo experience. AI uses player stats to make decisions.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="both" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#111;padding:16px;border-radius:8px;font-family:monospace;">
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:center;">
+        <div style="color:#a5d6a7;font-size:9px;font-weight:bold;">BOTH MODES AVAILABLE</div>
+        <div style="display:flex;gap:8px;">
+          <div style="background:#1a2a1a;border:1px solid #4caf50;border-radius:4px;padding:6px;text-align:center;">
+            <div style="color:#4caf50;font-size:9px;font-weight:bold;">1P MODE</div>
+            <div style="color:#aaa;font-size:8px;margin-top:2px;">vs AI</div>
+            <div style="color:#aaa;font-size:8px;">Simple keys</div>
+          </div>
+          <div style="background:#1a1a2a;border:1px solid #7986cb;border-radius:4px;padding:6px;text-align:center;">
+            <div style="color:#7986cb;font-size:9px;font-weight:bold;">2P MODE</div>
+            <div style="color:#aaa;font-size:8px;margin-top:2px;">Split KB</div>
+            <div style="color:#aaa;font-size:8px;">WASD+Arrows</div>
+          </div>
+        </div>
+        <div style="background:#1a1a1a;border:1px solid #555;border-radius:3px;padding:4px 8px;font-size:8px;color:#777;text-align:center;">
+          Menu lets you pick mode before tip-off
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Both Modes (1P vs AI + 2P Split)</h3>
+      <p>Menu lets you choose: play solo vs AI, or 2-player on same keyboard. Best of both worlds. Slightly more to build.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:24px;">My recommendation: <strong>Option C (Both Modes)</strong> — gives you and Noah flexibility to play together or solo. The AI can use Curry/Ant stats to play realistically.</p>

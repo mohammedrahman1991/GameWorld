@@ -1,0 +1,112 @@
+<h2>What camera angle for Noah's House?</h2>
+<p class="subtitle">This shapes the whole gameplay feel. Pick the view that fits your vision.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="sidescroll" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0a1628;padding:16px;border-radius:8px;font-family:monospace;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <!-- Court lines -->
+        <div style="width:100%;height:4px;background:#e67e22;border-radius:2px;"></div>
+        <div style="display:flex;justify-content:space-between;width:100%;align-items:center;padding:4px 0;">
+          <!-- Player 1 - Curry -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:#1d428a;border:2px solid #FFC72C;display:flex;align-items:center;justify-content:center;font-size:10px;color:#FFC72C;font-weight:bold;">SC</div>
+            <div style="width:8px;height:16px;background:#1d428a;border-radius:2px;"></div>
+            <div style="display:flex;gap:2px;">
+              <div style="width:4px;height:8px;background:#1d428a;border-radius:1px;"></div>
+              <div style="width:4px;height:8px;background:#1d428a;border-radius:1px;"></div>
+            </div>
+          </div>
+          <!-- Basketball -->
+          <div style="width:16px;height:16px;border-radius:50%;background:#e67e22;border:2px solid #333;position:relative;">
+            <div style="position:absolute;top:50%;left:0;right:0;height:1px;background:#333;transform:translateY(-50%);"></div>
+          </div>
+          <!-- Player 2 - Ant -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:#c8102e;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:bold;">AE</div>
+            <div style="width:8px;height:16px;background:#c8102e;border-radius:2px;"></div>
+            <div style="display:flex;gap:2px;">
+              <div style="width:4px;height:8px;background:#c8102e;border-radius:1px;"></div>
+              <div style="width:4px;height:8px;background:#c8102e;border-radius:1px;"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Hoop left -->
+        <div style="display:flex;justify-content:space-between;width:100%;">
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div style="width:3px;height:24px;background:#aaa;"></div>
+            <div style="width:18px;height:3px;background:#e67e22;border-radius:1px;"></div>
+          </div>
+          <!-- Hoop right -->
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div style="width:3px;height:24px;background:#aaa;"></div>
+            <div style="width:18px;height:3px;background:#e67e22;border-radius:1px;"></div>
+          </div>
+        </div>
+        <div style="width:100%;height:4px;background:#c4a95b;border-radius:2px;"></div>
+        <div style="color:#aaa;font-size:9px;">← Side view like NBA Jam / Street Hoops →</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Side-Scrolling (2D)</h3>
+      <p>Classic arcade feel. Like NBA Jam, NBA Street. Easy to read player positions and shoot arcs. Best for fast, fun gameplay.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="topdown" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#1a3a1a;padding:16px;border-radius:8px;font-family:monospace;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <!-- Court top-down -->
+        <div style="width:100%;background:#4a8a4a;border:2px solid #fff;border-radius:4px;padding:8px;position:relative;">
+          <!-- Center circle -->
+          <div style="width:24px;height:24px;border-radius:50%;border:1px solid #fff;margin:0 auto;"></div>
+          <!-- Players top-down -->
+          <div style="display:flex;justify-content:space-around;margin-top:4px;">
+            <div style="width:20px;height:20px;border-radius:50%;background:#1d428a;border:2px solid #FFC72C;display:flex;align-items:center;justify-content:center;font-size:8px;color:#FFC72C;font-weight:bold;">SC</div>
+            <div style="width:12px;height:12px;border-radius:50%;background:#e67e22;"></div>
+            <div style="width:20px;height:20px;border-radius:50%;background:#c8102e;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:bold;">AE</div>
+          </div>
+          <!-- Hoops top-down -->
+          <div style="display:flex;justify-content:space-between;margin-top:4px;">
+            <div style="width:10px;height:10px;border-radius:50%;border:2px solid #e67e22;"></div>
+            <div style="width:10px;height:10px;border-radius:50%;border:2px solid #e67e22;"></div>
+          </div>
+        </div>
+        <div style="color:#aaa;font-size:9px;">↑ Bird's-eye view like FIFA / old NBA Live ↓</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Top-Down (2D)</h3>
+      <p>Bird's eye view of the court. Great for strategy, harder to judge shot arcs. Simpler physics.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="isometric" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d1b2a;padding:16px;border-radius:8px;font-family:monospace;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <!-- Isometric court illusion -->
+        <div style="position:relative;width:120px;height:70px;margin:0 auto;">
+          <div style="position:absolute;top:20px;left:0;width:120px;height:40px;background:#c4a95b;transform:perspective(200px) rotateX(40deg);border:2px solid #fff;border-radius:2px;"></div>
+          <!-- Players isometric -->
+          <div style="position:absolute;top:10px;left:20px;display:flex;flex-direction:column;align-items:center;">
+            <div style="width:16px;height:16px;border-radius:50%;background:#1d428a;border:2px solid #FFC72C;font-size:7px;color:#FFC72C;display:flex;align-items:center;justify-content:center;font-weight:bold;">SC</div>
+            <div style="width:5px;height:12px;background:#1d428a;"></div>
+          </div>
+          <div style="position:absolute;top:10px;right:20px;display:flex;flex-direction:column;align-items:center;">
+            <div style="width:16px;height:16px;border-radius:50%;background:#c8102e;border:2px solid #fff;font-size:7px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;">AE</div>
+            <div style="width:5px;height:12px;background:#c8102e;"></div>
+          </div>
+        </div>
+        <div style="color:#aaa;font-size:9px;">◆ Angled 3/4 view like NBA 2K Mobile ◆</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Isometric / 3/4 View</h3>
+      <p>Angled perspective gives depth. Closer to 2K feel. More complex to build but looks most impressive.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:24px;">My recommendation: <strong>Option A (Side-Scrolling)</strong> — gives NBA Jam vibes, fastest to build well, and the beach court + graffiti walls pop best in a side view.</p>

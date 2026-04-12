@@ -1,0 +1,306 @@
+// src/data/mysticItems.ts
+
+export type MysticRarity = 'uncommon' | 'rare' | 'legendary'
+export type MysticCategory = 'weapon' | 'ability' | 'magic' | 'treasure'
+
+export interface MysticItem {
+  id: string
+  name: string
+  emoji: string
+  description: string
+  cost: number // star shards
+  rarity: MysticRarity
+  category: MysticCategory
+}
+
+export const MYSTIC_ITEMS: MysticItem[] = [
+  // ── WEAPONS ──────────────────────────────────────────
+  {
+    id: 'koral-dagger',
+    name: 'Koral Dagger',
+    emoji: '🪸',
+    description: 'A blade forged from ancient coral reefs — razor-sharp and glowing sea-blue.',
+    cost: 2,
+    rarity: 'uncommon',
+    category: 'weapon',
+  },
+  {
+    id: 'shadow-blade',
+    name: 'Shadow Blade',
+    emoji: '🗡️',
+    description: 'A blade that cuts through darkness itself — only the brave can wield it.',
+    cost: 3,
+    rarity: 'rare',
+    category: 'weapon',
+  },
+  {
+    id: 'thunder-spear',
+    name: 'Thunder Spear',
+    emoji: '⚡',
+    description: 'Summons a bolt of lightning with every throw. Boom!',
+    cost: 4,
+    rarity: 'rare',
+    category: 'weapon',
+  },
+  {
+    id: 'moonfire-bow',
+    name: 'Moonfire Bow',
+    emoji: '🏹',
+    description: 'Arrows that ignite with moonlight and never miss their mark.',
+    cost: 4,
+    rarity: 'rare',
+    category: 'weapon',
+  },
+  {
+    id: 'crystal-axe',
+    name: 'Crystal Axe',
+    emoji: '💎',
+    description: 'Shimmers with starlight trapped inside pure crystal — super shiny!',
+    cost: 3,
+    rarity: 'uncommon',
+    category: 'weapon',
+  },
+  {
+    id: 'nebula-sword',
+    name: 'Nebula Sword',
+    emoji: '🌌',
+    description: 'Forged from the heart of a fallen star. The most powerful sword in existence.',
+    cost: 6,
+    rarity: 'legendary',
+    category: 'weapon',
+  },
+  {
+    id: 'venom-whip',
+    name: 'Venom Whip',
+    emoji: '🐍',
+    description: 'Strikes with a serpent\'s speed and stings like a thousand bees.',
+    cost: 3,
+    rarity: 'uncommon',
+    category: 'weapon',
+  },
+  {
+    id: 'glacier-hammer',
+    name: 'Glacier Hammer',
+    emoji: '🔨',
+    description: 'One tap and everything freezes solid in a block of magical ice.',
+    cost: 5,
+    rarity: 'rare',
+    category: 'weapon',
+  },
+
+  // ── ABILITIES ─────────────────────────────────────────
+  {
+    id: 'teleport-scroll',
+    name: 'Teleport Scroll',
+    emoji: '🌀',
+    description: 'Whoosh! Zap yourself anywhere in the world in the blink of an eye.',
+    cost: 4,
+    rarity: 'rare',
+    category: 'ability',
+  },
+  {
+    id: 'invisibility-cloak',
+    name: 'Invisibility Cloak',
+    emoji: '🧥',
+    description: 'Wrap it around yourself and vanish completely — nobody can see you!',
+    cost: 5,
+    rarity: 'rare',
+    category: 'ability',
+  },
+  {
+    id: 'double-jump-boots',
+    name: 'Double Jump Boots',
+    emoji: '👟',
+    description: 'Springy magic boots that let you jump twice in mid-air. Boing!',
+    cost: 3,
+    rarity: 'uncommon',
+    category: 'ability',
+  },
+  {
+    id: 'time-freeze-watch',
+    name: 'Time Freeze Watch',
+    emoji: '⏱️',
+    description: 'Press the button and the entire world stops — only you keep moving!',
+    cost: 6,
+    rarity: 'legendary',
+    category: 'ability',
+  },
+  {
+    id: 'fire-shield',
+    name: 'Fire Shield',
+    emoji: '🔥',
+    description: 'A blazing wall of flames that no enemy can ever get through.',
+    cost: 4,
+    rarity: 'rare',
+    category: 'ability',
+  },
+  {
+    id: 'speed-surge',
+    name: 'Speed Surge',
+    emoji: '💨',
+    description: 'A magic burst that makes you run faster than the wind itself!',
+    cost: 3,
+    rarity: 'uncommon',
+    category: 'ability',
+  },
+
+  // ── MAGIC ─────────────────────────────────────────────
+  {
+    id: 'dragon-scale-shield',
+    name: 'Dragon Scale Shield',
+    emoji: '🛡️',
+    description: 'Crafted from dragon scales — absolutely no flame can get through it.',
+    cost: 5,
+    rarity: 'rare',
+    category: 'magic',
+  },
+  {
+    id: 'phoenix-feather',
+    name: 'Phoenix Feather',
+    emoji: '🪶',
+    description: 'A feather from the legendary Phoenix. Grants one magical resurrection.',
+    cost: 4,
+    rarity: 'rare',
+    category: 'magic',
+  },
+  {
+    id: 'unicorn-horn',
+    name: 'Unicorn Horn',
+    emoji: '🦄',
+    description: 'The rarest of all — swirling with rainbow magic and healing power.',
+    cost: 6,
+    rarity: 'legendary',
+    category: 'magic',
+  },
+  {
+    id: 'crystal-ball',
+    name: 'Crystal Ball',
+    emoji: '🔮',
+    description: 'Gaze inside and see things happening far away — or even the future!',
+    cost: 3,
+    rarity: 'uncommon',
+    category: 'magic',
+  },
+  {
+    id: 'rainbow-wand',
+    name: 'Rainbow Wand',
+    emoji: '🪄',
+    description: 'Casts seven dazzling spells — one for every colour of the rainbow!',
+    cost: 2,
+    rarity: 'uncommon',
+    category: 'magic',
+  },
+  {
+    id: 'cosmic-egg',
+    name: 'Cosmic Egg',
+    emoji: '🥚',
+    description: 'A mysterious egg from outer space. Something incredible is hatching inside...',
+    cost: 5,
+    rarity: 'legendary',
+    category: 'magic',
+  },
+  {
+    id: 'enchanted-mirror',
+    name: 'Enchanted Mirror',
+    emoji: '🪞',
+    description: 'Shows you the world\'s hidden secrets that no ordinary mirror can reveal.',
+    cost: 3,
+    rarity: 'uncommon',
+    category: 'magic',
+  },
+  {
+    id: 'giants-heart',
+    name: "Giant's Heart",
+    emoji: '💜',
+    description: 'A heart full of ancient giant strength — it doubles your power!',
+    cost: 5,
+    rarity: 'rare',
+    category: 'magic',
+  },
+
+  // ── TREASURE ──────────────────────────────────────────
+  {
+    id: 'sky-compass',
+    name: 'Sky Compass',
+    emoji: '🧭',
+    description: 'This magic compass always points toward the nearest hidden treasure.',
+    cost: 2,
+    rarity: 'uncommon',
+    category: 'treasure',
+  },
+  {
+    id: 'mermaid-scale',
+    name: 'Mermaid Scale',
+    emoji: '🐚',
+    description: 'A gift from the deep ocean. Lets you breathe underwater forever!',
+    cost: 2,
+    rarity: 'uncommon',
+    category: 'treasure',
+  },
+  {
+    id: 'wolf-fang-necklace',
+    name: 'Wolf Fang Necklace',
+    emoji: '🐺',
+    description: 'Wear it and you can understand what every animal is saying!',
+    cost: 3,
+    rarity: 'uncommon',
+    category: 'treasure',
+  },
+  {
+    id: 'aurora-wings',
+    name: 'Aurora Wings',
+    emoji: '🦋',
+    description: 'Giant glowing wings made from the Northern Lights. You can fly!',
+    cost: 6,
+    rarity: 'legendary',
+    category: 'treasure',
+  },
+  {
+    id: 'golden-crown',
+    name: 'Golden Crown',
+    emoji: '👑',
+    description: 'The crown of a legendary merchant king. Radiates wisdom and wealth.',
+    cost: 4,
+    rarity: 'rare',
+    category: 'treasure',
+  },
+  {
+    id: 'starlight-cape',
+    name: 'Starlight Cape',
+    emoji: '🌟',
+    description: 'Woven from the light of a thousand stars — glows brilliantly in the dark.',
+    cost: 4,
+    rarity: 'rare',
+    category: 'treasure',
+  },
+  {
+    id: 'world-key',
+    name: 'World Key',
+    emoji: '🗝️',
+    description: 'The legendary golden key that can open any door, anywhere in the world.',
+    cost: 6,
+    rarity: 'legendary',
+    category: 'treasure',
+  },
+  {
+    id: 'time-sand',
+    name: 'Time Sand',
+    emoji: '⌛',
+    description: 'Ancient golden sand that lets you rewind one precious moment in time.',
+    cost: 6,
+    rarity: 'legendary',
+    category: 'treasure',
+  },
+]
+
+export const RARITY_COLOR: Record<MysticRarity, string> = {
+  uncommon: '#00B894',
+  rare: '#6C5CE7',
+  legendary: '#FDCB6E',
+}
+
+export const RARITY_GLOW: Record<MysticRarity, string> = {
+  uncommon: 'rgba(0,184,148,0.35)',
+  rare: 'rgba(108,92,231,0.35)',
+  legendary: 'rgba(253,203,110,0.45)',
+}

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spell Quest 🚀</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Star field -->
+  <div id="stars"></div>
+
+  <!-- ═══════════════════════════════════ HOME SCREEN -->
+  <div id="screen-home" class="screen active">
+    <div class="home-title">
+      <div class="title-icon">🚀</div>
+      <h1>SPELL QUEST</h1>
+      <p class="tagline">Can you spell your way through space?</p>
+    </div>
+
+    <div class="difficulty-cards">
+      <div class="diff-card easy" data-level="easy">
+        <div class="diff-icon">🌍</div>
+        <div class="diff-name">EASY</div>
+        <div class="diff-age">Ages 5–7</div>
+        <div class="diff-info">3–4 letter words</div>
+        <div class="diff-hearts">❤️❤️❤️❤️❤️</div>
+      </div>
+
+      <div class="diff-card medium" data-level="medium">
+        <div class="diff-icon">🌙</div>
+        <div class="diff-name">MEDIUM</div>
+        <div class="diff-age">Ages 8–10</div>
+        <div class="diff-info">5–6 letter words</div>
+        <div class="diff-hearts">❤️❤️❤️❤️</div>
+      </div>
+
+      <div class="diff-card hard" data-level="hard">
+        <div class="diff-icon">🌌</div>
+        <div class="diff-name">HARD</div>
+        <div class="diff-age">Ages 11–12</div>
+        <div class="diff-info">7–10 letter words</div>
+        <div class="diff-hearts">❤️❤️❤️</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ GAME SCREEN -->
+  <div id="screen-game" class="screen">
+
+    <!-- Header -->
+    <div class="game-header">
+      <div class="round-info">Round <span id="round-num">1</span> of 10</div>
+      <div id="diff-badge" class="diff-badge">EASY</div>
+      <div class="score-info">Score: <span id="score">0</span></div>
+    </div>
+
+    <!-- Alien + Hearts -->
+    <div class="alien-area">
+      <div class="alien-emoji" id="alien">👾</div>
+      <div class="hearts-row" id="hearts-row"></div>
+    </div>
+
+    <!-- Timer bar -->
+    <div class="timer-wrap">
+      <div class="timer-bar" id="timer-bar"></div>
+    </div>
+
+    <!-- Word tiles -->
+    <div class="tiles-wrap" id="tiles-wrap"></div>
+
+    <!-- Hint area -->
+    <div class="hint-area hidden" id="hint-area">
+      <div class="hint-label">💡 HINT</div>
+      <div class="hint-text" id="hint-text"></div>
+    </div>
+
+    <!-- Round result overlay -->
+    <div class="round-overlay hidden" id="round-overlay">
+      <div class="overlay-content" id="overlay-content"></div>
+    </div>
+
+    <!-- On-screen keyboard -->
+    <div class="keyboard" id="keyboard"></div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════ SCORE SCREEN -->
+  <div id="screen-score" class="screen">
+    <div class="score-screen">
+      <div class="score-title">🎉 MISSION COMPLETE!</div>
+      <div class="score-stars" id="score-stars"></div>
+      <div class="score-result">You spelled <span id="final-score">0</span> out of 10 words!</div>
+      <div class="score-btns">
+        <button class="btn-primary" id="btn-play-again">Play Again</button>
+        <button class="btn-secondary" id="btn-change-level">Change Level</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ GAME OVER SCREEN -->
+  <div id="screen-gameover" class="screen">
+    <div class="gameover-screen">
+      <div class="gameover-alien">👾💔</div>
+      <div class="gameover-title">Your alien ran out of hearts!</div>
+      <div class="gameover-score">You spelled <span id="gameover-score">0</span> words</div>
+      <button class="btn-primary" id="btn-try-again">Try Again</button>
+      <button class="btn-secondary" id="btn-go-home">Change Level</button>
+    </div>
+  </div>
+
+  <script src="words.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

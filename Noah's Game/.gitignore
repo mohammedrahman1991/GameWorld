@@ -1,0 +1,6 @@
+node_modules/
+.env
+.cortex/
+
+# context-mem
+.context-mem/

@@ -1,0 +1,18 @@
+.cortex/
+
+# context-mem
+.context-mem/
+
+# dependencies
+node_modules/
+dist/
+
+# secrets — NEVER commit
+.env
+.env.*
+.env.local
+
+# tool state
+.remember/
+.claude/
+*.log

@@ -1,0 +1,13 @@
+{
+  "name": "trutles-2",
+  "version": "1.0.0",
+  "description": "Trutles 2.0 — chicken fighting game",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "dotenv": "^16.3.1"
+  }
+}

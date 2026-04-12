@@ -1,0 +1,7 @@
+{"type":"server-started","port":59460,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:59460","screen_dir":"/Users/mohammedrahman/Desktop/Games/one v one sniper/.superpowers/brainstorm/49890-1774914788/content","state_dir":"/Users/mohammedrahman/Desktop/Games/one v one sniper/.superpowers/brainstorm/49890-1774914788/state"}
+{"type":"screen-added","file":"/Users/mohammedrahman/Desktop/Games/one v one sniper/.superpowers/brainstorm/49890-1774914788/content/pixel-style.html"}
+{"type":"screen-added","file":"/Users/mohammedrahman/Desktop/Games/one v one sniper/.superpowers/brainstorm/49890-1774914788/content/fps-layout.html"}
+{"type":"screen-added","file":"/Users/mohammedrahman/Desktop/Games/one v one sniper/.superpowers/brainstorm/49890-1774914788/content/waiting-1.html"}
+{"type":"screen-added","file":"/Users/mohammedrahman/Desktop/Games/one v one sniper/.superpowers/brainstorm/49890-1774914788/content/game-design.html"}
+{"type":"screen-added","file":"/Users/mohammedrahman/Desktop/Games/one v one sniper/.superpowers/brainstorm/49890-1774914788/content/scope-aimassist.html"}
+{"type":"server-stopped","reason":"idle timeout"}

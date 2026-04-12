@@ -1,0 +1,5 @@
+.cortex/
+
+# context-mem
+.context-mem/
+.worktrees/

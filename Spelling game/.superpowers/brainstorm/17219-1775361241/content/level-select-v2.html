@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0618;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Stars */
+  .stars {
+    position: fixed; inset: 0; pointer-events: none;
+  }
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    background: white;
+    animation: twinkle 3s ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.2; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.3); }
+  }
+
+  h1 {
+    color: #e0e7ff;
+    font-size: 2em;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-align: center;
+    margin-bottom: 8px;
+    text-shadow: 0 0 30px rgba(129,140,248,0.8);
+  }
+  .subtitle {
+    color: #a5b4fc;
+    font-size: 1em;
+    text-align: center;
+    margin-bottom: 40px;
+    letter-spacing: 1px;
+  }
+
+  .cards-row {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 0 20px;
+  }
+
+  .level-card {
+    width: 200px;
+    border-radius: 20px;
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .level-card:hover {
+    transform: translateY(-8px) scale(1.04);
+  }
+
+  /* Easy */
+  .easy {
+    background: linear-gradient(160deg, #064e3b, #065f46);
+    border: 2px solid #34d399;
+    box-shadow: 0 0 30px rgba(52,211,153,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .easy:hover { box-shadow: 0 0 50px rgba(52,211,153,0.6), inset 0 1px 0 rgba(255,255,255,0.1); }
+
+  /* Medium */
+  .medium {
+    background: linear-gradient(160deg, #78350f, #92400e);
+    border: 2px solid #fbbf24;
+    box-shadow: 0 0 30px rgba(251,191,36,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .medium:hover { box-shadow: 0 0 50px rgba(251,191,36,0.6), inset 0 1px 0 rgba(255,255,255,0.1); }
+
+  /* Hard */
+  .hard {
+    background: linear-gradient(160deg, #4c1d95, #5b21b6);
+    border: 2px solid #a78bfa;
+    box-shadow: 0 0 30px rgba(167,139,250,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .hard:hover { box-shadow: 0 0 50px rgba(167,139,250,0.6), inset 0 1px 0 rgba(255,255,255,0.1); }
+
+  .level-icon { font-size: 3em; margin-bottom: 12px; display: block; }
+
+  .level-name {
+    font-size: 1.3em;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .easy .level-name { color: #6ee7b7; }
+  .medium .level-name { color: #fde68a; }
+  .hard .level-name { color: #ddd6fe; }
+
+  .age-badge {
+    display: inline-block;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 0.75em;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+  }
+  .easy .age-badge { background: rgba(52,211,153,0.2); color: #6ee7b7; border: 1px solid #34d399; }
+  .medium .age-badge { background: rgba(251,191,36,0.2); color: #fde68a; border: 1px solid #fbbf24; }
+  .hard .age-badge { background: rgba(167,139,250,0.2); color: #ddd6fe; border: 1px solid #a78bfa; }
+
+  .words-preview {
+    font-size: 0.78em;
+    line-height: 1.7;
+    opacity: 0.85;
+  }
+  .easy .words-preview { color: #a7f3d0; }
+  .medium .words-preview { color: #fef3c7; }
+  .hard .words-preview { color: #ede9fe; }
+
+  .letter-count {
+    margin-top: 14px;
+    font-size: 0.7em;
+    letter-spacing: 1px;
+    opacity: 0.7;
+  }
+  .easy .letter-count { color: #6ee7b7; }
+  .medium .letter-count { color: #fde68a; }
+  .hard .letter-count { color: #ddd6fe; }
+
+  /* Floating planet accents */
+  .planet {
+    position: fixed;
+    border-radius: 50%;
+    opacity: 0.08;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+<div class="planet" style="width:300px;height:300px;background:#818cf8;bottom:-80px;left:-80px;"></div>
+<div class="planet" style="width:200px;height:200px;background:#34d399;top:-60px;right:-40px;"></div>
+
+<h1>⭐ CHOOSE YOUR MISSION</h1>
+<p class="subtitle">Pick a level and start spelling!</p>
+
+<div class="cards-row">
+
+  <div class="level-card easy">
+    <span class="level-icon">🌍</span>
+    <div class="level-name">EASY</div>
+    <div class="age-badge">AGES 5 – 7</div>
+    <div class="words-preview">
+      cat · dog · sun<br>
+      hat · big · run<br>
+      3–4 letter words
+    </div>
+    <div class="letter-count">5 HEARTS · 30 SECONDS</div>
+  </div>
+
+  <div class="level-card medium">
+    <span class="level-icon">🌙</span>
+    <div class="level-name">MEDIUM</div>
+    <div class="age-badge">AGES 8 – 10</div>
+    <div class="words-preview">
+      jungle · planet · rocket<br>
+      brave · storm · flower<br>
+      5–6 letter words
+    </div>
+    <div class="letter-count">4 HEARTS · 30 SECONDS</div>
+  </div>
+
+  <div class="level-card hard">
+    <span class="level-icon">🌌</span>
+    <div class="level-name">HARD</div>
+    <div class="age-badge">AGES 11 – 12</div>
+    <div class="words-preview">
+      champion · adventure<br>
+      universe · discovery<br>
+      7–10 letter words
+    </div>
+    <div class="letter-count">3 HEARTS · 30 SECONDS</div>
+  </div>
+
+</div>
+
+<script>
+  // Generate stars
+  const container = document.getElementById('stars');
+  for (let i = 0; i < 120; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2.5 + 0.5;
+    s.style.cssText = `
+      width:${size}px; height:${size}px;
+      top:${Math.random()*100}%;
+      left:${Math.random()*100}%;
+      animation-delay:${Math.random()*3}s;
+      animation-duration:${2+Math.random()*3}s;
+    `;
+    container.appendChild(s);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+.cortex/
+
+# context-mem
+.context-mem/
+
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# macOS
+.DS_Store

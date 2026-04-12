@@ -1,0 +1,13 @@
+/* src/index.css */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: 'Fredoka One', cursive;
+  background: #1a1a2e;
+  overflow: hidden;
+}

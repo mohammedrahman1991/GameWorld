@@ -1,0 +1,120 @@
+<h2>Scope + Aim Assist Design</h2>
+<p class="subtitle">Hold shoot key → circle scope zooms in. Release to cancel. Click/tap to fire while scoped.</p>
+
+<div class="section">
+  <h3>Scope Overlay (hold to aim)</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">Unscoped view</div>
+      <div class="mockup-body" style="background:#1a2a1a;height:160px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:45%;background:linear-gradient(#0a1a2a,#1a3a5a);"></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:30%;background:#1a2a0a;"></div>
+        <!-- Enemy far away -->
+        <div style="position:absolute;bottom:31%;right:30%;width:6px;height:16px;">
+          <div style="width:6px;height:3px;background:#4aaaff;"></div>
+          <div style="width:6px;height:8px;background:#2a6aaa;margin-top:1px;"></div>
+          <div style="display:flex;margin-top:1px;"><div style="width:2px;height:4px;background:#1a4a7a;"></div><div style="width:2px;height:4px;background:#1a4a7a;margin-left:2px;"></div></div>
+        </div>
+        <!-- Simple crosshair -->
+        <div style="position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);">
+          <div style="width:16px;height:1px;background:rgba(255,100,100,0.6);"></div>
+          <div style="width:1px;height:16px;background:rgba(255,100,100,0.6);margin-left:7px;margin-top:-8px;"></div>
+        </div>
+        <div style="position:absolute;bottom:4px;left:4px;font-size:8px;font-family:monospace;color:#aaa;">Hold F to scope</div>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">Scoped view (hold F)</div>
+      <div class="mockup-body" style="background:#000;height:160px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+        <!-- Black vignette -->
+        <div style="position:absolute;inset:0;background:#000;"></div>
+        <!-- Circular scope window -->
+        <div style="position:relative;width:110px;height:110px;border-radius:50%;overflow:hidden;border:3px solid #555;box-shadow:0 0 0 60px #000;">
+          <!-- Zoomed in scene -->
+          <div style="position:absolute;inset:0;background:linear-gradient(#0a1a2a,#1a3a5a) 0 0/100% 45%, #1a2a0a 0 65%/100% 35%;"></div>
+          <!-- Enemy much larger now -->
+          <div style="position:absolute;bottom:36%;left:55%;transform:translateX(-50%);width:14px;height:36px;">
+            <div style="width:14px;height:6px;background:#4aaaff;"></div>
+            <div style="width:14px;height:18px;background:#2a6aaa;margin-top:1px;"></div>
+            <div style="display:flex;margin-top:1px;"><div style="width:5px;height:10px;background:#1a4a7a;"></div><div style="width:5px;height:10px;background:#1a4a7a;margin-left:4px;"></div></div>
+          </div>
+          <!-- Mil-dot reticle -->
+          <div style="position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(255,50,50,0.9);transform:translateY(-50%);"></div>
+          <div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,50,50,0.9);transform:translateX(-50%);"></div>
+          <!-- Mil dots -->
+          <div style="position:absolute;top:50%;left:25%;width:4px;height:4px;background:#ff3333;border-radius:50%;transform:translate(-50%,-50%);"></div>
+          <div style="position:absolute;top:50%;left:75%;width:4px;height:4px;background:#ff3333;border-radius:50%;transform:translate(-50%,-50%);"></div>
+          <div style="position:absolute;top:25%;left:50%;width:4px;height:4px;background:#ff3333;border-radius:50%;transform:translate(-50%,-50%);"></div>
+          <div style="position:absolute;top:75%;left:50%;width:4px;height:4px;background:#ff3333;border-radius:50%;transform:translate(-50%,-50%);"></div>
+        </div>
+        <div style="position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:8px;font-family:monospace;color:#888;">Press F again to fire</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Aim Assist by Weapon</h3>
+  <table style="width:100%;border-collapse:collapse;font-family:monospace;font-size:10px;color:#ccc;">
+    <tr style="color:#ffcc00;border-bottom:1px solid #333;">
+      <td style="padding:6px;">Weapon</td>
+      <td>Aim Assist</td>
+      <td>Snap radius</td>
+      <td>Damage</td>
+      <td>Reload</td>
+    </tr>
+    <tr style="border-bottom:1px solid #1a1a1a;">
+      <td style="padding:6px;color:#88ff88;">Scout</td>
+      <td><span style="color:#88ff88;">████████░░ HIGH</span></td>
+      <td>30px</td>
+      <td>34 hp</td>
+      <td>0.8s</td>
+    </tr>
+    <tr style="border-bottom:1px solid #1a1a1a;">
+      <td style="padding:6px;color:#ffaa44;">Krieg</td>
+      <td><span style="color:#ffaa44;">█████░░░░░ MED</span></td>
+      <td>18px</td>
+      <td>55 hp</td>
+      <td>1.5s</td>
+    </tr>
+    <tr style="border-bottom:1px solid #1a1a1a;">
+      <td style="padding:6px;color:#ff8888;">AWP</td>
+      <td><span style="color:#ff8888;">███░░░░░░░ LOW</span></td>
+      <td>8px</td>
+      <td>85 hp</td>
+      <td>3.0s</td>
+    </tr>
+    <tr>
+      <td style="padding:6px;color:#ff4444;">💀 Deadeye</td>
+      <td><span style="color:#ff4444;">█░░░░░░░░░ NONE</span></td>
+      <td>0px</td>
+      <td>100 hp</td>
+      <td>5.0s</td>
+    </tr>
+  </table>
+  <p style="font-size:9px;color:#555;margin-top:6px;">Aim assist = crosshair snaps to enemy within snap radius while scoped. Deadeye requires pure skill — no assist.</p>
+</div>
+
+<div class="section">
+  <h3>Best of 5 Rounds</h3>
+  <div class="mockup">
+    <div class="mockup-header">Round tracker (top center of screen)</div>
+    <div class="mockup-body" style="background:#0d0d1a;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;font-family:monospace;">
+      <div style="color:#4aff4a;font-size:10px;">P1</div>
+      <div style="display:flex;gap:4px;">
+        <div style="width:14px;height:14px;background:#4aff4a;border:1px solid #6aff6a;"></div>
+        <div style="width:14px;height:14px;background:#4aff4a;border:1px solid #6aff6a;"></div>
+        <div style="width:14px;height:14px;background:#222;border:1px solid #444;"></div>
+      </div>
+      <div style="color:#555;font-size:10px;">vs</div>
+      <div style="display:flex;gap:4px;">
+        <div style="width:14px;height:14px;background:#4aaaff;border:1px solid #6aaaff;"></div>
+        <div style="width:14px;height:14px;background:#222;border:1px solid #444;"></div>
+        <div style="width:14px;height:14px;background:#222;border:1px solid #444;"></div>
+      </div>
+      <div style="color:#4aaaff;font-size:10px;">P2</div>
+      <div style="color:#555;font-size:9px;margin-left:8px;">First to 3 wins</div>
+    </div>
+  </div>
+  <p style="font-size:10px;color:#666;margin-top:8px;">Each round: both players start with full HP. One kill = round win. Players pick weapons fresh each round. Match ends at 3 round wins.</p>
+</div>

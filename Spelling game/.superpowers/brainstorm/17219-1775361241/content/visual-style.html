@@ -1,0 +1,70 @@
+<h2>What visual style should the Spelling Game have?</h2>
+<p class="subtitle">Pick the vibe that feels best for kids ages 5–12</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="bubbly" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: linear-gradient(135deg, #FF6B9D, #FFD93D, #6BCB77); border-radius:12px; padding:20px; text-align:center; font-family:sans-serif;">
+      <div style="font-size:2.5em; margin-bottom:8px;">🌈 ⭐ 🎈</div>
+      <div style="background:white; border-radius:20px; padding:12px 24px; display:inline-block; font-size:1.3em; font-weight:bold; color:#FF6B9D; box-shadow:0 4px 0 #e05585; letter-spacing:4px;">S P E L L</div>
+      <div style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
+        <div style="width:36px; height:36px; background:#FF6B9D; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:1.1em; box-shadow:0 3px 0 #c0456d;">A</div>
+        <div style="width:36px; height:36px; background:#FFD93D; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:1.1em; box-shadow:0 3px 0 #c0a02e;">_</div>
+        <div style="width:36px; height:36px; background:#6BCB77; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:1.1em; box-shadow:0 3px 0 #4a9955;">T</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Bubbly & Rainbow</h3>
+      <p>Bright pops of color, bouncy letters, balloon-like buttons. Very energetic — great for younger kids (5–8).</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="space" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: linear-gradient(135deg, #0F0C29, #302B63, #24243e); border-radius:12px; padding:20px; text-align:center; font-family:sans-serif; position:relative; overflow:hidden;">
+      <div style="font-size:2.5em; margin-bottom:8px;">🚀 🌟 👾</div>
+      <div style="background:rgba(99,102,241,0.3); border:2px solid #818cf8; border-radius:12px; padding:10px 24px; display:inline-block; font-size:1.3em; font-weight:bold; color:#e0e7ff; letter-spacing:6px; text-shadow:0 0 10px #818cf8;">S P E L L</div>
+      <div style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
+        <div style="width:36px; height:36px; background:rgba(129,140,248,0.3); border:2px solid #818cf8; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#e0e7ff; font-weight:bold; font-size:1.1em;">A</div>
+        <div style="width:36px; height:36px; background:rgba(129,140,248,0.15); border:2px dashed #818cf8; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#818cf8; font-weight:bold; font-size:1.1em;">_</div>
+        <div style="width:36px; height:36px; background:rgba(129,140,248,0.3); border:2px solid #818cf8; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#e0e7ff; font-weight:bold; font-size:1.1em;">T</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Space Adventure</h3>
+      <p>Deep purple & dark blue with glowing letters and stars. Cooler, mysterious feel — better for older kids (9–12).</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="jungle" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: linear-gradient(135deg, #56ab2f, #a8e063, #f7ff00); border-radius:12px; padding:20px; text-align:center; font-family:sans-serif;">
+      <div style="font-size:2.5em; margin-bottom:8px;">🦁 🌿 🐦</div>
+      <div style="background:#fff9e6; border:3px solid #7c5c00; border-radius:12px; padding:10px 24px; display:inline-block; font-size:1.3em; font-weight:bold; color:#7c5c00; letter-spacing:4px; box-shadow:0 4px 0 #7c5c00;">S P E L L</div>
+      <div style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
+        <div style="width:36px; height:36px; background:#ff9f1c; border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:1.1em; box-shadow:0 3px 0 #c07000;">A</div>
+        <div style="width:36px; height:36px; background:#fff9e6; border:2px dashed #7c5c00; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#aaa; font-weight:bold; font-size:1.1em;">_</div>
+        <div style="width:36px; height:36px; background:#ff9f1c; border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:1.1em; box-shadow:0 3px 0 #c07000;">T</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Jungle Safari</h3>
+      <p>Warm greens, oranges, and earthy tones with animal friends. Friendly and adventurous — works for all ages.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="candy" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: linear-gradient(135deg, #f8cdda, #1d2b64); border-radius:12px; padding:20px; text-align:center; font-family:sans-serif;">
+      <div style="font-size:2.5em; margin-bottom:8px;">🍭 🍬 🌸</div>
+      <div style="background:white; border-radius:20px; padding:10px 24px; display:inline-block; font-size:1.3em; font-weight:bold; background: linear-gradient(90deg,#f77062,#fe5196); -webkit-background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:4px;">S P E L L</div>
+      <div style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
+        <div style="width:36px; height:36px; background:linear-gradient(135deg,#f77062,#fe5196); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:1.1em; box-shadow:0 3px 0 #c0304e;">A</div>
+        <div style="width:36px; height:36px; background:white; border:2px dashed #fe5196; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#ccc; font-weight:bold; font-size:1.1em;">_</div>
+        <div style="width:36px; height:36px; background:linear-gradient(135deg,#f77062,#fe5196); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:1.1em; box-shadow:0 3px 0 #c0304e;">T</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Candy Dream</h3>
+      <p>Pastel pinks and soft purples — sweet, gentle, and calming. Perfect for a "relaxing" feel you mentioned.</p>
+    </div>
+  </div>
+
+</div>
