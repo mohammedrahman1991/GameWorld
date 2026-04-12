@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trutles 2.0</title>
+  <title>CaPaw!</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #000; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
@@ -255,6 +255,28 @@ class AudioManager {
   }
 }
 
+// ─── GOOFY HIT VOICES ────────────────────────────────────────────────────────
+const GOOFY_LINES = {
+  cluck:  ['Bwaaaak!', 'Cluck yeah!', 'Take that, featherball!', 'Cluck ATTACK!', 'Bok bok BOK!'],
+  wing:   ['Wing power!', 'Flap flap POW!', 'That's my wing!', 'Beakmaster moves!', 'Flappy smacky!'],
+  peck:   ['Peck peck PECK!', 'Beak blast!', 'Peck ya later!', 'Peckity peck!', 'Double beak bonk!'],
+  talons: ['Talon strike!', 'Claw power!', 'Scratch THAT!', 'Got ya, cluckface!', 'Raaawk!'],
+  sensei: ['Hiyaaaa!', 'Feel my wisdom!', 'Ancient chicken arts!', 'Sensei smash!', 'Bwok-do!'],
+  slicer: ['Sliiice!', 'Chop chop!', 'Ultra slice!', 'Razor sharp!', 'Snip snip!'],
+};
+
+function speakGoofyHit(fighterId) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const lines = GOOFY_LINES[fighterId] || ['POW!'];
+  const text  = lines[Math.floor(Math.random() * lines.length)];
+  const utt   = new SpeechSynthesisUtterance(text);
+  utt.pitch   = 1.8 + Math.random() * 0.4;  // high & goofy
+  utt.rate    = 1.4 + Math.random() * 0.3;  // fast & punchy
+  utt.volume  = 0.9;
+  window.speechSynthesis.speak(utt);
+}
+
 // ─── GLOBALS ──────────────────────────────────────────────────────────────────
 let music, sfx;
 
@@ -386,14 +408,9 @@ class TitleScene extends Phaser.Scene {
     bg.fillGradientStyle(0x0a0a1a, 0x0a0a1a, 0x1a0a2e, 0x1a0a2e, 1);
     bg.fillRect(0, 0, W, H);
 
-    this.add.text(W/2, 130, 'TRUTLES', {
-      fontSize: '72px', fill: '#f4c430', fontFamily: 'monospace', fontStyle: 'bold',
-      stroke: '#c97a00', strokeThickness: 6,
-    }).setOrigin(0.5);
-
-    this.add.text(W/2, 210, '2.0', {
-      fontSize: '48px', fill: '#e53935', fontFamily: 'monospace', fontStyle: 'bold',
-      stroke: '#8b0000', strokeThickness: 4,
+    this.add.text(W/2, 150, 'CaPaw!', {
+      fontSize: '96px', fill: '#f4c430', fontFamily: 'monospace', fontStyle: 'bold',
+      stroke: '#c97a00', strokeThickness: 8,
     }).setOrigin(0.5);
 
     FIGHTERS.forEach((f, i) => {
@@ -757,6 +774,9 @@ class FightScene extends Phaser.Scene {
     const damage     = isCritical ? 24 : 12;
 
     if (!defender.takeDamage(damage, isCritical)) return; // invincibility frames
+
+    // Goofy hit voice
+    speakGoofyHit(attacker.id);
 
     // Apply damage
     if (defenderSide === 'p2') {
