@@ -806,7 +806,19 @@ class FightScene extends Phaser.Scene {
     if (!defender.takeDamage(damage, isCritical)) return; // invincibility frames
 
     // Goofy hit voice
-    speakGoofyHit(attacker.id);
+    if (isCritical) {
+      if (window.speechSynthesis) {
+        if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
+        const utt  = new SpeechSynthesisUtterance('BOOM SHAKALAKA!!!');
+        utt.pitch  = 2.0;
+        utt.rate   = 1.6;
+        utt.volume = 1.0;
+        if (_announcerVoice) utt.voice = _announcerVoice;
+        window.speechSynthesis.speak(utt);
+      }
+    } else {
+      speakGoofyHit(attacker.id);
+    }
 
     // Apply damage
     if (defenderSide === 'p2') {
