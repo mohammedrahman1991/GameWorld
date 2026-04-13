@@ -5,8 +5,68 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SHOOTPOINT</title>
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ── On-screen D-pad ─────────────────────────────────── */
+    #dpad {
+      position: fixed;
+      bottom: 28px;
+      left: 28px;
+      z-index: 9999;
+      user-select: none;
+      -webkit-user-select: none;
+      display: none;   /* shown by GameScene */
+    }
+    .dpad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 62px);
+      grid-template-rows:    repeat(3, 62px);
+      gap: 5px;
+    }
+    .dpad-btn {
+      width: 62px;
+      height: 62px;
+      background: rgba(0, 0, 0, 0.55);
+      border: 2px solid rgba(255, 255, 255, 0.28);
+      border-radius: 14px;
+      color: rgba(255,255,255,0.85);
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.08s, border-color 0.08s;
+    }
+    .dpad-btn.pressed {
+      background: rgba(255, 255, 255, 0.22);
+      border-color: rgba(255, 255, 255, 0.7);
+    }
+    .dpad-center {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.3);
+      border: 2px solid rgba(255,255,255,0.1);
+    }
+  </style>
 </head>
 <body>
+  <!-- On-screen D-pad (shown only during GameScene) -->
+  <div id="dpad">
+    <div class="dpad-grid">
+      <div></div>
+      <button id="dpad-up"    class="dpad-btn" aria-label="Up">▲</button>
+      <div></div>
+      <button id="dpad-left"  class="dpad-btn" aria-label="Left">◀</button>
+      <div class="dpad-center"></div>
+      <button id="dpad-right" class="dpad-btn" aria-label="Right">▶</button>
+      <div></div>
+      <button id="dpad-down"  class="dpad-btn" aria-label="Down">▼</button>
+      <div></div>
+    </div>
+  </div>
+
   <div id="game-container"></div>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
   <script src="js/data/weapons.js"></script>
@@ -29,5 +89,46 @@
   <script src="js/scenes/ShopScene.js"></script>
   <script src="js/scenes/RanksScene.js"></script>
   <script src="js/main.js"></script>
+
+  <script>
+    // ── D-pad state (read by GameScene.movePlayer) ────────────────────────────
+    window.dpad = { up: false, down: false, left: false, right: false };
+
+    function _bindDpad(id, dir) {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+
+      function press(e) {
+        window.dpad[dir] = true;
+        btn.classList.add('pressed');
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      function release(e) {
+        window.dpad[dir] = false;
+        btn.classList.remove('pressed');
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      btn.addEventListener('touchstart',  press,   { passive: false });
+      btn.addEventListener('touchend',    release, { passive: false });
+      btn.addEventListener('touchcancel', release, { passive: false });
+      btn.addEventListener('mousedown',   press);
+      btn.addEventListener('mouseup',     release);
+      btn.addEventListener('mouseleave',  release);
+    }
+
+    _bindDpad('dpad-up',    'up');
+    _bindDpad('dpad-down',  'down');
+    _bindDpad('dpad-left',  'left');
+    _bindDpad('dpad-right', 'right');
+
+    // Helper called by GameScene to show/hide
+    window.showDpad = (visible) => {
+      const el = document.getElementById('dpad');
+      if (el) el.style.display = visible ? 'block' : 'none';
+    };
+  </script>
 </body>
 </html>

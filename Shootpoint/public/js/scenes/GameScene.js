@@ -29,6 +29,11 @@ class GameScene extends Phaser.Scene {
 
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
 
+    // Show on-screen D-pad
+    if (window.showDpad) window.showDpad(true);
+    this.events.once('shutdown', () => { if (window.showDpad) window.showDpad(false); });
+    this.events.once('destroy',  () => { if (window.showDpad) window.showDpad(false); });
+
     // Game state
     this.playerHealth = this.soldierData.health;
     this.playerMaxHealth = this.soldierData.health;
@@ -231,8 +236,9 @@ class GameScene extends Phaser.Scene {
 
   movePlayer(_delta) {
     const speed = this.soldierData.speed * (this.playerSpeedBoost || 1);
-    const vx = (this.keys.left.isDown ? -1 : this.keys.right.isDown ? 1 : 0);
-    const vy = (this.keys.up.isDown ? -1 : this.keys.down.isDown ? 1 : 0);
+    const dp = window.dpad || {};
+    const vx = (this.keys.left.isDown  || dp.left  ? -1 : this.keys.right.isDown || dp.right ?  1 : 0);
+    const vy = (this.keys.up.isDown    || dp.up    ? -1 : this.keys.down.isDown  || dp.down  ?  1 : 0);
     const len = Math.sqrt(vx * vx + vy * vy);
     this.player.setVelocity(
       len > 0 ? (vx / len) * speed : 0,
