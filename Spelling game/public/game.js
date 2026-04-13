@@ -41,34 +41,55 @@ function buildStars() {
   }
 }
 
-// ─── AUDIO (Web Speech API — works in-browser, no server needed) ─────────────
+// ─── AUDIO — ElevenLabs via /api/spelling-voice, fallback to Web Speech ──────
 let _speechVoice = null;
+let _currentAudio = null;
 
-function _loadVoice() {
+function _loadFallbackVoice() {
   const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
   if (!voices.length) return;
   _speechVoice =
     voices.find(v => v.name === 'Google US English') ||
     voices.find(v => v.name === 'Samantha') ||
-    voices.find(v => v.name === 'Karen') ||
-    voices.find(v => /en[-_]US/i.test(v.lang) && /google|apple/i.test(v.name)) ||
     voices.find(v => /en/i.test(v.lang)) ||
     voices[0];
 }
 if (window.speechSynthesis) {
-  window.speechSynthesis.onvoiceschanged = _loadVoice;
-  _loadVoice();
+  window.speechSynthesis.onvoiceschanged = _loadFallbackVoice;
+  _loadFallbackVoice();
 }
 
-function speak(text) {
+function _fallbackSpeak(text) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
-  const utt   = new SpeechSynthesisUtterance(text);
-  utt.rate    = 0.88;
-  utt.pitch   = 1.1;
-  utt.volume  = 1.0;
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate  = 0.88;
+  utt.pitch = 1.0;
+  utt.volume = 1.0;
   if (_speechVoice) utt.voice = _speechVoice;
   window.speechSynthesis.speak(utt);
+}
+
+async function speak(text) {
+  // Stop any audio already playing
+  if (_currentAudio) { _currentAudio.pause(); _currentAudio = null; }
+
+  try {
+    const res = await fetch('/api/spelling-voice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+    if (!res.ok) throw new Error('api');
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    _currentAudio = new Audio(url);
+    _currentAudio.play();
+    _currentAudio.onended = () => { URL.revokeObjectURL(url); _currentAudio = null; };
+  } catch {
+    // No API key or network error — use Web Speech as fallback
+    _fallbackSpeak(text);
+  }
 }
 
 // ─── DIFFICULTY CARD LISTENERS ────────────────────────────────────────────────
@@ -179,7 +200,7 @@ function startRound() {
 
   // Speak the word clearly — repeat it twice so kids catch it
   const word = state.currentEntry.word;
-  speak(`Round ${state.roundIndex + 1}. Spell the word: ${word}. ${word}.`);
+  speak(`Round ${state.roundIndex + 1}. Spell the word: ${word}.`);
 
   startTimer();
 }
@@ -233,7 +254,7 @@ function onTimerExpired() {
   if (key) { key.classList.add('correct'); key.disabled = true; }
 
   // Hint area is already visible — just remind them of the word
-  speak(`The word is: ${state.currentEntry.word}. ${state.currentEntry.word}.`);
+  speak(`The word is: ${state.currentEntry.word}.`);
 
   // Check if word was already complete after hint
   checkWordComplete();
