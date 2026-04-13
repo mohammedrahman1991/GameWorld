@@ -41,23 +41,34 @@ function buildStars() {
   }
 }
 
-// ─── AUDIO ───────────────────────────────────────────────────────────────────
-async function speak(text) {
-  try {
-    const res = await fetch('/api/speak', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
-    });
-    if (!res.ok) return;
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const audio = new Audio(url);
-    audio.play();
-    audio.onended = () => URL.revokeObjectURL(url);
-  } catch (e) {
-    console.warn('Audio failed:', e);
-  }
+// ─── AUDIO (Web Speech API — works in-browser, no server needed) ─────────────
+let _speechVoice = null;
+
+function _loadVoice() {
+  const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  if (!voices.length) return;
+  _speechVoice =
+    voices.find(v => v.name === 'Google US English') ||
+    voices.find(v => v.name === 'Samantha') ||
+    voices.find(v => v.name === 'Karen') ||
+    voices.find(v => /en[-_]US/i.test(v.lang) && /google|apple/i.test(v.name)) ||
+    voices.find(v => /en/i.test(v.lang)) ||
+    voices[0];
+}
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = _loadVoice;
+  _loadVoice();
+}
+
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt   = new SpeechSynthesisUtterance(text);
+  utt.rate    = 0.88;
+  utt.pitch   = 1.1;
+  utt.volume  = 1.0;
+  if (_speechVoice) utt.voice = _speechVoice;
+  window.speechSynthesis.speak(utt);
 }
 
 // ─── DIFFICULTY CARD LISTENERS ────────────────────────────────────────────────
@@ -155,8 +166,9 @@ function startRound() {
   renderHearts();
   buildTiles(state.currentEntry.word);
 
-  // Reset hint area
-  document.getElementById('hint-area').classList.add('hidden');
+  // Show hint immediately so the player knows what to spell
+  document.getElementById('hint-text').textContent = state.currentEntry.hint;
+  document.getElementById('hint-area').classList.remove('hidden');
   document.getElementById('round-overlay').classList.add('hidden');
 
   // Re-enable all keys
@@ -165,8 +177,9 @@ function startRound() {
     k.className = 'key';
   });
 
-  // Speak intro
-  speak(`Round ${state.roundIndex + 1}! You have 30 seconds. Spell the word: ${state.currentEntry.word}`);
+  // Speak the word clearly — repeat it twice so kids catch it
+  const word = state.currentEntry.word;
+  speak(`Round ${state.roundIndex + 1}. Spell the word: ${word}. ${word}.`);
 
   startTimer();
 }
@@ -219,11 +232,8 @@ function onTimerExpired() {
   const key = document.getElementById(`key-${firstLetter}`);
   if (key) { key.classList.add('correct'); key.disabled = true; }
 
-  // Show hint text
-  document.getElementById('hint-text').textContent = state.currentEntry.hint;
-  document.getElementById('hint-area').classList.remove('hidden');
-
-  speak("Nice try! Here's a hint...");
+  // Hint area is already visible — just remind them of the word
+  speak(`The word is: ${state.currentEntry.word}. ${state.currentEntry.word}.`);
 
   // Check if word was already complete after hint
   checkWordComplete();
