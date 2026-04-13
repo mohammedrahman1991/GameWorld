@@ -433,14 +433,7 @@
 <div id="ad-overlay">
   <div id="ad-box">
     <span class="ad-label">Advertisement</span>
-    <div class="ad-unit">
-      <ins class="adsbygoogle"
-           style="display:block;width:100%;height:250px;"
-           data-ad-client="ca-pub-6657639576480779"
-           data-ad-slot="auto"
-           data-ad-format="rectangle"
-           data-full-width-responsive="true"></ins>
-    </div>
+    <div class="ad-unit" id="ad-unit-container"></div>
     <button id="ad-continue" disabled>Play in <span id="ad-countdown">5</span>s</button>
   </div>
 </div>
@@ -469,7 +462,17 @@
       btn.disabled = true;
       countdown.textContent = secs;
 
-      // Push a fresh ad unit each time
+      // Inject a fresh <ins> every time so AdSense fills it
+      var container = document.getElementById('ad-unit-container');
+      container.innerHTML = '';
+      var ins = document.createElement('ins');
+      ins.className = 'adsbygoogle';
+      ins.style.cssText = 'display:block;width:100%;height:250px;';
+      ins.setAttribute('data-ad-client', 'ca-pub-6657639576480779');
+      ins.setAttribute('data-ad-slot', '7507353782');
+      ins.setAttribute('data-ad-format', 'rectangle');
+      ins.setAttribute('data-full-width-responsive', 'true');
+      container.appendChild(ins);
       try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e) {}
 
       _timer = setInterval(function () {
