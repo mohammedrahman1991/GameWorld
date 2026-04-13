@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Wacky Brains – Play Games</title>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6657639576480779" crossorigin="anonymous"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -176,6 +177,62 @@
       font-size: 0.8rem;
       border-top: 1px solid rgba(255,255,255,0.05);
     }
+
+    /* ── Ad Interstitial ─────────────────────────────────────────────── */
+    #ad-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.88);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    #ad-overlay.visible { display: flex; }
+
+    #ad-box {
+      background: #13132a;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 28px 24px 20px;
+      width: min(480px, 92vw);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    #ad-box .ad-label {
+      color: #94a3b8;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    #ad-box .ad-unit {
+      width: 100%;
+      min-height: 100px;
+    }
+
+    #ad-continue {
+      margin-top: 4px;
+      padding: 11px 32px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      background: linear-gradient(135deg, #7c3aed, #06b6d4);
+      color: #fff;
+      transition: opacity 0.15s;
+    }
+    #ad-continue:disabled {
+      background: rgba(255,255,255,0.1);
+      color: #64748b;
+      cursor: default;
+    }
+    #ad-continue:not(:disabled):hover { opacity: 0.85; }
   </style>
 </head>
 <body>
@@ -371,6 +428,69 @@
 <footer>
   &copy; 2026 Wacky Brains · All games built with ❤️
 </footer>
+
+<!-- ── Ad Interstitial Overlay ──────────────────────────────────────── -->
+<div id="ad-overlay">
+  <div id="ad-box">
+    <span class="ad-label">Advertisement</span>
+    <div class="ad-unit">
+      <ins class="adsbygoogle"
+           style="display:block;width:100%;height:250px;"
+           data-ad-client="ca-pub-6657639576480779"
+           data-ad-slot="auto"
+           data-ad-format="rectangle"
+           data-full-width-responsive="true"></ins>
+    </div>
+    <button id="ad-continue" disabled>Play in <span id="ad-countdown">5</span>s</button>
+  </div>
+</div>
+
+<script>
+  (function () {
+    let _dest = '';
+    let _timer = null;
+
+    // Intercept every Play button
+    document.querySelectorAll('.play-btn-active').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        _dest = btn.getAttribute('href');
+        showAd();
+      });
+    });
+
+    function showAd() {
+      var overlay = document.getElementById('ad-overlay');
+      var btn     = document.getElementById('ad-continue');
+      var countdown = document.getElementById('ad-countdown');
+      var secs = 5;
+
+      overlay.classList.add('visible');
+      btn.disabled = true;
+      countdown.textContent = secs;
+
+      // Push a fresh ad unit each time
+      try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e) {}
+
+      _timer = setInterval(function () {
+        secs--;
+        countdown.textContent = secs;
+        if (secs <= 0) {
+          clearInterval(_timer);
+          btn.disabled = false;
+          btn.textContent = 'Play Now!';
+        }
+      }, 1000);
+    }
+
+    document.getElementById('ad-continue').addEventListener('click', function () {
+      document.getElementById('ad-overlay').classList.remove('visible');
+      this.textContent = '';
+      this.disabled = true;
+      window.location.href = _dest;
+    });
+  })();
+</script>
 
 </body>
 </html>
