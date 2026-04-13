@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Arrow Fire Game</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; touch-action: none; }
+
+  body {
+    background: linear-gradient(180deg, #1a0a2e 0%, #2d1b4e 40%, #4a2c6b 100%);
+    min-height: 100vh;
+    font-family: 'Arial Black', Arial, sans-serif;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  #game {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    position: relative;
+  }
+
+  /* HUD */
+  #hud {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: rgba(0,0,0,0.4);
+    border-bottom: 2px solid rgba(255,200,0,0.3);
+    z-index: 10;
+  }
+
+  .player-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 110px;
+  }
+
+  .player-label {
+    font-size: 11px;
+    color: #aaa;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .player-score {
+    font-size: 28px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 10px currentColor;
+    line-height: 1;
+  }
+
+  .player-panel.active .player-label { color: #ffd700; }
+  .player-panel.active .player-score { color: #ffd700; text-shadow: 0 0 15px #ffd700; }
+  .player-panel.p1 .player-score { color: #4fc3f7; }
+  .player-panel.p1.active .player-score { color: #ffd700; }
+  .player-panel.p2 .player-score { color: #ef9a9a; }
+  .player-panel.p2.active .player-score { color: #ffd700; }
+
+  #center-hud {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #turn-label {
+    font-size: 13px;
+    color: #ffd700;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  #arrows-left {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  .arrow-pip {
+    width: 14px;
+    height: 14px;
+    background: #ffd700;
+    clip-path: polygon(0 40%, 70% 40%, 70% 0%, 100% 50%, 70% 100%, 70% 60%, 0 60%);
+    transition: opacity 0.2s;
+  }
+
+  .arrow-pip.used { opacity: 0.2; }
+
+  /* Scene */
+  #scene {
+    flex: 1;
+    width: 100%;
+    position: relative;
+    overflow: visible;
+  }
+
+  /* Ground */
+  #ground {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 60px;
+    background: linear-gradient(180deg, #3d5a1f 0%, #2a3f14 100%);
+    border-top: 3px solid #5a8a2a;
+  }
+
+  /* Bow area */
+  #bow-area {
+    position: absolute;
+    bottom: 55px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #bow-svg {
+    width: 60px;
+    height: 120px;
+    filter: drop-shadow(0 0 6px rgba(255,200,0,0.4));
+  }
+
+  /* Aim line */
+  #aim-line {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  /* Target */
+  #target-container {
+    position: absolute;
+    bottom: 55px;
+    right: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #target-svg {
+    width: 155px;
+    height: 232px;
+    filter: drop-shadow(2px 4px 8px rgba(0,0,0,0.5));
+  }
+
+  /* Arrows in target */
+  .stuck-arrow {
+    position: absolute;
+    pointer-events: none;
+    font-size: 20px;
+    transform-origin: center;
+    transition: none;
+    z-index: 6;
+  }
+
+  /* Flying arrow */
+  #flying-arrow {
+    position: absolute;
+    left: 0; top: 0;
+    width: 60px;
+    height: 14px;
+    pointer-events: none;
+    z-index: 99;
+    display: none;
+    transform-origin: left center;
+    will-change: transform;
+  }
+
+  /* Shaft */
+  #arrow-shaft {
+    position: absolute;
+    left: 14px; top: 50%;
+    transform: translateY(-50%);
+    width: 30px; height: 5px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #c8a96e, #a0724a);
+  }
+
+  /* Arrowhead */
+  #arrow-head {
+    position: absolute;
+    right: 0; top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 16px solid #888;
+  }
+
+  /* Fletching */
+  #arrow-fletch {
+    position: absolute;
+    left: 14px; top: 50%;
+    transform: translateY(-50%);
+  }
+  #arrow-fletch::before,
+  #arrow-fletch::after {
+    content: '';
+    position: absolute;
+    width: 12px; height: 6px;
+    border-radius: 3px 0 0 0;
+    background: var(--fc, #e74c3c);
+  }
+  #arrow-fletch::before { top: -7px; transform: skewX(-15deg); }
+  #arrow-fletch::after  { top: 2px;  transform: skewX(15deg); }
+  #flying-arrow.p1 #arrow-fletch { --fc: #ff6a00; }
+  #flying-arrow.p2 #arrow-fletch { --fc: #00b4ff; }
+
+  /* Flame trail particles */
+  .flame {
+    position: absolute;
+    border-radius: 50% 50% 50% 0;
+    pointer-events: none;
+    animation: flameBurn 0.3s ease-out forwards;
+    z-index: 98;
+  }
+  @keyframes flameBurn {
+    0%   { opacity: 0.9; transform: scale(1) rotate(-45deg); }
+    100% { opacity: 0; transform: scale(2.5) translateX(-10px) rotate(-45deg); }
+  }
+
+  /* P1 = red/orange flames */
+  .flame-p1 { background: radial-gradient(circle, #fff 0%, #ff6a00 40%, #e73c00 100%); }
+  /* P2 = blue flames */
+  .flame-p2 { background: radial-gradient(circle, #fff 0%, #00b4ff 40%, #0040cc 100%); }
+
+  /* Score popup */
+  .score-popup {
+    position: absolute;
+    font-size: 28px;
+    font-weight: 900;
+    pointer-events: none;
+    z-index: 20;
+    animation: floatUp 1.2s ease-out forwards;
+    text-shadow: 0 0 10px currentColor, 2px 2px 4px #000;
+  }
+
+  @keyframes floatUp {
+    0%   { transform: translateY(0) scale(0.5); opacity: 1; }
+    30%  { transform: translateY(-20px) scale(1.3); opacity: 1; }
+    100% { transform: translateY(-80px) scale(1); opacity: 0; }
+  }
+
+  /* Tap instruction */
+  #tap-hint {
+    position: absolute;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.55);
+    font-size: 13px;
+    letter-spacing: 1px;
+    pointer-events: none;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.9; }
+  }
+
+  /* Overlay */
+  #overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 50;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  #overlay.show { display: flex; }
+
+  #overlay-box {
+    background: linear-gradient(135deg, #1a0a2e, #3d1a6e);
+    border: 3px solid #ffd700;
+    border-radius: 20px;
+    padding: 32px 40px;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(255,215,0,0.3);
+    max-width: 320px;
+    width: 90%;
+  }
+
+  #overlay-title {
+    font-size: 32px;
+    font-weight: 900;
+    color: #ffd700;
+    text-shadow: 0 0 20px #ffd700;
+    margin-bottom: 8px;
+  }
+
+  #overlay-body {
+    font-size: 16px;
+    color: #ddd;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  #overlay-btn {
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    color: #1a0a2e;
+    border: none;
+    padding: 14px 40px;
+    font-size: 18px;
+    font-weight: 900;
+    border-radius: 50px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 20px rgba(255,140,0,0.5);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+
+  #overlay-btn:active { transform: scale(0.96); box-shadow: 0 2px 10px rgba(255,140,0,0.4); }
+
+  /* Hit flash */
+  #hit-flash {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 30;
+    opacity: 0;
+    transition: opacity 0.05s;
+  }
+
+  #hit-flash.flash { opacity: 1; transition: none; }
+  #hit-flash.flash-out { opacity: 0; transition: opacity 0.4s; }
+
+  /* Trees / scenery */
+  .tree {
+    position: absolute;
+    bottom: 55px;
+    font-size: 40px;
+    pointer-events: none;
+  }
+
+  /* Clouds */
+  .cloud {
+    position: absolute;
+    background: rgba(255,255,255,0.08);
+    border-radius: 50px;
+    pointer-events: none;
+  }
+
+  /* ── Sliding blocker ─────────────────────────────────── */
+  #slider-pole {
+    position: absolute;
+    width: 8px;
+    background: linear-gradient(90deg, #666, #aaa, #666);
+    border-radius: 4px;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  #slider-block {
+    position: absolute;
+    width: 30px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 50%, #e74c3c 100%);
+    border: 2px solid #7b241c;
+    border-radius: 5px;
+    z-index: 8;
+    pointer-events: none;
+    box-shadow: 0 0 10px rgba(231,76,60,0.6), inset 0 1px 0 rgba(255,255,255,0.2);
+    overflow: hidden;
+  }
+
+  .slider-band {
+    width: 100%;
+    height: 8px;
+    background: rgba(0,0,0,0.25);
+    margin: 10px 0;
+  }
+
+  #slider-label {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 16px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    pointer-events: none;
+  }
+
+  /* ── Swinging tire ───────────────────────────────────── */
+  #tire-swing {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform-origin: top center;
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  #tire-chain {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .chain-link {
+    width: 6px;
+    height: 9px;
+    border: 2px solid #888;
+    border-radius: 3px;
+    background: transparent;
+  }
+
+  #tire-svg {
+    filter: drop-shadow(2px 4px 8px rgba(0,0,0,0.6));
+    margin-top: 2px;
+  }
+
+  /* Water drops from ring */
+  .water-drop {
+    position: absolute;
+    left: 0; top: 0;
+    width: 6px;
+    height: 9px;
+    background: linear-gradient(180deg, rgba(160,220,255,0.95), rgba(60,140,230,0.8));
+    border-radius: 50% 50% 50% 50% / 35% 35% 65% 65%;
+    pointer-events: none;
+    z-index: 11;
+    filter: blur(0.4px) drop-shadow(0 0 2px rgba(100,180,255,0.6));
+  }
+
+  /* Steam puff when arrow doused */
+  .steam-puff {
+    position: absolute;
+    left: 0; top: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(220,240,255,0.9) 0%, rgba(150,200,255,0.4) 60%, transparent 100%);
+    pointer-events: none;
+    z-index: 22;
+    animation: steamRise 0.9s ease-out forwards;
+  }
+  @keyframes steamRise {
+    0%   { opacity: 0.9; transform: translate(var(--sx), var(--sy)) scale(0.4); }
+    50%  { opacity: 0.6; }
+    100% { opacity: 0; transform: translate(var(--sx), calc(var(--sy) - 45px)) scale(3); }
+  }
+
+  /* Blocked flash label */
+  .blocked-label {
+    position: absolute;
+    font-size: 22px;
+    font-weight: 900;
+    color: #ff4400;
+    text-shadow: 0 0 10px #ff4400, 2px 2px 4px #000;
+    pointer-events: none;
+    z-index: 25;
+    animation: floatUp 1s ease-out forwards;
+  }
+</style>
+</head>
+<body>
+<div id="game">
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="player-panel p1 active" id="p1panel">
+      <div class="player-label">Player 1</div>
+      <div class="player-score" id="p1score">0</div>
+    </div>
+    <div id="center-hud">
+      <div id="turn-label">PLAYER 1'S TURN</div>
+      <div id="arrows-left"></div>
+    </div>
+    <div class="player-panel p2" id="p2panel">
+      <div class="player-label">Player 2</div>
+      <div class="player-score" id="p2score">0</div>
+    </div>
+  </div>
+
+  <!-- Scene -->
+  <div id="scene">
+
+    <!-- Clouds -->
+    <div class="cloud" style="width:120px;height:40px;top:30px;left:10%"></div>
+    <div class="cloud" style="width:80px;height:28px;top:50px;left:25%"></div>
+    <div class="cloud" style="width:150px;height:45px;top:20px;right:15%"></div>
+
+    <!-- Trees -->
+    <div class="tree" style="left:35%;">🌲</div>
+    <div class="tree" style="left:45%; font-size:30px; bottom:58px;">🌲</div>
+    <div class="tree" style="left:55%;">🌳</div>
+
+    <!-- Bow -->
+    <div id="bow-area">
+      <svg id="bow-svg" viewBox="0 0 60 120">
+        <!-- Bow body -->
+        <path d="M30 5 Q5 30 5 60 Q5 90 30 115" stroke="#8B4513" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <!-- String -->
+        <line id="bow-string" x1="30" y1="5" x2="30" y2="115" stroke="#ddd" stroke-width="1.5" stroke-dasharray="2,2"/>
+        <!-- Arrow on bow -->
+        <line id="bow-arrow-line" x1="30" y1="30" x2="30" y2="90" stroke="#c8a96e" stroke-width="3" stroke-linecap="round"/>
+        <polygon id="bow-arrow-head" points="30,20 26,34 34,34" fill="#888"/>
+        <!-- Fletching -->
+        <polygon points="30,88 26,98 30,92" fill="#e74c3c"/>
+        <polygon points="30,88 34,98 30,92" fill="#e74c3c"/>
+      </svg>
+    </div>
+
+    <!-- Aim canvas -->
+    <canvas id="aim-line"></canvas>
+
+    <!-- Target dummy -->
+    <div id="target-container">
+      <svg id="target-svg" viewBox="0 0 120 180" id="target-svg">
+        <!-- Body -->
+        <rect x="40" y="70" width="40" height="70" rx="5" fill="#e8c49a" stroke="#c9a47a" stroke-width="2"/>
+        <!-- Shirt zones -->
+        <!-- Bull (10 pts) - chest center -->
+        <ellipse cx="60" cy="95" rx="12" ry="14" fill="#e74c3c" stroke="#c0392b" stroke-width="1.5"/>
+        <text x="60" y="100" text-anchor="middle" font-size="9" fill="white" font-weight="bold">10</text>
+        <!-- Inner ring (7 pts) -->
+        <ellipse cx="60" cy="95" rx="20" ry="22" fill="none" stroke="#e67e22" stroke-width="2"/>
+        <text x="78" y="92" font-size="7" fill="#e67e22" font-weight="bold">7</text>
+        <!-- Head -->
+        <circle cx="60" cy="50" r="22" fill="#f5d5a0" stroke="#c9a47a" stroke-width="2"/>
+        <!-- Face -->
+        <circle cx="54" cy="46" r="3" fill="#fff"/>
+        <circle cx="66" cy="46" r="3" fill="#fff"/>
+        <circle cx="55" cy="47" r="1.5" fill="#333"/>
+        <circle cx="67" cy="47" r="1.5" fill="#333"/>
+        <path d="M54 58 Q60 63 66 58" stroke="#c9a47a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <!-- Outer zone labels -->
+        <!-- Arms -->
+        <rect x="15" y="72" width="25" height="15" rx="4" fill="#e8c49a" stroke="#c9a47a" stroke-width="1.5"/>
+        <rect x="80" y="72" width="25" height="15" rx="4" fill="#e8c49a" stroke="#c9a47a" stroke-width="1.5"/>
+        <!-- Arm pts -->
+        <text x="27" y="83" text-anchor="middle" font-size="7" fill="#555" font-weight="bold">3</text>
+        <text x="92" y="83" text-anchor="middle" font-size="7" fill="#555" font-weight="bold">3</text>
+        <!-- Legs -->
+        <rect x="40" y="135" width="16" height="35" rx="5" fill="#e8c49a" stroke="#c9a47a" stroke-width="1.5"/>
+        <rect x="64" y="135" width="16" height="35" rx="5" fill="#e8c49a" stroke="#c9a47a" stroke-width="1.5"/>
+        <!-- Leg pts -->
+        <text x="48" y="158" text-anchor="middle" font-size="7" fill="#555" font-weight="bold">2</text>
+        <text x="72" y="158" text-anchor="middle" font-size="7" fill="#555" font-weight="bold">2</text>
+        <!-- Head pts -->
+        <text x="60" y="20" text-anchor="middle" font-size="8" fill="#9b59b6" font-weight="bold">5</text>
+        <!-- Stand -->
+        <rect x="50" y="168" width="20" height="8" rx="2" fill="#8B4513"/>
+        <rect x="45" y="174" width="30" height="5" rx="2" fill="#6b3410"/>
+      </svg>
+    </div>
+
+    <!-- Sliding blocker pole + block -->
+    <div id="slider-pole"></div>
+    <div id="slider-block">
+      <div class="slider-band"></div>
+      <div class="slider-band"></div>
+      <div id="slider-label">!</div>
+    </div>
+
+    <!-- Swinging tire on chain -->
+    <div id="tire-swing">
+      <div id="tire-chain">
+        <div class="chain-link"></div>
+        <div class="chain-link"></div>
+        <div class="chain-link"></div>
+        <div class="chain-link"></div>
+        <div class="chain-link"></div>
+        <div class="chain-link"></div>
+        <div class="chain-link"></div>
+        <div class="chain-link"></div>
+        <div class="chain-link"></div>
+        <div class="chain-link"></div>
+        <div class="chain-link"></div>
+        <div class="chain-link"></div>
+        <div class="chain-link"></div>
+        <div class="chain-link"></div>
+        <div class="chain-link"></div>
+        <div class="chain-link"></div>
+      </div>
+      <svg id="tire-svg" viewBox="0 0 80 80" width="160" height="160">
+        <!-- Drop shadow -->
+        <circle cx="40" cy="40" r="34" fill="none" stroke="#000" stroke-width="18" stroke-opacity="0.4"/>
+        <!-- Ring outer edge dark outline -->
+        <circle cx="40" cy="40" r="34" fill="none" stroke="#5a2800" stroke-width="14"/>
+        <!-- Main ring body -->
+        <circle cx="40" cy="40" r="34" fill="none" stroke="#e8820a" stroke-width="10"/>
+        <!-- Ring inner highlight -->
+        <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,220,80,0.35)" stroke-width="3" stroke-dasharray="18,50" stroke-dashoffset="0"/>
+        <!-- Center open hole — transparent, arrow passes through -->
+      </svg>
+    </div>
+
+    <!-- Flying arrow (CSS drawn) -->
+    <div id="flying-arrow">
+      <div id="arrow-fletch"></div>
+      <div id="arrow-shaft"></div>
+      <div id="arrow-head"></div>
+    </div>
+
+    <!-- Tap hint -->
+    <div id="tap-hint">TAP ANYWHERE TO FIRE</div>
+
+    <!-- Ground -->
+    <div id="ground"></div>
+  </div>
+
+  <!-- Hit flash overlay -->
+  <div id="hit-flash"></div>
+
+</div>
+
+<!-- Overlay -->
+<div id="overlay">
+  <div id="overlay-box">
+    <div id="overlay-title">READY!</div>
+    <div id="overlay-body">Player 1 goes first.<br>Tap the screen to fire arrows!</div>
+    <button id="overlay-btn">START GAME</button>
+  </div>
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+const ARROWS_PER_TURN = 10;
+
+let state = {
+  phase: 'start',   // start | p1turn | p2turn | switchWait | gameOver
+  p1Score: 0,
+  p2Score: 0,
+  currentPlayer: 1,
+  arrowsLeft: ARROWS_PER_TURN,
+  arrowsFired: 0,
+  firing: false,
+  gameCount: 0,
+};
+
+// ─── DOM refs ─────────────────────────────────────────────────────────────────
+const overlay       = document.getElementById('overlay');
+const overlayTitle  = document.getElementById('overlay-title');
+const overlayBody   = document.getElementById('overlay-body');
+const overlayBtn    = document.getElementById('overlay-btn');
+const p1ScoreEl     = document.getElementById('p1score');
+const p2ScoreEl     = document.getElementById('p2score');
+const p1Panel       = document.getElementById('p1panel');
+const p2Panel       = document.getElementById('p2panel');
+const turnLabel     = document.getElementById('turn-label');
+const arrowsLeftEl  = document.getElementById('arrows-left');
+const scene         = document.getElementById('scene');
+const flyingArrow   = document.getElementById('flying-arrow');
+const aimCanvas     = document.getElementById('aim-line');
+const aimCtx        = aimCanvas.getContext('2d');
+const hitFlash      = document.getElementById('hit-flash');
+const tapHint       = document.getElementById('tap-hint');
+const targetContainer = document.getElementById('target-container');
+
+// ─── Resize canvas ────────────────────────────────────────────────────────────
+function resizeCanvas() {
+  aimCanvas.width  = scene.offsetWidth;
+  aimCanvas.height = scene.offsetHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+// ─── HUD helpers ─────────────────────────────────────────────────────────────
+function updateHUD() {
+  p1ScoreEl.textContent = state.p1Score;
+  p2ScoreEl.textContent = state.p2Score;
+
+  const cp = state.currentPlayer;
+  p1Panel.classList.toggle('active', cp === 1);
+  p2Panel.classList.toggle('active', cp === 2);
+  turnLabel.textContent = `PLAYER ${cp}'S TURN`;
+
+  arrowsLeftEl.innerHTML = '';
+  for (let i = 0; i < ARROWS_PER_TURN; i++) {
+    const pip = document.createElement('div');
+    pip.className = 'arrow-pip' + (i >= state.arrowsLeft ? ' used' : '');
+    arrowsLeftEl.appendChild(pip);
+  }
+}
+
+// ─── Hit zone detection ───────────────────────────────────────────────────────
+// Returns { points, zone, color } based on where arrow lands on target
+function detectHitZone(clickX, clickY) {
+  const rect = targetContainer.getBoundingClientRect();
+  const sceneRect = scene.getBoundingClientRect();
+
+  // Target center in scene coords
+  const tx = rect.left - sceneRect.left + rect.width / 2;
+  const ty = rect.top  - sceneRect.top  + rect.height / 2;
+
+  const dx = clickX - tx;
+  const dy = clickY - ty;
+
+  // SVG is 120x180 units, displayed at rect.width x rect.height
+  const scaleX = 120 / rect.width;
+  const scaleY = 180 / rect.height;
+  const sx = dx * scaleX;
+  const sy = dy * scaleY;  // relative to SVG center (60,90)
+
+  // Head: circle center (60,50) r=22 → relative to center (60,90): (0,-40) r=22
+  const headDist = Math.sqrt(sx * sx + (sy + 40) * (sy + 40));
+  if (headDist <= 22) return { points: 5, zone: 'HEAD', color: '#9b59b6' };
+
+  // Bullseye: ellipse center (60,95) relative to center (60,90): (0,5) rx=12 ry=14
+  const bullX = sx / 12, bullY = (sy - 5) / 14;
+  if (bullX * bullX + bullY * bullY <= 1) return { points: 10, zone: 'BULLSEYE!', color: '#e74c3c' };
+
+  // Inner ring: ellipse center (60,95) rx=20 ry=22
+  const innerX = sx / 20, innerY = (sy - 5) / 22;
+  if (innerX * innerX + innerY * innerY <= 1) return { points: 7, zone: 'INNER RING', color: '#e67e22' };
+
+  // Arms: left arm rect x=15-40, y=72-87 → relative to center: x=-45 to -20, y=-18 to -3
+  if (sx >= -45 && sx <= -20 && sy >= -18 && sy <= -3) return { points: 3, zone: 'ARM', color: '#27ae60' };
+  if (sx >= 20 && sx <= 45  && sy >= -18 && sy <= -3)  return { points: 3, zone: 'ARM', color: '#27ae60' };
+
+  // Body: rect x=40-80, y=70-140 → relative to center: x=-20 to 20, y=-20 to 50
+  if (sx >= -20 && sx <= 20 && sy >= -20 && sy <= 50) return { points: 4, zone: 'BODY', color: '#3498db' };
+
+  // Legs: x=40-56 or x=64-80, y=135-170 → relative: x=-20 to -4 or 4 to 20, y=45 to 80
+  if (((sx >= -20 && sx <= -4) || (sx >= 4 && sx <= 20)) && sy >= 45 && sy <= 80)
+    return { points: 2, zone: 'LEG', color: '#95a5a6' };
+
+  return null; // miss
+}
+
+// ─── Score popup ──────────────────────────────────────────────────────────────
+function showScorePopup(x, y, points, color, label) {
+  const el = document.createElement('div');
+  el.className = 'score-popup';
+  el.style.left = (x - 30) + 'px';
+  el.style.top  = (y - 20) + 'px';
+  el.style.color = color;
+  el.textContent = label || `+${points}`;
+  scene.appendChild(el);
+  setTimeout(() => el.remove(), 1200);
+}
+
+// ─── Stuck arrow ──────────────────────────────────────────────────────────────
+function stickArrow(x, y) {
+  const el = document.createElement('div');
+  el.className = 'stuck-arrow';
+  el.textContent = '➤';
+  el.style.left = (x - 12) + 'px';
+  el.style.top  = (y - 12) + 'px';
+  el.style.color = state.currentPlayer === 1 ? '#4fc3f7' : '#ef9a9a';
+  scene.appendChild(el);
+}
+
+// ─── Clear stuck arrows ───────────────────────────────────────────────────────
+function clearStuckArrows() {
+  document.querySelectorAll('.stuck-arrow').forEach(e => e.remove());
+}
+
+// ─── Aim line draw ────────────────────────────────────────────────────────────
+const bowArea = document.getElementById('bow-area');
+
+function getBowTip() {
+  const rect = bowArea.getBoundingClientRect();
+  const sceneRect = scene.getBoundingClientRect();
+  return {
+    x: rect.left - sceneRect.left + rect.width / 2,
+    y: rect.top  - sceneRect.top  + rect.height * 0.25,
+  };
+}
+
+function drawAimLine(tx, ty) {
+  aimCtx.clearRect(0, 0, aimCanvas.width, aimCanvas.height);
+  const bow = getBowTip();
+  aimCtx.setLineDash([8, 6]);
+  aimCtx.lineWidth = 1.5;
+  aimCtx.strokeStyle = 'rgba(255,215,0,0.35)';
+  aimCtx.beginPath();
+  aimCtx.moveTo(bow.x, bow.y);
+  aimCtx.lineTo(tx, ty);
+  aimCtx.stroke();
+  aimCtx.setLineDash([]);
+}
+
+function clearAimLine() {
+  aimCtx.clearRect(0, 0, aimCanvas.width, aimCanvas.height);
+}
+
+// ─── Flash ────────────────────────────────────────────────────────────────────
+function flashScreen(color) {
+  hitFlash.style.background = color;
+  hitFlash.classList.add('flash');
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      hitFlash.classList.remove('flash');
+      hitFlash.classList.add('flash-out');
+      setTimeout(() => hitFlash.classList.remove('flash-out'), 400);
+    });
+  });
+}
+
+// ─── Wind indicator ───────────────────────────────────────────────────────────
+let currentWind = 0; // px of horizontal drift at full flight
+
+function newWindValue() {
+  // Random wind between -60 and +60 px drift, avoid near-zero
+  const mag = 20 + Math.random() * 50;
+  return Math.random() < 0.5 ? -mag : mag;
+}
+
+// Show wind on HUD
+function updateWindDisplay() {
+  let el = document.getElementById('wind-display');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'wind-display';
+    el.style.cssText = `font-size:11px;color:#7df;letter-spacing:1px;margin-top:2px;`;
+    document.getElementById('center-hud').appendChild(el);
+  }
+  const dir = currentWind > 0 ? '→' : '←';
+  const strength = Math.abs(currentWind) < 30 ? 'LIGHT' : Math.abs(currentWind) < 50 ? 'MEDIUM' : 'STRONG';
+  el.textContent = `WIND ${dir} ${strength}`;
+}
+
+// ─── Obstacle system ─────────────────────────────────────────────────────────
+const SLIDER_FRAC_X  = 0.54;   // position along scene width
+const SLIDER_W       = 30;     // px
+const SLIDER_H       = 92;     // px
+let   sliderFracY    = 0.12;   // top of block as fraction of scene height
+let   sliderDir      = 1;
+const SLIDER_SPEED   = 0.00026; // fraction per ms
+
+const TIRE_FRAC_X    = 0.70;   // pivot x as fraction of scene width
+const TIRE_PIVOT_FRAC_Y = 0.02; // pivot y as fraction of scene height
+const TIRE_ROPE_LEN  = 240;    // px — long drop, ring hangs low
+const TIRE_OUTER_R   = 76;     // px — (34+5)*160/80 = 78, rounding down for forgiveness
+const TIRE_INNER_R   = 56;     // px — (34-5)*160/80 = 58, big open hole
+let   tireAngle      = Math.PI / 5;
+let   tireAngVel     = 0.00008; // rad/ms — very slow start
+
+let obstacleAnimId   = null;
+let lastObstacleTs   = 0;
+
+const sliderPoleEl  = document.getElementById('slider-pole');
+const sliderBlockEl = document.getElementById('slider-block');
+const tireSwingEl   = document.getElementById('tire-swing');
+
+function getSliderState() {
+  const sw = scene.offsetWidth;
+  const sh = scene.offsetHeight;
+  return {
+    x: sw * SLIDER_FRAC_X - SLIDER_W / 2,
+    y: sliderFracY * sh,
+    w: SLIDER_W,
+    h: SLIDER_H
+  };
+}
+
+function getTireState() {
+  const sw = scene.offsetWidth;
+  const sh = scene.offsetHeight;
+  const px = sw * TIRE_FRAC_X;
+  const py = sh * TIRE_PIVOT_FRAC_Y;
+  return {
+    cx: px + Math.sin(tireAngle) * TIRE_ROPE_LEN,
+    cy: py + Math.cos(tireAngle) * TIRE_ROPE_LEN,
+    outerR: TIRE_OUTER_R,
+    innerR: TIRE_INNER_R,
+    pivotX: px,
+    pivotY: py
+  };
+}
+
+function renderObstacles() {
+  const sw = scene.offsetWidth;
+  const sh = scene.offsetHeight;
+
+  // Slider pole (full-height vertical bar)
+  const poleX = sw * SLIDER_FRAC_X - 4;
+  sliderPoleEl.style.cssText = `left:${poleX}px;top:0;height:${sh - 60}px;`;
+
+  // Slider block
+  const sl = getSliderState();
+  sliderBlockEl.style.left   = sl.x + 'px';
+  sliderBlockEl.style.top    = sl.y + 'px';
+  sliderBlockEl.style.height = sl.h + 'px';
+
+  // Tire swing (pivot point, then rotate)
+  const tire = getTireState();
+  const tireElW = 160; // matches SVG width
+  tireSwingEl.style.left      = (tire.pivotX - tireElW / 2) + 'px';
+  tireSwingEl.style.top       = tire.pivotY + 'px';
+  tireSwingEl.style.transform = `rotate(${tireAngle}rad)`;
+}
+
+function updateObstacles(dt) {
+  // Slider bounce up/down
+  sliderFracY += sliderDir * SLIDER_SPEED * dt;
+  const sh = scene.offsetHeight;
+  const minFrac = 0.04;
+  const maxFrac = (sh - 60 - SLIDER_H) / sh;
+  if (sliderFracY >= maxFrac) { sliderFracY = maxFrac; sliderDir = -1; }
+  if (sliderFracY <= minFrac) { sliderFracY = minFrac; sliderDir =  1; }
+
+  // Pendulum: ω₀² = 0.0000009 → period ≈ 6600ms, very slow
+  const alpha = -0.0000009 * Math.sin(tireAngle);
+  tireAngVel += alpha * dt;
+  tireAngle  += tireAngVel * dt;
+  // Soft clamp — gentle bounce at max swing
+  if (Math.abs(tireAngle) > Math.PI / 3.8) {
+    tireAngVel *= -0.88;
+    tireAngle   = Math.sign(tireAngle) * Math.PI / 3.8;
+  }
+
+  renderObstacles();
+}
+
+// ─── Water drop system ────────────────────────────────────────────────────────
+let waterDrops = [];
+let lastDropSpawn = 0;
+const DROP_INTERVAL = 220; // ms between spawns
+
+function spawnWaterDrops() {
+  const tire = getTireState();
+  // Emit 2-3 drops from the bottom arc of the ring
+  const count = 2 + Math.floor(Math.random() * 2);
+  for (let i = 0; i < count; i++) {
+    // Bottom half of ring (angles π*0.25 → π*0.75 from downward)
+    const a = Math.PI * (0.3 + Math.random() * 0.4);
+    const r = TIRE_OUTER_R - (Math.random() * (TIRE_OUTER_R - TIRE_INNER_R) * 0.5);
+    const x = tire.cx + Math.cos(a + Math.PI / 2) * r;
+    const y = tire.cy + Math.sin(a + Math.PI / 2) * r;
+
+    const el = document.createElement('div');
+    el.className = 'water-drop';
+    el.style.transform = `translate(${x}px, ${y}px)`;
+    scene.appendChild(el);
+
+    waterDrops.push({
+      x, y,
+      vx: (Math.random() - 0.5) * 0.06,
+      vy: 0.4 + Math.random() * 0.8,
+      el,
+      born: performance.now()
+    });
+  }
+}
+
+function updateWaterDrops(dt, now) {
+  if (now - lastDropSpawn > DROP_INTERVAL) {
+    lastDropSpawn = now;
+    spawnWaterDrops();
+  }
+  const sh = scene.offsetHeight;
+  waterDrops = waterDrops.filter(drop => {
+    drop.vy += 0.004 * dt;   // gravity
+    drop.x  += drop.vx * dt;
+    drop.y  += drop.vy * dt;
+    drop.el.style.transform = `translate(${drop.x}px, ${drop.y}px)`;
+    if (drop.y > sh || now - drop.born > 3000) {
+      drop.el.remove();
+      return false;
+    }
+    return true;
+  });
+}
+
+function clearWaterDrops() {
+  waterDrops.forEach(d => d.el.remove());
+  waterDrops = [];
+}
+
+function showSteamEffect(x, y) {
+  for (let i = 0; i < 10; i++) {
+    const el = document.createElement('div');
+    el.className = 'steam-puff';
+    const size = 10 + Math.random() * 20;
+    const ox = (Math.random() - 0.5) * 40;
+    const oy = (Math.random() - 0.5) * 24;
+    el.style.cssText = `
+      width:${size}px; height:${size}px;
+      --sx:${x + ox}px; --sy:${y + oy}px;
+      transform: translate(${x + ox}px, ${y + oy}px) scale(0.4);
+      animation-delay:${Math.random() * 180}ms;
+    `;
+    scene.appendChild(el);
+    setTimeout(() => el.remove(), 1100);
+  }
+}
+
+function obstacleLoop(ts) {
+  const dt = lastObstacleTs ? Math.min(ts - lastObstacleTs, 50) : 16;
+  lastObstacleTs = ts;
+  updateObstacles(dt);
+  updateWaterDrops(dt, ts);
+  obstacleAnimId = requestAnimationFrame(obstacleLoop);
+}
+
+function startObstacleLoop() {
+  if (!obstacleAnimId) {
+    lastObstacleTs = 0;
+    obstacleAnimId = requestAnimationFrame(obstacleLoop);
+  }
+}
+
+// ─── Flame trail emitter ──────────────────────────────────────────────────────
+let lastFlameTime = 0;
+function emitFlame(cx, cy, player) {
+  const now = performance.now();
+  if (now - lastFlameTime < 40) return;
+  lastFlameTime = now;
+
+  const f = document.createElement('div');
+  f.className = `flame flame-p${player}`;
+  const size = 8 + Math.random() * 10;
+  f.style.cssText = `
+    width:${size}px; height:${size}px;
+    left:${cx - size / 2}px;
+    top:${cy - size / 2}px;
+  `;
+  scene.appendChild(f);
+  setTimeout(() => f.remove(), 350);
+}
+
+// ─── Fire arrow animation — arc + wind ───────────────────────────────────────
+function fireArrow(targetX, targetY, onComplete) {
+  const bow = getBowTip();
+  const dx = targetX - bow.x;
+  const dy = targetY - bow.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  const duration = Math.max(350, dist * 0.95);
+
+  const arcHeight = dist * 0.18;
+  const player = state.currentPlayer;
+
+  // Color the arrow by player
+  const shaft = document.getElementById('arrow-shaft');
+  const head  = document.getElementById('arrow-head');
+  const fletch = document.getElementById('arrow-fletch');
+  if (player === 1) {
+    shaft.style.background = 'linear-gradient(90deg, #ff6a00, #ff2200)';
+    head.style.borderLeftColor = '#ff4400';
+    fletch.style.setProperty('--fc', '#ff6a00');
+    flyingArrow.style.filter = 'drop-shadow(0 0 6px #ff4400)';
+  } else {
+    shaft.style.background = 'linear-gradient(90deg, #00b4ff, #0040cc)';
+    head.style.borderLeftColor = '#0088ff';
+    fletch.style.setProperty('--fc', '#00b4ff');
+    flyingArrow.style.filter = 'drop-shadow(0 0 6px #0088ff)';
+  }
+
+  flyingArrow.className = player === 1 ? 'p1' : 'p2';
+  flyingArrow.style.display = 'block';
+
+  const startTime = performance.now();
+
+  function step(now) {
+    const t = Math.min((now - startTime) / duration, 1);
+    const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
+    let cx = bow.x + dx * ease;
+    let cy = bow.y + dy * ease;
+
+    cy -= Math.sin(Math.PI * ease) * arcHeight;
+    cx += currentWind * ease;
+
+    const dtEase = t < 0.5 ? 4 * t : 4 - 4 * t;
+    const velX = (dx + currentWind) * dtEase;
+    const velY = dy * dtEase - Math.cos(Math.PI * ease) * arcHeight * Math.PI;
+    const angle = Math.atan2(velY, velX) * 180 / Math.PI;
+
+    flyingArrow.style.transform = `translate(${cx}px, ${cy}px) rotate(${angle}deg)`;
+
+    // Emit flame trail behind the arrowhead
+    emitFlame(cx, cy, player);
+
+    // ── Obstacle collision ────────────────────────────────────────────────
+    if (t > 0.05) { // skip first few frames while leaving bow
+      // Sliding blocker
+      const sl = getSliderState();
+      if (cx >= sl.x && cx <= sl.x + sl.w && cy >= sl.y && cy <= sl.y + sl.h) {
+        flyingArrow.style.display = 'none';
+        onComplete(cx, cy, 'blocked');
+        return;
+      }
+      // Tire — blocked if inside rim but outside hole
+      const tire = getTireState();
+      const dd = Math.sqrt((cx - tire.cx) ** 2 + (cy - tire.cy) ** 2);
+      if (dd <= tire.outerR && dd > tire.innerR) {
+        flyingArrow.style.display = 'none';
+        onComplete(cx, cy, 'blocked-tire');
+        return;
+      }
+
+      // Water drop — arrow gets doused and flames extinguish
+      for (const drop of waterDrops) {
+        const ddx = cx - drop.x;
+        const ddy = cy - drop.y;
+        if (Math.sqrt(ddx * ddx + ddy * ddy) < 20) {
+          flyingArrow.style.filter = 'none'; // kill flame glow
+          flyingArrow.style.display = 'none';
+          onComplete(cx, cy, 'doused');
+          return;
+        }
+      }
+    }
+
+    if (t < 1) {
+      requestAnimationFrame(step);
+    } else {
+      flyingArrow.style.display = 'none';
+      onComplete(cx, cy);
+    }
+  }
+
+  requestAnimationFrame(step);
+}
+
+// ─── Handle shot ─────────────────────────────────────────────────────────────
+function handleShot(sceneX, sceneY) {
+  if (state.firing) return;
+  if (state.phase !== 'p1turn' && state.phase !== 'p2turn') return;
+
+  state.firing = true;
+  tapHint.style.display = 'none';
+  clearAimLine();
+
+  fireArrow(sceneX, sceneY, (landX, landY, blockReason) => {
+    if (blockReason === 'doused') {
+      showSteamEffect(landX, landY);
+      showScorePopup(landX, landY - 10, 0, '#80d8ff', '💧 DOUSED!');
+      flashScreen('rgba(60,140,230,0.2)');
+    } else if (blockReason) {
+      const msg = blockReason === 'blocked-tire' ? '🔴 RIM HIT!' : '🛡 BLOCKED!';
+      const col = blockReason === 'blocked-tire' ? '#f39c12'      : '#e74c3c';
+      showScorePopup(landX, landY - 10, 0, col, msg);
+      flashScreen('rgba(120,120,120,0.25)');
+    } else {
+      const hit = detectHitZone(landX, landY);
+      if (hit) {
+        stickArrow(landX, landY);
+        if (state.currentPlayer === 1) state.p1Score += hit.points;
+        else                           state.p2Score += hit.points;
+        showScorePopup(landX, landY, hit.points, hit.color,
+          hit.points === 10 ? '🎯 10!' : `+${hit.points} ${hit.zone}`);
+        flashScreen(hit.points >= 10 ? 'rgba(231,76,60,0.4)' :
+                    hit.points >= 7  ? 'rgba(230,126,34,0.3)' :
+                                       'rgba(39,174,96,0.2)');
+      } else {
+        showScorePopup(landX, landY - 20, 0, '#888', 'MISS');
+      }
+    }
+
+    state.arrowsLeft--;
+    updateHUD();
+
+    state.firing = false;
+
+    if (state.arrowsLeft <= 0) {
+      setTimeout(endTurn, 600);
+    }
+  });
+}
+
+// ─── End turn ────────────────────────────────────────────────────────────────
+function endTurn() {
+  if (state.currentPlayer === 1) {
+    // Switch to P2
+    state.currentPlayer = 2;
+    state.arrowsLeft = ARROWS_PER_TURN;
+    state.phase = 'switchWait';
+    clearStuckArrows();
+    showOverlay(
+      "PLAYER 2'S TURN",
+      `Player 1 scored ${state.p1Score} points!\nNow it's Player 2's turn — good luck!`,
+      "FIRE AWAY!"
+    );
+    overlayBtn.onclick = () => {
+      state.phase = 'p2turn';
+      currentWind = newWindValue();
+      updateHUD();
+      updateWindDisplay();
+      hideOverlay();
+      tapHint.style.display = '';
+    };
+  } else {
+    // Game over
+    state.phase = 'gameOver';
+    clearStuckArrows();
+    state.gameCount++;
+    setTimeout(showGameOver, 400);
+  }
+}
+
+// ─── Game over ────────────────────────────────────────────────────────────────
+function showGameOver() {
+  let title, body;
+  if (state.p1Score > state.p2Score) {
+    title = '🏆 PLAYER 1 WINS!';
+    body  = `Player 1: ${state.p1Score} pts\nPlayer 2: ${state.p2Score} pts\n\nGreat shooting!`;
+  } else if (state.p2Score > state.p1Score) {
+    title = '🏆 PLAYER 2 WINS!';
+    body  = `Player 1: ${state.p1Score} pts\nPlayer 2: ${state.p2Score} pts\n\nNice comeback!`;
+  } else {
+    title = "🤝 IT'S A TIE!";
+    body  = `Both players scored ${state.p1Score} pts!\n\nWhat a match!`;
+  }
+
+  showOverlay(title, body, `PLAY AGAIN (Game ${state.gameCount + 1})`);
+  overlayBtn.onclick = () => {
+    resetGame();
+    hideOverlay();
+  };
+}
+
+// ─── Reset game ───────────────────────────────────────────────────────────────
+function resetGame() {
+  state.p1Score = 0;
+  state.p2Score = 0;
+  state.currentPlayer = 1;
+  state.arrowsLeft = ARROWS_PER_TURN;
+  state.phase = 'p1turn';
+  state.firing = false;
+  clearStuckArrows();
+  clearWaterDrops();
+  clearAimLine();
+  currentWind = newWindValue();
+  updateHUD();
+  updateWindDisplay();
+  tapHint.style.display = '';
+  startObstacleLoop();
+}
+
+// ─── Overlay helpers ──────────────────────────────────────────────────────────
+function showOverlay(title, body, btnText) {
+  overlayTitle.textContent = title;
+  overlayBody.innerHTML    = body.replace(/\n/g, '<br>');
+  overlayBtn.textContent   = btnText;
+  overlay.classList.add('show');
+}
+
+function hideOverlay() {
+  overlay.classList.remove('show');
+}
+
+// ─── Input: touch & mouse ─────────────────────────────────────────────────────
+function getSceneCoords(e) {
+  const rect = scene.getBoundingClientRect();
+  let cx, cy;
+  if (e.touches) {
+    cx = e.touches[0].clientX;
+    cy = e.touches[0].clientY;
+  } else {
+    cx = e.clientX;
+    cy = e.clientY;
+  }
+  return { x: cx - rect.left, y: cy - rect.top };
+}
+
+// Draw aim line on move
+scene.addEventListener('mousemove', e => {
+  if (state.firing || (state.phase !== 'p1turn' && state.phase !== 'p2turn')) return;
+  const { x, y } = getSceneCoords(e);
+  drawAimLine(x, y);
+});
+
+scene.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (state.firing || (state.phase !== 'p1turn' && state.phase !== 'p2turn')) return;
+  const { x, y } = getSceneCoords(e);
+  drawAimLine(x, y);
+}, { passive: false });
+
+// Fire on tap/click
+scene.addEventListener('click', e => {
+  const { x, y } = getSceneCoords(e);
+  handleShot(x, y);
+});
+
+scene.addEventListener('touchend', e => {
+  e.preventDefault();
+  const touch = e.changedTouches[0];
+  const rect = scene.getBoundingClientRect();
+  handleShot(touch.clientX - rect.left, touch.clientY - rect.top);
+}, { passive: false });
+
+// ─── Start ────────────────────────────────────────────────────────────────────
+updateHUD();
+showOverlay(
+  '🏹 ARROW FIRE!',
+  'Hit the target to score points!\n\n🎯 Bullseye = 10 pts\n🔶 Inner Ring = 7 pts\n💀 Head = 5 pts\n💙 Body = 4 pts\n💪 Arm = 3 pts\n🦵 Leg = 2 pts\n\nEach player gets 10 arrows!',
+  'PLAY!'
+);
+
+overlayBtn.onclick = () => {
+  state.phase = 'p1turn';
+  currentWind = newWindValue();
+  updateHUD();
+  updateWindDisplay();
+  startObstacleLoop();
+  hideOverlay();
+};
+</script>
+</body>
+</html>
