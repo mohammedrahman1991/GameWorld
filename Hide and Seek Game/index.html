@@ -165,8 +165,6 @@ let timeLeft = HIDE_TIME;
 let ticker   = null;
 let pLocked  = false;
 let foundCount = 0, totalHiders = 0;
-let headBobT1 = 0, headBobT2 = 0;
-let footTimer1 = 0, footTimer2 = 0;
 // Lighting references (set in initThree)
 let ambLight = null, sunLight = null;
 let indoorLights = [];
@@ -185,8 +183,8 @@ const aabbs  = [];     // wall colliders {min, max}
 const stairs = [];     // stair zones {minX,maxX,minZ,maxZ,y0,y1}
 
 // Player state
-const P1 = { pos:new THREE.Vector3(0,EYE_H,4), yaw:Math.PI, pitch:0, isHider:false, hidden:false, nearSpot:null, mesh:null, floorIdx:0 };
-const P2 = { pos:new THREE.Vector3(2,EYE_H,4), yaw:Math.PI, pitch:0, isHider:false, hidden:false, nearSpot:null, mesh:null, floorIdx:0 };
+const P1 = { pos:new THREE.Vector3(0,EYE_H,4), yaw:Math.PI, pitch:0, isHider:false, hidden:false, nearSpot:null, mesh:null, floorIdx:0, bobT:0, footTimer:0 };
+const P2 = { pos:new THREE.Vector3(2,EYE_H,4), yaw:Math.PI, pitch:0, isHider:false, hidden:false, nearSpot:null, mesh:null, floorIdx:0, bobT:0, footTimer:0 };
 
 // ─────────────────────────────────────────────────────────────
 //  AUDIO (Web Audio API)
@@ -951,12 +949,11 @@ function updatePlayer(P, dt, isP1) {
     P.mesh.rotation.y = P.yaw + Math.PI;
   }
 
-  // Head bob
-  const bobVar = isP1 ? 'headBobT1' : 'headBobT2';
+  // Head bob — stored on player object (not window[], which breaks with let)
   const bobStep = sprint ? 10 : 6.5;
-  if (isMoving) { window[bobVar] += dt * bobStep; }
-  else          { window[bobVar] *= Math.exp(-dt * 9); }
-  const bob = Math.sin(window[bobVar]) * (sprint ? 0.10 : 0.055);
+  if (isMoving) P.bobT += dt * bobStep;
+  else          P.bobT *= Math.exp(-dt * 9);
+  const bob = Math.sin(P.bobT) * (sprint ? 0.10 : 0.055);
 
   const cam = isP1 ? cam1 : cam2;
   cam.position.set(P.pos.x, P.pos.y + bob, P.pos.z);
@@ -970,11 +967,10 @@ function updatePlayer(P, dt, isP1) {
 
   // Footstep sounds (seeker only, seeking phase)
   if (!P.isHider && gState === 'seeking' && isMoving) {
-    const ftVar = isP1 ? 'footTimer1' : 'footTimer2';
-    window[ftVar] -= dt;
-    if (window[ftVar] <= 0) {
+    P.footTimer -= dt;
+    if (P.footTimer <= 0) {
       beep(55 + Math.random()*15, 0.06, sprint ? 0.18 : 0.12, 'triangle');
-      window[ftVar] = sprint ? 0.28 : 0.42;
+      P.footTimer = sprint ? 0.28 : 0.42;
     }
   }
 
