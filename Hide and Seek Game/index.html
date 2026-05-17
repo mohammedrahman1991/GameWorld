@@ -367,6 +367,7 @@ function buildWorld() {
   const gMat = new THREE.MeshLambertMaterial({color:0x222222});
   const ground = new THREE.Mesh(gGeo, gMat);
   ground.rotation.x = -Math.PI/2;
+  ground.position.y = -0.05; // slightly below floor slab to eliminate z-fighting
   ground.receiveShadow = true;
   scene.add(ground);
 
@@ -552,12 +553,12 @@ function buildHouse() {
   box(wt, 2.5, D,  W/2, f3+1.25, 0, 0xdddddd, true);
 
   // Roof — two slopes
-  const roofL = new THREE.Mesh(new THREE.BoxGeometry(W/2+2,0.35,D+2), new THREE.MeshPhongMaterial({color:0x000000}));
+  const roofL = new THREE.Mesh(new THREE.BoxGeometry(W/2+2,0.35,D+2), new THREE.MeshPhongMaterial({color:0x2a2a2a}));
   roofL.rotation.z = Math.PI*0.17; roofL.position.set(-W/4, f3+3.8, 0); roofL.castShadow=true; scene.add(roofL);
-  const roofR = new THREE.Mesh(new THREE.BoxGeometry(W/2+2,0.35,D+2), new THREE.MeshPhongMaterial({color:0x000000}));
+  const roofR = new THREE.Mesh(new THREE.BoxGeometry(W/2+2,0.35,D+2), new THREE.MeshPhongMaterial({color:0x2a2a2a}));
   roofR.rotation.z =-Math.PI*0.17; roofR.position.set( W/4, f3+3.8, 0); roofR.castShadow=true; scene.add(roofR);
   // Gable ridge box
-  box(W+3, 0.4, D+2, 0, f3+5, 0, 0x000000);
+  box(W+3, 0.4, D+2, 0, f3+5, 0, 0x1a1a1a);
 
   // Chimney
   box(2.2,6.5,2.2, 5, f3+3, -4, 0x666666, true);
@@ -1482,6 +1483,27 @@ function updateHints() {
 
 
 // ─────────────────────────────────────────────────────────────
+//  INSTANT SEEKER TOUCH WIN
+// ─────────────────────────────────────────────────────────────
+function checkSeekerTouch() {
+  if (gState !== 'seeking' || gameMode !== '2p') return;
+
+  const seeker = P2.isHider ? P1 : P2;
+  const hider  = P2.isHider ? P2 : P1;
+
+  // Win the moment seeker is within 2 units of hider
+  const dx = seeker.pos.x - hider.pos.x;
+  const dz = seeker.pos.z - hider.pos.z;
+  const dist = Math.sqrt(dx*dx + dz*dz);
+
+  if (dist < 2.0) {
+    sfxFound();
+    clearInterval(ticker);
+    endGame('seeker');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
 //  RENDER LOOP
 // ─────────────────────────────────────────────────────────────
 function raf() {
@@ -1513,7 +1535,10 @@ function raf() {
     }
 
     // Proximity indicator (seeking phase only)
-    if (gState === 'seeking') updateProximity();
+    if (gState === 'seeking') {
+      updateProximity();
+      checkSeekerTouch(); // instant win if seeker touches hider
+    }
 
   }
 
