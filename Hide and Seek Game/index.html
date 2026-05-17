@@ -960,9 +960,13 @@ function updatePlayer(P, dt, isP1) {
 
   const cam = isP1 ? cam1 : cam2;
   cam.position.set(P.pos.x, P.pos.y + bob, P.pos.z);
-  cam.rotation.order = 'YXZ';
-  cam.rotation.y = P.yaw + Math.PI;
-  cam.rotation.x = P.pitch;
+  // Use lookAt — avoids all Euler/quaternion rotation order issues
+  const pc = Math.cos(P.pitch);
+  cam.lookAt(
+    P.pos.x + Math.sin(P.yaw) * pc,
+    P.pos.y + bob + Math.sin(P.pitch),
+    P.pos.z + Math.cos(P.yaw) * pc
+  );
 
   // Footstep sounds (seeker only, seeking phase)
   if (!P.isHider && gState === 'seeking' && isMoving) {
