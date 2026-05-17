@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hide &amp; Seek</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#000;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;color:#fff;user-select:none;}
+canvas{display:block;}
+#menu{position:fixed;inset:0;background:linear-gradient(160deg,#0d1b2a 0%,#1b2838 40%,#0a2540 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;}
+#menu h1{font-size:clamp(2.5em,7vw,5em);letter-spacing:6px;text-transform:uppercase;background:linear-gradient(90deg,#00f5ff,#00c896,#00f5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:none;margin-bottom:10px;}
+#menu .sub{color:#7ecfff;font-size:1.1em;margin-bottom:40px;letter-spacing:2px;}
+.btn{padding:14px 44px;font-size:1.15em;border:2px solid #00f5ff;background:rgba(0,245,255,0.08);color:#00f5ff;cursor:pointer;border-radius:10px;transition:all .25s;text-transform:uppercase;letter-spacing:2px;margin:7px;display:block;width:340px;text-align:center;}
+.btn:hover{background:#00f5ff;color:#000;box-shadow:0 0 25px #00f5ff,0 0 50px rgba(0,245,255,0.3);transform:translateY(-2px);}
+.btn-red{border-color:#ff6b6b;color:#ff6b6b;background:rgba(255,107,107,0.08);}
+.btn-red:hover{background:#ff6b6b;color:#fff;box-shadow:0 0 25px #ff6b6b;}
+.controls-hint{margin-top:35px;color:#556;font-size:0.8em;text-align:center;line-height:1.9;}
+#overlay{position:fixed;inset:0;z-index:50;pointer-events:none;}
+#ui{position:fixed;top:0;left:0;right:0;z-index:60;pointer-events:none;display:none;}
+#timerBox{background:rgba(0,0,0,0.82);padding:8px 0;text-align:center;border-bottom:2px solid rgba(255,255,255,0.08);}
+#phase{font-size:.9em;letter-spacing:3px;text-transform:uppercase;}
+#timeDisplay{font-size:2em;font-weight:700;font-variant-numeric:tabular-nums;}
+#hud{position:fixed;top:70px;left:0;right:0;display:flex;justify-content:space-between;padding:0 14px;z-index:60;pointer-events:none;display:none;}
+#foundBox{background:rgba(0,0,0,0.7);padding:8px 16px;border-radius:8px;font-size:.95em;}
+#modeTag{background:rgba(0,0,0,0.7);padding:8px 16px;border-radius:8px;font-size:.95em;color:#aaa;}
+#divider{position:fixed;top:0;left:50%;width:3px;height:100%;background:rgba(255,255,255,0.25);z-index:65;display:none;pointer-events:none;}
+#p1label{position:fixed;top:70px;left:10px;z-index:66;background:rgba(0,100,255,0.5);padding:5px 12px;border-radius:6px;font-size:.85em;display:none;}
+#p2label{position:fixed;top:70px;left:calc(50% + 10px);z-index:66;background:rgba(255,80,80,0.5);padding:5px 12px;border-radius:6px;font-size:.85em;display:none;}
+#crosshair{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:22px;height:22px;z-index:70;pointer-events:none;display:none;}
+#crosshair::before,#crosshair::after{content:'';position:absolute;background:rgba(255,255,255,0.9);}
+#crosshair::before{width:2px;height:100%;left:50%;transform:translateX(-50%);}
+#crosshair::after{height:2px;width:100%;top:50%;transform:translateY(-50%);}
+#p1ch{position:fixed;top:50%;left:25%;transform:translate(-50%,-50%);width:18px;height:18px;z-index:70;pointer-events:none;display:none;}
+#p1ch::before,#p1ch::after{content:'';position:absolute;background:rgba(100,200,255,0.9);}
+#p1ch::before{width:2px;height:100%;left:50%;transform:translateX(-50%);}
+#p1ch::after{height:2px;width:100%;top:50%;transform:translateY(-50%);}
+#p2ch{position:fixed;top:50%;left:75%;transform:translate(-50%,-50%);width:18px;height:18px;z-index:70;pointer-events:none;display:none;}
+#p2ch::before,#p2ch::after{content:'';position:absolute;background:rgba(255,120,120,0.9);}
+#p2ch::before{width:2px;height:100%;left:50%;transform:translateX(-50%);}
+#p2ch::after{height:2px;width:100%;top:50%;transform:translateY(-50%);}
+#p1blackout{position:fixed;top:0;left:0;width:50%;height:100%;background:#000;z-index:80;display:none;flex-direction:column;align-items:center;justify-content:center;color:#333;}
+#p1blackout .bo-icon{font-size:4em;margin-bottom:15px;}
+#p1blackout .bo-text{font-size:1.2em;color:#555;}
+#p1blackout .bo-sub{font-size:.85em;color:#333;margin-top:8px;}
+#hint{position:fixed;bottom:80px;z-index:75;background:rgba(0,200,100,0.88);padding:9px 24px;border-radius:24px;font-size:.95em;color:#fff;pointer-events:none;display:none;white-space:nowrap;}
+#eHint{position:fixed;bottom:80px;z-index:75;background:rgba(255,120,30,0.88);padding:9px 24px;border-radius:24px;font-size:.95em;color:#fff;pointer-events:none;display:none;white-space:nowrap;}
+#controls{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);padding:7px 18px;border-radius:8px;font-size:.78em;color:#777;z-index:70;pointer-events:none;text-align:center;}
+#lockPrompt{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:90;display:none;flex-direction:column;align-items:center;justify-content:center;font-size:1.5em;cursor:pointer;}
+#gameover{position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+#gameover h1{font-size:clamp(3em,9vw,6em);margin-bottom:12px;text-shadow:0 0 40px currentColor;}
+#gameover .sub{font-size:1.3em;color:#aaa;margin-bottom:40px;}
+#gameover .stats{font-size:1em;color:#666;margin-bottom:30px;}
+.floor-indicator{position:fixed;bottom:50px;right:20px;background:rgba(0,0,0,0.7);padding:6px 14px;border-radius:6px;font-size:.85em;z-index:70;display:none;}
+#vignette{position:fixed;inset:0;pointer-events:none;z-index:45;display:none;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,0.75) 100%);}
+#nightLabel{position:fixed;top:58px;right:20px;background:rgba(255,100,0,0.15);border:1px solid rgba(255,100,0,0.3);color:#ff8844;padding:4px 12px;border-radius:6px;font-size:.78em;z-index:65;display:none;letter-spacing:1px;pointer-events:none;}
+</style>
+</head>
+<body>
+
+<div id="menu">
+  <h1>Hide &amp; Seek</h1>
+  <p class="sub">Can you find them all in time?</p>
+  <button class="btn" onclick="startGame('1p')">🔍 1 Player vs 20 Bots</button>
+  <button class="btn btn-red" onclick="startGame('2p')">👥 2 Players + 10 Bots (Split Screen)</button>
+  <div class="controls-hint">
+    1P&nbsp;&nbsp;WASD + Mouse &nbsp;|&nbsp; <b>E / Space / F</b> = Search hiding spot &nbsp;|&nbsp; Shift = Sprint<br>
+    2P&nbsp;&nbsp;P1: WASD + Q/E turn &nbsp;|&nbsp; <b>F / Space</b> = Hide &nbsp;|&nbsp; P2: Arrows + Z/X turn &nbsp;|&nbsp; <b>Enter / /</b> = Search
+  </div>
+</div>
+
+<canvas id="gc"></canvas>
+
+<div id="ui">
+  <div id="timerBox">
+    <div id="phase">HIDING PHASE</div>
+    <div id="timeDisplay">30</div>
+  </div>
+</div>
+
+<div id="hud">
+  <div id="foundBox">Found: <span id="fc">0</span> / <span id="tc">0</span></div>
+  <div id="modeTag"></div>
+</div>
+
+<div id="divider"></div>
+<div id="p1label">P1 — HIDER (WASD + Q/E · F/Space = Hide)</div>
+<div id="p2label">P2 — SEEKER (Arrows + Z/X · Enter/Slash = Search)</div>
+
+<div id="vignette"></div>
+<div id="nightLabel">🔦 NIGHT MODE</div>
+<div id="crosshair"></div>
+<div id="p1ch"></div>
+<div id="p2ch"></div>
+
+<div id="p1blackout">
+  <div class="bo-icon">🙈</div>
+  <div class="bo-text">You are hidden!</div>
+  <div class="bo-sub">Time left: <span id="boTimer">--</span>s</div>
+</div>
+
+<div id="hint" style="left:50%;transform:translateX(-50%);">Press F or SPACE to HIDE here!</div>
+<div id="eHint" style="left:50%;transform:translateX(-50%);">Press E / SPACE / F to SEARCH!</div>
+
+<div class="floor-indicator" id="floorInd">Floor 1</div>
+
+<div id="minimapWrap" style="position:fixed;bottom:90px;left:16px;z-index:70;display:none;">
+  <div style="font-size:.68em;color:#7ecfff;margin-bottom:4px;letter-spacing:1px;text-align:center;">MAP · <span id="mmFloor">F1</span></div>
+  <canvas id="minimap" width="176" height="132" style="border:1.5px solid rgba(100,200,255,0.3);background:rgba(5,10,15,0.88);border-radius:8px;display:block;"></canvas>
+  <div style="font-size:.62em;color:#445;text-align:center;margin-top:3px;">🟦 You · 🟥 Seeker</div>
+</div>
+<div id="controls">Click canvas to start</div>
+
+<div id="lockPrompt" onclick="lockMouse()">
+  <div>🖱️ Click anywhere to lock mouse &amp; play</div>
+  <div style="font-size:.6em;color:#666;margin-top:10px">Press ESC to pause</div>
+</div>
+
+<canvas id="confettiCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:290;display:none;"></canvas>
+
+<div id="foundFlash" style="position:fixed;top:45%;left:50%;transform:translate(-50%,-50%) scale(1);opacity:0;pointer-events:none;z-index:210;font-size:2.8em;font-weight:900;color:#00ff88;text-shadow:0 0 18px #00ff88;transition:opacity 0.8s,transform 0.8s;">+1 FOUND!</div>
+
+<div id="roundDisplay" style="position:fixed;top:58px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.72);padding:4px 16px;border-radius:8px;font-size:.82em;letter-spacing:1px;z-index:62;display:none;pointer-events:none;">
+  Round <span id="rNum">1</span>/<span id="rTotal">3</span> &nbsp;·&nbsp; P1: <span id="r1s">0</span> &nbsp;P2: <span id="r2s">0</span>
+</div>
+
+<div id="countdown" style="position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:150;background:rgba(0,0,0,0.75);font-size:9em;font-weight:900;color:#fff;text-shadow:0 0 30px currentColor;pointer-events:none;"></div>
+
+<div id="proximity" style="position:fixed;bottom:110px;right:20px;z-index:70;display:none;background:rgba(0,0,0,0.75);padding:8px 14px;border-radius:8px;font-size:.82em;color:#aaa;pointer-events:none;">
+  🔊 <span id="proxLabel">--</span>
+</div>
+
+<div id="gameover">
+  <h1 id="goText"></h1>
+  <div class="sub" id="goSub"></div>
+  <div class="stats" id="goStats"></div>
+  <button class="btn" onclick="location.reload()">Play Again</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r132/three.min.js"></script>
+<script>
+// ─────────────────────────────────────────────────────────────
+//  CONSTANTS
+// ─────────────────────────────────────────────────────────────
+const HIDE_TIME   = 30;   // seconds to hide
+const SEEK_TIME   = 100;  // seconds to seek
+const SPEED       = 5.5;  // player movement speed
+const SPRINT_MUL  = 1.8;  // sprint speed multiplier
+const TURN_SPD    = 2.2;  // keyboard look speed (rad/s)
+const EYE_H       = 1.75; // camera eye height above floor
+const P_RADIUS    = 0.42; // player collision radius
+const FLOOR_H     = 4.2;  // height of each floor
+const NUM_FLOORS  = 3;
+const HOUSE_W     = 24;
+const HOUSE_D     = 18;
+
+// ─────────────────────────────────────────────────────────────
+//  GLOBALS
+// ─────────────────────────────────────────────────────────────
+let renderer, scene, clock;
+let cam1, cam2;
+let gameMode = null;
+let gState   = 'menu'; // menu | hiding | seeking | gameover
+let timeLeft = HIDE_TIME;
+let ticker   = null;
+let pLocked  = false;
+let foundCount = 0, totalHiders = 0;
+let headBobT1 = 0, headBobT2 = 0;
+let footTimer1 = 0, footTimer2 = 0;
+// Lighting references (set in initThree)
+let ambLight = null, sunLight = null;
+let indoorLights = [];
+// Seeker flashlight
+let seekerSpot = null, seekerSpotTarget = null;
+// Round system (2P)
+let roundNum = 1, p1Score = 0, p2Score = 0;
+const TOTAL_ROUNDS = 3;
+// Breathing sound timer
+let breathTimer = 0;
+
+const keys  = {};
+const spots  = [];     // hiding spot objects
+const bots   = [];
+const aabbs  = [];     // wall colliders {min, max}
+const stairs = [];     // stair zones {minX,maxX,minZ,maxZ,y0,y1}
+
+// Player state
+const P1 = { pos:new THREE.Vector3(0,EYE_H,4), yaw:Math.PI, pitch:0, isHider:false, hidden:false, nearSpot:null, mesh:null, floorIdx:0 };
+const P2 = { pos:new THREE.Vector3(2,EYE_H,4), yaw:Math.PI, pitch:0, isHider:false, hidden:false, nearSpot:null, mesh:null, floorIdx:0 };
+
+// ─────────────────────────────────────────────────────────────
+//  AUDIO (Web Audio API)
+// ─────────────────────────────────────────────────────────────
+let _audio = null;
+function getAudio() {
+  if (!_audio) _audio = new (window.AudioContext || window.webkitAudioContext)();
+  return _audio;
+}
+function beep(freq, dur, vol=0.3, type='sine', delay=0) {
+  try {
+    const ctx = getAudio();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = type; o.frequency.value = freq;
+    const t = ctx.currentTime + delay;
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(t); o.stop(t + dur);
+  } catch(e) {}
+}
+const sfxFound = () => { beep(880,0.08,0.45); beep(1100,0.1,0.45,undefined,0.1); beep(1320,0.18,0.45,undefined,0.2); };
+const sfxWin   = () => { [523,659,784,1047].forEach((f,i) => beep(f,0.28,0.5,undefined,i*0.12)); };
+const sfxLose  = () => { [523,494,440,392].forEach((f,i) => beep(f,0.22,0.3,'sine',i*0.18)); }; // gentle descend
+const sfxHide  = () => { beep(660,0.18,0.3); beep(880,0.14,0.3,undefined,0.15); };
+const sfxTick  = () => { beep(880, 0.05, 0.25); };
+const sfxCount = (n) => beep(n === 0 ? 1320 : 660, n===0 ? 0.4 : 0.2, 0.5);
+
+// ─────────────────────────────────────────────────────────────
+//  HELPERS
+// ─────────────────────────────────────────────────────────────
+function getFloorIdx(y) {
+  return Math.max(0, Math.min(2, Math.round((y - EYE_H) / FLOOR_H)));
+}
+
+// ─────────────────────────────────────────────────────────────
+//  INPUT
+// ─────────────────────────────────────────────────────────────
+window.addEventListener('keydown', e => {
+  if (keys[e.code]) return;
+  keys[e.code] = true;
+  onKeyPress(e.code);
+});
+window.addEventListener('keyup',   e => { keys[e.code] = false; });
+
+document.addEventListener('mousemove', e => {
+  if (!pLocked || gState !== 'seeking' || gameMode !== '1p') return;
+  P1.yaw   -= e.movementX * 0.0022;
+  P1.pitch -= e.movementY * 0.0022;
+  P1.pitch  = Math.max(-1.3, Math.min(1.3, P1.pitch));
+});
+
+document.addEventListener('pointerlockchange', () => {
+  pLocked = document.pointerLockElement === document.getElementById('gc');
+  document.getElementById('lockPrompt').style.display = pLocked ? 'none' : 'none';
+});
+
+function lockMouse() {
+  document.getElementById('gc').requestPointerLock();
+}
+
+// ─────────────────────────────────────────────────────────────
+//  THREE.JS INIT
+// ─────────────────────────────────────────────────────────────
+function initThree() {
+  const canvas = document.getElementById('gc');
+  renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
+
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x87ceeb);
+  scene.fog = new THREE.FogExp2(0x87ceeb, 0.007);
+
+  clock = new THREE.Clock();
+
+  cam1 = new THREE.PerspectiveCamera(72, innerWidth/innerHeight, 0.1, 200);
+  cam2 = new THREE.PerspectiveCamera(72, innerWidth/innerHeight, 0.1, 200);
+
+  // Lighting
+  ambLight = new THREE.AmbientLight(0xffffff, 0.55);
+  scene.add(ambLight);
+
+  sunLight = new THREE.DirectionalLight(0xfff5e0, 1.1);
+  sunLight.position.set(40, 60, 30);
+  sunLight.castShadow = true;
+  sunLight.shadow.mapSize.set(2048, 2048);
+  sunLight.shadow.camera.near = 0.5; sunLight.shadow.camera.far = 200;
+  ['left','right','top','bottom'].forEach((s,i) => sunLight.shadow.camera[s] = [-70,70,70,-70][i]);
+  scene.add(sunLight);
+
+  // Indoor fill lights per floor (stay on at night)
+  [2, FLOOR_H+2, FLOOR_H*2+2].forEach(h => {
+    const l = new THREE.PointLight(0xffe4b5, 0.7, 22);
+    l.position.set(0, h, 0);
+    scene.add(l);
+    indoorLights.push(l);
+  });
+
+  buildWorld();
+  raf();
+  window.addEventListener('resize', onResize);
+}
+
+// ─────────────────────────────────────────────────────────────
+//  HELPERS
+// ─────────────────────────────────────────────────────────────
+function box(w,h,d, x,y,z, color, isWall=false, op=1) {
+  const g = new THREE.BoxGeometry(w,h,d);
+  const m = new THREE.MeshPhongMaterial({color, opacity:op, transparent:op<1});
+  const mesh = new THREE.Mesh(g, m);
+  mesh.position.set(x,y,z);
+  mesh.castShadow = true; mesh.receiveShadow = true;
+  scene.add(mesh);
+  if (isWall) aabbs.push({ min:new THREE.Vector3(x-w/2,y-h/2,z-d/2), max:new THREE.Vector3(x+w/2,y+h/2,z+d/2) });
+  return mesh;
+}
+
+function glowMarker(x,y,z) {
+  const g = new THREE.BoxGeometry(1.8, 0.08, 1.8);
+  const m = new THREE.MeshBasicMaterial({color:0x00ff88, transparent:true, opacity:0.45});
+  const mesh = new THREE.Mesh(g, m);
+  mesh.position.set(x, y+0.04, z);
+  scene.add(mesh);
+  return mesh;
+}
+
+function addSpot(x,y,z, label) {
+  const marker = glowMarker(x,y,z);
+  const s = { pos:new THREE.Vector3(x,y,z), label, occupied:null, marker };
+  spots.push(s);
+  return s;
+}
+
+function cyl(rt,rb,h, x,y,z, color) {
+  const g = new THREE.CylinderGeometry(rt,rb,h,10);
+  const m = new THREE.MeshPhongMaterial({color});
+  const mesh = new THREE.Mesh(g, m);
+  mesh.position.set(x,y,z);
+  mesh.castShadow = true;
+  scene.add(mesh);
+  return mesh;
+}
+
+function cone(r,h, x,y,z, color) {
+  const g = new THREE.ConeGeometry(r,h,10);
+  const m = new THREE.MeshPhongMaterial({color});
+  const mesh = new THREE.Mesh(g, m);
+  mesh.position.set(x,y,z);
+  mesh.castShadow = true;
+  scene.add(mesh);
+  return mesh;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  WORLD
+// ─────────────────────────────────────────────────────────────
+function buildWorld() {
+  // Ground — very large
+  const gGeo = new THREE.PlaneGeometry(500,500,16,16);
+  const gMat = new THREE.MeshLambertMaterial({color:0x4a7c3f});
+  const ground = new THREE.Mesh(gGeo, gMat);
+  ground.rotation.x = -Math.PI/2;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  // Path to house
+  box(6,0.06,32, 0,0.03,9, 0xc8a876);
+
+  // Trees — far and near
+  const treeData = [];
+  for (let i=0; i<60; i++) {
+    const a = Math.random()*Math.PI*2;
+    const r = 28 + Math.random()*80;
+    treeData.push([Math.cos(a)*r, Math.sin(a)*r]);
+  }
+  // Some near trees
+  [[-18,8],[-20,-5],[18,8],[20,-5],[-15,20],[15,20],[-8,28],[8,28]].forEach(([tx,tz]) => {
+    addTree(tx,tz);
+  });
+  treeData.forEach(([tx,tz]) => addTree(tx,tz));
+
+  // Garden bushes (outdoor hiding spots)
+  addBush(-14,0,6, 'bush_L1');
+  addBush(-16,0,12,'bush_L2');
+  addBush(14,0,6,  'bush_R1');
+  addBush(14,0,12, 'bush_R2');
+  addBush(-8,0,22, 'bush_F1');
+  addBush(8,0,22,  'bush_F2');
+  // Shed / big hide
+  box(5,3,4, -22,1.5,0, 0x8B7355, true);
+  addSpot(-22,0,-1.5,'shed_back');
+  addSpot(-19,0,0,   'shed_side');
+
+  buildHouse();
+}
+
+function addTree(x,z) {
+  cyl(0.3, 0.4, 3.5, x, 1.75, z, 0x4a3728);
+  cone(2.5, 5.5, x, 5.5, z, 0x2d5a1b);
+  // Taller layer
+  cone(1.8, 4, x, 8, z, 0x3a6e22);
+}
+
+function addBush(x,y,z, label) {
+  const geo = new THREE.SphereGeometry(1.4,8,6);
+  const mat = new THREE.MeshLambertMaterial({color:0x2d6e2d});
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(x, y+0.75, z);
+  mesh.scale.y = 0.72;
+  scene.add(mesh);
+  addSpot(x,y,z, label);
+}
+
+// ─────────────────────────────────────────────────────────────
+//  HOUSE — 3 FLOORS
+// ─────────────────────────────────────────────────────────────
+function buildHouse() {
+  const W = HOUSE_W, D = HOUSE_D, FH = FLOOR_H;
+  const wt = 0.35; // wall thickness
+  const wc = 0xf5f0e0; // wall color
+  const flc = 0xa0784a; // floor color
+  const ceilc = 0xe8e0d0;
+
+  // ══════════════════ FLOOR 1 (y=0) ══════════════════
+  const f1 = 0;
+  box(W,   0.3, D, 0, f1-0.15, 0, flc); // floor slab
+
+  // Outer walls — N S W E with door opening south (3.5 wide center)
+  box(W,   FH, wt, 0, f1+FH/2, -D/2,   wc, true); // N
+  box(W/2-2, FH, wt, -(W/4+1), f1+FH/2, D/2, wc, true); // S left
+  box(W/2-2, FH, wt,  (W/4+1), f1+FH/2, D/2, wc, true); // S right
+  box(3.5, 0.8, wt, 0, f1+FH-0.4, D/2, wc); // transom above door
+  box(wt, FH, D, -W/2, f1+FH/2, 0, wc, true); // W
+  box(wt, FH, D,  W/2, f1+FH/2, 0, wc, true); // E
+  box(W, 0.3, D, 0, f1+FH+0.15, 0, ceilc); // ceiling/f2 base
+
+  // Interior walls F1
+  // Living | Kitchen divider (vertical)
+  box(wt, FH, D/2, 3, f1+FH/2, D/4, wc, true);
+  // Back hall divider
+  box(W/2, FH, wt, -W/4, f1+FH/2, -1, wc, true);
+  // Bathroom corner
+  box(wt, FH, 5.5, W/2-5.5, f1+FH/2, -D/2+2.75, wc, true);
+  box(5.5, FH, wt, W/2-2.75, f1+FH/2, -D/2+5.5,  wc, true);
+  // Storage room
+  box(6, FH, wt, -W/2+3, f1+FH/2, -D/2+5, wc, true);
+  box(wt, FH, 5, -W/2+6, f1+FH/2, -D/2+2.5, wc, true);
+
+  // Furniture F1
+  // Couch (living room left)
+  box(5,0.9,1.2, -7,f1+0.45, 1.5, 0x8B4513);
+  box(5,1.4,0.4, -7,f1+0.7, 2.1, 0x8B4513); // back
+  addSpot(-7, f1, 0.3, 'couch_behind');
+  addSpot(-9, f1, 1.5, 'couch_side');
+
+  // TV cabinet
+  box(4,0.7,0.4, -7,f1+0.35, -0.5, 0x333);
+
+  // Kitchen table
+  box(3, 0.08, 2, 6,f1+0.88,1.5, 0x6b4226);
+  [[5.1,1],[6.9,1],[5.1,2],[6.9,2]].forEach(([tx,tz]) => box(0.08,0.88,0.08,tx,f1+0.44,tz,0x5a3a1a));
+  addSpot(6, f1, 1.5, 'kitchen_table');
+
+  // Fridge (kitchen back)
+  box(0.9,2,0.7, 8.5,f1+1, -D/2+0.8, 0xddd);
+  addSpot(8.5, f1, -D/2+1.5, 'kitchen_corner');
+
+  // Bathroom tub + toilet
+  box(1.8,0.6,0.8, W/2-2.5,f1+0.3,-D/2+0.9, 0xeee);
+  box(0.5,0.7,0.5, W/2-1,f1+0.35,-D/2+4, 0xfff);
+  addSpot(W/2-3, f1, -D/2+1.5, 'bath1_tub');
+
+  // Behind front door
+  addSpot(-W/2+1.5, f1, D/2-1.5, 'door_behind');
+  // Under stairs
+  addSpot(7, f1, -4, 'under_stairs_f1');
+  // Storage room
+  addSpot(-W/2+2, f1, -D/2+2, 'storage_corner');
+  addSpot(-W/2+4, f1, -D/2+3, 'storage_mid');
+
+  // Stairs F1→F2 (right side, starts near south wall z=7 going north)
+  buildStairs(7, f1, 7, FH);
+
+  // ══════════════════ FLOOR 2 (y=FH) ══════════════════
+  const f2 = FH;
+  box(W, 0.3, D, 0, f2-0.15, 0, flc);
+
+  // Outer walls
+  box(W, FH, wt, 0, f2+FH/2, -D/2, wc, true);
+  box(W/2-2.5,FH,wt,-(W/4+1.25),f2+FH/2, D/2, wc, true);
+  box(W/2-2.5,FH,wt, (W/4+1.25),f2+FH/2, D/2, wc, true);
+  box(5, 1.2, wt, 0, f2+0.6, D/2, 0x8B6914); // balcony rail
+  box(wt, FH, D, -W/2, f2+FH/2, 0, wc, true);
+  box(wt, FH, D,  W/2, f2+FH/2, 0, wc, true);
+  box(W, 0.3, D, 0, f2+FH+0.15, 0, ceilc);
+
+  // Interior walls F2
+  box(wt, FH, D/2-1, -3, f2+FH/2, D/4-0.5, wc, true);
+  box(wt, FH, D/2-1,  3, f2+FH/2, D/4-0.5, wc, true);
+  box(W/2-3, FH, wt, -(3+W/4-3)/2, f2+FH/2, 0.5, wc, true);
+  box(W/2-3, FH, wt,  (3+W/4-3)/2, f2+FH/2, 0.5, wc, true);
+  // Bathroom
+  box(wt, FH, 5.5, -W/2+5.5, f2+FH/2, -D/2+2.75, wc, true);
+  box(5.5, FH, wt, -W/2+2.75, f2+FH/2, -D/2+5.5, wc, true);
+  // Closet master
+  box(3, FH, wt, -W/2+1.5, f2+FH/2, -D/2+3, wc, true);
+  box(wt, FH, 3, -W/2+3, f2+FH/2, -D/2+1.5, wc, true);
+
+  // Master bed
+  box(4.5,0.55,6.5, -8,f2+0.275,-4, 0x4169e1);
+  box(4.5,0.8,0.4,  -8,f2+0.95,-7,  0x2a4aaa); // headboard
+  addSpot(-8, f2, -4, 'master_bed_under');
+  // Master closet
+  addSpot(-W/2+2, f2, -D/2+1.5, 'master_closet');
+
+  // Bedroom 2 bed
+  box(3.5,0.5,5.5, 7,f2+0.25,-3.5, 0x9370DB);
+  box(3.5,0.7,0.3, 7,f2+0.85,-6.2, 0x6a3aaa);
+  addSpot(7, f2, -3.5, 'bed2_under');
+  // Curtain / window
+  box(0.08,3,2.5, W/2-0.15,f2+2.2, 2.5, 0x6495ED, false, 0.75);
+  addSpot(W/2-1.5, f2, 2.5, 'curtain_f2');
+  // Bathroom 2
+  box(0.6,0.9,0.5, -W/2+0.9,f2+0.45,-D/2+0.9, 0xfff);
+  box(1.6,0.6,0.7, -W/2+2,f2+0.3,-D/2+0.8, 0xeee);
+  addSpot(-W/2+2, f2, -D/2+2, 'bath2_corner');
+  // Hallway wardrobe
+  box(3,2.2,0.5, 0,f2+1.1, 4.8, 0x8B7355, false);
+  addSpot(0, f2, 4, 'hallway_wardrobe');
+  // Under desk
+  box(2,0.7,1, 6,f2+0.35,5, 0x8B6914);
+  addSpot(6, f2, 4.2, 'desk_f2');
+
+  // Stairs F2→F3 (left side, separate column from F1→F2)
+  buildStairs(-7, f2, 7, FH);
+
+  // ══════════════════ FLOOR 3 — ATTIC (y=FH*2) ══════════════════
+  const f3 = FH*2;
+  box(W, 0.3, D, 0, f3-0.15, 0, flc);
+
+  // Lower attic walls
+  box(W, 2.5, wt, 0, f3+1.25, -D/2, 0xd4c8b0, true);
+  box(W, 2.5, wt, 0, f3+1.25,  D/2, 0xd4c8b0, true);
+  box(wt, 2.5, D, -W/2, f3+1.25, 0, 0xd4c8b0, true);
+  box(wt, 2.5, D,  W/2, f3+1.25, 0, 0xd4c8b0, true);
+
+  // Roof — two slopes
+  const roofL = new THREE.Mesh(new THREE.BoxGeometry(W/2+2,0.35,D+2), new THREE.MeshPhongMaterial({color:0x8B1a1a}));
+  roofL.rotation.z = Math.PI*0.17; roofL.position.set(-W/4, f3+3.8, 0); roofL.castShadow=true; scene.add(roofL);
+  const roofR = new THREE.Mesh(new THREE.BoxGeometry(W/2+2,0.35,D+2), new THREE.MeshPhongMaterial({color:0x8B1a1a}));
+  roofR.rotation.z =-Math.PI*0.17; roofR.position.set( W/4, f3+3.8, 0); roofR.castShadow=true; scene.add(roofR);
+  // Gable ridge box
+  box(W+3, 0.4, D+2, 0, f3+5, 0, 0x6a1010);
+
+  // Chimney
+  box(2.2,6.5,2.2, 5, f3+3, -4, 0x808080, true);
+  addSpot(7, f3, -4, 'chimney_hide');
+
+  // Attic clutter
+  box(2,1.4,2, -7,f3+0.7,-4, 0x8B6914); // big crate
+  box(1.5,1.1,1.5,-9,f3+0.55,-2, 0x7a5c3a);
+  box(1.2,1,1.2, -6,f3+0.5,-2.5,0x6b4e2a);
+  addSpot(-7.5, f3, -3, 'attic_crates');
+  addSpot(-9, f3, 0, 'attic_eave_L');
+
+  // Old trunk
+  box(2.2,1.1,3.2, 8,f3+0.55,4, 0x4a3010);
+  addSpot(8, f3, 4, 'attic_trunk');
+  addSpot(9, f3, 0, 'attic_eave_R');
+
+  // Hanging sheet
+  box(0.05,3,3, 0,f3+2,5, 0xffffff,false,0.6);
+  addSpot(1, f3, 5, 'attic_sheet');
+  // More
+  addSpot(-3, f3, -6, 'attic_corner_NL');
+  addSpot(3,  f3, -6, 'attic_corner_NR');
+
+  // Exterior chimney visible outside
+  box(2.2, 3, 2.2, 5, f3+7, -4, 0x666);
+
+  // Player / seeker start positions
+  P1.pos.set(0, EYE_H, 5);
+  P2.pos.set(0, EYE_H, 40);
+
+  addDecorations(f1, f2, f3, W, D);
+}
+
+// ─────────────────────────────────────────────────────────────
+//  DECORATIONS — rugs, plants, windows, colorful accents
+// ─────────────────────────────────────────────────────────────
+function addDecorations(f1, f2, f3, W, D) {
+  // ── RUGS ──
+  addRug(-7, f1, 1.5,   6,4, 0xcc3333);  // living room: warm red
+  addRug( 5, f1, 1.5,   4,3, 0xe8c020);  // kitchen: sunny yellow
+  addRug( 0, f1, 5,     3,1.2, 0x44aa66); // hallway entrance: green runner
+  addRug(-8, f2, -3.5,  5,7, 0x8844cc);  // master bedroom: purple
+  addRug( 7, f2, -2,    4,5, 0x44aacc);  // bedroom 2: sky blue
+  addRug( 0, f3, 0,    10,4, 0xcc6622);  // attic: orange rust
+
+  // ── INDOOR PLANTS ──
+  addPlant( 2,    f1, 7.5);   // near front door
+  addPlant(-10.5, f1, 7.5);
+  addPlant(-10.5, f2, 7.5);
+  addPlant( 10.5, f2, 7.5);
+  addPlant(-3,    f3, 6);
+
+  // ── WINDOWS (glass panes on inside of outer walls) ──
+  // Floor 1 south-facing windows
+  addWindow(-9,    f1+2.5, D/2,    2.4, 1.7, 'NS');  // living room
+  addWindow( 7.5,  f1+2.5, D/2,    2.4, 1.7, 'NS');  // kitchen
+  // Floor 1 east / west
+  addWindow( W/2,  f1+2.5, 3,      2.2, 1.5, 'EW');
+  addWindow(-W/2,  f1+2.5, 3,      2.2, 1.5, 'EW');
+  // Floor 2
+  addWindow(-9,    f2+2.5, D/2,    2.2, 1.6, 'NS');
+  addWindow( 8.5,  f2+2.5, D/2,    2.2, 1.6, 'NS');
+  addWindow( W/2,  f2+2.5, 0,      2.2, 1.5, 'EW');
+  addWindow(-W/2,  f2+2.5, 0,      2.2, 1.5, 'EW');
+  // Attic gable windows
+  addWindow( 0,    f3+1.8, D/2,    3,   1.5, 'NS');
+  addWindow( 0,    f3+1.8, -D/2,   3,   1.5, 'NS');
+
+  // ── FRONT DOOR (painted red) ──
+  box(3.5, 3.2, 0.1, 0, f1+1.6, D/2, 0xcc2222);
+  box(0.2, 3.2, 0.1, 1.6, f1+1.6, D/2, 0x8B1a1a); // frame
+  box(0.2, 3.2, 0.1,-1.6, f1+1.6, D/2, 0x8B1a1a);
+  box(3.8, 0.2, 0.1, 0,   f1+3.1, D/2, 0x8B1a1a);
+  // Door knob
+  const knobG = new THREE.SphereGeometry(0.1,8,8);
+  const knobM = new THREE.MeshPhongMaterial({color:0xffd700});
+  const knob = new THREE.Mesh(knobG,knobM); knob.position.set(0.9,f1+1.5,D/2+0.05); scene.add(knob);
+
+  // ── WALL ART / PICTURE FRAMES ──
+  addPicture(-10.5, f1+2.5, 0.5,   1.4, 0.9, 0x4466cc); // blue painting
+  addPicture(-10.5, f2+2.5, -2,    1.4, 0.9, 0xcc8844); // master bedroom
+  addPicture( 10.5, f2+2.5, -2,    1.4, 0.9, 0x44cc88); // bedroom 2
+
+  // ── GARDEN FENCE posts ──
+  for (let x = -14; x <= 14; x += 3.5) {
+    cyl(0.1, 0.12, 1.5, x, 0.75, 14); // north fence line
+  }
+  for (let x = -14; x <= 14; x += 3.5) {
+    cyl(0.1, 0.12, 1.5, x, 0.75, -14);
+  }
+}
+
+function addRug(x, y, z, w, d, color) {
+  box(w, 0.04, d, x, y+0.02, z, color);
+}
+
+function addPlant(x, y, z) {
+  cyl(0.22, 0.28, 0.5, x, y+0.25, z, 0xcc6633); // terracotta pot
+  const geo = new THREE.SphereGeometry(0.55, 8, 7);
+  const mat = new THREE.MeshLambertMaterial({color: 0x2daa44});
+  const plant = new THREE.Mesh(geo, mat);
+  plant.position.set(x, y+0.9, z);
+  plant.scale.set(1, 1.3, 1);
+  plant.castShadow = true;
+  scene.add(plant);
+  // Small white flowers
+  for (let i=0; i<3; i++) {
+    const fg = new THREE.SphereGeometry(0.07,5,5);
+    const fm = new THREE.MeshBasicMaterial({color:0xffffff});
+    const f = new THREE.Mesh(fg,fm);
+    const a = (i/3)*Math.PI*2;
+    f.position.set(x+Math.cos(a)*0.35, y+1.1, z+Math.sin(a)*0.35);
+    scene.add(f);
+  }
+}
+
+function addWindow(x, y, z, w, h, face) {
+  const geo = new THREE.BoxGeometry(
+    face === 'EW' ? 0.12 : w,
+    h,
+    face === 'NS' ? 0.12 : w
+  );
+  const mat = new THREE.MeshPhongMaterial({
+    color: 0x88ccff, transparent: true, opacity: 0.38,
+    emissive: 0x2244aa, emissiveIntensity: 0.25,
+    side: THREE.DoubleSide
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(x, y, z);
+  scene.add(mesh);
+  // Window frame
+  const fw = face === 'EW' ? 0.14 : w+0.2;
+  const fd = face === 'NS' ? 0.14 : w+0.2;
+  const fgeo = new THREE.BoxGeometry(fw, h+0.2, fd);
+  const fmat = new THREE.MeshPhongMaterial({color: 0xffffff});
+  const frame = new THREE.Mesh(fgeo, fmat);
+  frame.position.set(x, y, z);
+  frame.castShadow = true;
+  scene.add(frame);
+  // Glass in front of frame
+  mesh.renderOrder = 1;
+}
+
+function addPicture(x, y, z, w, h, color) {
+  box(w+0.2, h+0.2, 0.06, x, y, z, 0x5a3a1a); // frame
+  box(w,     h,     0.07, x, y, z, color);      // canvas
+}
+
+// ─────────────────────────────────────────────────────────────
+//  STAIRS
+// ─────────────────────────────────────────────────────────────
+function buildStairs(cx, startY, czTop, floorH) {
+  // Steps go from czTop (south, low) toward czTop-totalLen (north, high)
+  const steps = 10;
+  const sw = 2.1, sh = floorH/steps, sd = 0.85;
+  const totalLen = sd * steps; // 8.5 units — fits inside house
+  for (let i=0; i<steps; i++) {
+    box(sw, sh, sd, cx, startY+sh*(i+0.5), czTop - sd*i, 0xc8a876);
+  }
+  stairs.push({
+    minX: cx-sw/2-0.15, maxX: cx+sw/2+0.15,
+    minZ: czTop - totalLen - 0.5, maxZ: czTop + 0.5,
+    y0: startY, y1: startY + floorH
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+//  BOTS
+// ─────────────────────────────────────────────────────────────
+const BOT_COLORS = [0xff6b6b,0xffa07a,0xffd700,0x98fb98,0x87ceeb,0xdda0dd,0xf0e68c,0xff69b4,0x40e0d0,0xffa500,0xee82ee,0x7cfc00,0xdc143c,0x00ced1,0xff4500,0xda70d6,0x7b68ee,0x3cb371,0xff1493,0x1e90ff];
+
+function createBot(idx) {
+  const color = BOT_COLORS[idx % BOT_COLORS.length];
+  const g = new THREE.CylinderGeometry(0.35, 0.38, 1.8, 8);
+  const mat = new THREE.MeshPhongMaterial({color});
+  const mesh = new THREE.Mesh(g, mat);
+  mesh.castShadow = true;
+  scene.add(mesh);
+
+  // Eyes
+  const eyeG = new THREE.SphereGeometry(0.08, 6, 6);
+  const eyeM = new THREE.MeshBasicMaterial({color:0xffffff});
+  const eL = new THREE.Mesh(eyeG, eyeM); eL.position.set(-0.15, 0.55, 0.33); mesh.add(eL);
+  const eR = new THREE.Mesh(eyeG, eyeM); eR.position.set( 0.15, 0.55, 0.33); mesh.add(eR);
+
+  // Start bots outside the house in a grid (z=12-21, x=-6 to 6)
+  const col = idx % 5, row = Math.floor(idx / 5);
+  const startPos = new THREE.Vector3(-6 + col * 3, EYE_H, 12 + row * 3);
+  const b = {
+    idx, mesh, pos: startPos.clone(),
+    speed: 2.2 + Math.random() * 1.0,
+    targetSpot: null, hidden: false, found: false,
+    yaw: Math.PI, path: null, pathIdx: 0, stuckTimer: 0
+  };
+  mesh.position.copy(startPos);
+  bots.push(b);
+  return b;
+}
+
+// Build a waypoint path for a bot to reach its hiding spot across floors
+function buildBotPath(bot) {
+  if (!bot.targetSpot) return;
+  const spot = bot.targetSpot.pos;
+  const targetFloor = getFloorIdx(spot.y);
+  bot.path = [];
+  bot.pathIdx = 0;
+
+  // Every bot enters the house through the front door (center gap in south wall)
+  bot.path.push({x: 0, z: 7.5});
+
+  if (targetFloor >= 1) {
+    // Stair 1 (F1→F2) at x=7: enter at z≈6, exit at z≈-2 on floor 2
+    bot.path.push({x: 7, z: 6.2});
+    bot.path.push({x: 7, z: -2.5}); // at this point ramp pushes bot to floor 2
+  }
+  if (targetFloor >= 2) {
+    // Stair 2 (F2→F3) at x=-7: enter at z≈6, exit at z≈-2 on floor 3
+    bot.path.push({x: -7, z: 6.2});
+    bot.path.push({x: -7, z: -2.5});
+  }
+
+  bot.path.push({x: spot.x, z: spot.z}); // final spot XZ
+}
+
+function assignBots() {
+  const available = [...spots].filter(s => !s.occupied).sort(() => Math.random() - 0.5);
+  bots.forEach((bot, i) => {
+    if (i < available.length) {
+      bot.targetSpot = available[i];
+      available[i].occupied = 'bot' + bot.idx;
+      buildBotPath(bot);
+    }
+  });
+}
+
+function updateBots(dt) {
+  bots.forEach(bot => {
+    // Spin & bounce animation when found
+    if (bot.found) {
+      bot.spinT = (bot.spinT || 0) + dt * 4;
+      bot.mesh.rotation.y = bot.spinT;
+      const floorBase = getFloorIdx(bot.pos.y) * FLOOR_H;
+      bot.mesh.position.y = floorBase + 0.9 + Math.abs(Math.sin(bot.spinT * 1.5)) * 0.6;
+      return;
+    }
+    if (bot.hidden) { bot.mesh.visible = false; return; }
+    if (!bot.targetSpot || !bot.path) return;
+
+    // Advance to next waypoint when close enough
+    if (bot.pathIdx < bot.path.length) {
+      const wp = bot.path[bot.pathIdx];
+      const dx2 = bot.pos.x - wp.x, dz2 = bot.pos.z - wp.z;
+      if (dx2*dx2 + dz2*dz2 < 1.5) bot.pathIdx++;
+    }
+
+    // Check if reached the final spot on the correct floor
+    const finalSpot = bot.targetSpot.pos;
+    const fdx = bot.pos.x - finalSpot.x, fdz = bot.pos.z - finalSpot.z;
+    if (fdx*fdx + fdz*fdz < 1.2 && getFloorIdx(bot.pos.y) === getFloorIdx(finalSpot.y)) {
+      bot.hidden = true;
+      bot.pos.set(finalSpot.x, EYE_H + getFloorIdx(finalSpot.y) * FLOOR_H, finalSpot.z);
+      bot.mesh.visible = false;
+      if (bot.targetSpot.marker) bot.targetSpot.marker.material.opacity = 0.05;
+      return;
+    }
+
+    // Determine direction toward current waypoint
+    const wp = bot.pathIdx < bot.path.length ? bot.path[bot.pathIdx] : {x:finalSpot.x, z:finalSpot.z};
+    const ddx = wp.x - bot.pos.x, ddz = wp.z - bot.pos.z;
+    const dlen = Math.sqrt(ddx*ddx + ddz*ddz);
+    if (dlen < 0.05) return;
+
+    const nx = ddx / dlen, nz = ddz / dlen;
+    bot.yaw = Math.atan2(nx, nz);
+    const spd = bot.speed * dt;
+
+    // Try full move, then axis-separated slide, then perpendicular, then warp
+    const tryPos = pos => { const p = bot.pos.clone(); p.x += pos[0]; p.z += pos[1]; return p; };
+    const full  = tryPos([nx*spd, nz*spd]);
+    const slideX = tryPos([nx*spd, 0]);
+    const slideZ = tryPos([0, nz*spd]);
+    const perp   = tryPos([-nz*spd, nx*spd]);
+
+    if (!collides(full)) {
+      bot.pos.x = full.x; bot.pos.z = full.z; bot.stuckTimer = 0;
+    } else if (!collides(slideX)) {
+      bot.pos.x = slideX.x; bot.stuckTimer = 0;
+    } else if (!collides(slideZ)) {
+      bot.pos.z = slideZ.z; bot.stuckTimer = 0;
+    } else if (!collides(perp)) {
+      bot.pos.x = perp.x; bot.pos.z = perp.z; bot.stuckTimer = 0;
+    } else {
+      bot.stuckTimer += dt;
+      if (bot.stuckTimer > 2.5) {
+        // Warp directly to the spot
+        bot.hidden = true;
+        bot.pos.set(finalSpot.x, EYE_H + getFloorIdx(finalSpot.y) * FLOOR_H, finalSpot.z);
+        bot.mesh.visible = false;
+        if (bot.targetSpot.marker) bot.targetSpot.marker.material.opacity = 0.05;
+        return;
+      }
+    }
+
+    bot.pos.y = getFloorY(bot.pos);
+    bot.mesh.position.set(bot.pos.x, bot.pos.y - 0.9, bot.pos.z);
+    bot.mesh.rotation.y = bot.yaw;
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+//  FLOOR Y / STAIRS
+// ─────────────────────────────────────────────────────────────
+function getFloorY(pos) {
+  // Check stair ramps — t goes from 0 (bottom/south) to 1 (top/north)
+  for (const st of stairs) {
+    if (
+      pos.x > st.minX && pos.x < st.maxX &&
+      pos.z > st.minZ && pos.z < st.maxZ &&
+      pos.y >= st.y0 + EYE_H - 1.2 &&
+      pos.y <= st.y1 + EYE_H + 0.6
+    ) {
+      const t = Math.max(0, Math.min(1, (st.maxZ - pos.z) / (st.maxZ - st.minZ)));
+      return st.y0 + t * (st.y1 - st.y0) + EYE_H;
+    }
+  }
+  // Snap to nearest floor below current position
+  const floors = [0, FLOOR_H, FLOOR_H*2];
+  let best = 0;
+  for (const f of floors) {
+    if (pos.y >= f + EYE_H - 0.7) best = f;
+  }
+  return best + EYE_H;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  COLLISION
+// ─────────────────────────────────────────────────────────────
+function collides(pos) {
+  const hh = 0.9;
+  for (const a of aabbs) {
+    if (
+      pos.x+P_RADIUS > a.min.x && pos.x-P_RADIUS < a.max.x &&
+      pos.y-hh       < a.max.y && pos.y+hh        > a.min.y &&
+      pos.z+P_RADIUS > a.min.z && pos.z-P_RADIUS  < a.max.z
+    ) return true;
+  }
+  return false;
+}
+
+function tryMove(player, dx, dz, spd) {
+  const nx = player.pos.clone(); nx.x += dx*spd;
+  const nz = player.pos.clone(); nz.z += dz*spd;
+  const nb = player.pos.clone(); nb.x += dx*spd; nb.z += dz*spd;
+  if (!collides(nb)) { player.pos.x = nb.x; player.pos.z = nb.z; }
+  else if (!collides(nx)) { player.pos.x = nx.x; }
+  else if (!collides(nz)) { player.pos.z = nz.z; }
+}
+
+// ─────────────────────────────────────────────────────────────
+//  PLAYER UPDATE
+// ─────────────────────────────────────────────────────────────
+function updatePlayer(P, dt, isP1) {
+  if (gState === 'gameover') return;
+  if (P.hidden && gState === 'seeking') return;
+
+  let dx=0, dz=0;
+  const sprint = isP1
+    ? (keys['ShiftLeft'] || keys['ShiftRight'])
+    : (keys['ShiftRight']); // P2 uses right shift
+
+  if (isP1) {
+    if (keys['KeyW']) { dx+=Math.sin(P.yaw); dz+=Math.cos(P.yaw); }
+    if (keys['KeyS']) { dx-=Math.sin(P.yaw); dz-=Math.cos(P.yaw); }
+    if (keys['KeyA']) { dx+=Math.cos(P.yaw); dz-=Math.sin(P.yaw); }
+    if (keys['KeyD']) { dx-=Math.cos(P.yaw); dz+=Math.sin(P.yaw); }
+    if (keys['KeyQ']) P.yaw += TURN_SPD*dt;
+    if (keys['KeyE'] && gameMode==='2p') P.yaw -= TURN_SPD*dt;
+  } else {
+    if (keys['ArrowUp'])    { dx+=Math.sin(P.yaw); dz+=Math.cos(P.yaw); }
+    if (keys['ArrowDown'])  { dx-=Math.sin(P.yaw); dz-=Math.cos(P.yaw); }
+    if (keys['ArrowLeft'])  { dx+=Math.cos(P.yaw); dz-=Math.sin(P.yaw); }
+    if (keys['ArrowRight']) { dx-=Math.cos(P.yaw); dz+=Math.sin(P.yaw); }
+    // Z / Comma = turn left,  X / Period = turn right
+    if (keys['KeyZ'] || keys['Comma'])  P.yaw += TURN_SPD*dt;
+    if (keys['KeyX'] || keys['Period']) P.yaw -= TURN_SPD*dt;
+  }
+
+  const isMoving = dx !== 0 || dz !== 0;
+  if (isMoving) {
+    const len = Math.sqrt(dx*dx+dz*dz);
+    const spd = SPEED * (sprint ? SPRINT_MUL : 1) * dt;
+    tryMove(P, dx/len, dz/len, spd);
+  }
+
+  P.pos.y = getFloorY(P.pos);
+  P.pos.x = Math.max(-100, Math.min(100, P.pos.x));
+  P.pos.z = Math.max(-100, Math.min(100, P.pos.z));
+
+  const floorIdx = Math.round((P.pos.y - EYE_H) / FLOOR_H);
+  P.floorIdx = Math.max(0, Math.min(2, floorIdx));
+
+  if (P.mesh) {
+    P.mesh.position.set(P.pos.x, P.pos.y - EYE_H + 0.9, P.pos.z);
+    P.mesh.rotation.y = P.yaw + Math.PI;
+  }
+
+  // Head bob
+  const bobVar = isP1 ? 'headBobT1' : 'headBobT2';
+  const bobStep = sprint ? 10 : 6.5;
+  if (isMoving) { window[bobVar] += dt * bobStep; }
+  else          { window[bobVar] *= Math.exp(-dt * 9); }
+  const bob = Math.sin(window[bobVar]) * (sprint ? 0.10 : 0.055);
+
+  const cam = isP1 ? cam1 : cam2;
+  cam.position.set(P.pos.x, P.pos.y + bob, P.pos.z);
+  cam.rotation.order = 'YXZ';
+  cam.rotation.y = P.yaw;
+  cam.rotation.x = P.pitch;
+
+  // Footstep sounds (seeker only, seeking phase)
+  if (!P.isHider && gState === 'seeking' && isMoving) {
+    const ftVar = isP1 ? 'footTimer1' : 'footTimer2';
+    window[ftVar] -= dt;
+    if (window[ftVar] <= 0) {
+      beep(55 + Math.random()*15, 0.06, sprint ? 0.18 : 0.12, 'triangle');
+      window[ftVar] = sprint ? 0.28 : 0.42;
+    }
+  }
+
+  // Near-spot detection
+  let near = null;
+  for (const s of spots) {
+    const sdx = P.pos.x-s.pos.x, sdz = P.pos.z-s.pos.z, sdy = P.pos.y-EYE_H-s.pos.y;
+    if (sdx*sdx+sdz*sdz+sdy*sdy < 9) { near = s; break; }
+  }
+  P.nearSpot = near;
+
+  // Floor indicator (P1 in 1P, or 2P right side for P2)
+  if (gameMode==='1p' && isP1) {
+    document.getElementById('floorInd').textContent =
+      ['Floor 1','Floor 2','Floor 3 (Attic)'][P.floorIdx];
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+//  KEY PRESS ACTIONS
+// ─────────────────────────────────────────────────────────────
+function onKeyPress(code) {
+  if (gState === 'hiding') {
+    // P1 hider: F or H or Space to hide
+    if (code === 'KeyF' || code === 'KeyH' || code === 'Space') {
+      if (gameMode === '2p' && P1.isHider && P1.nearSpot && !P1.hidden) {
+        doHide(P1, P1.nearSpot);
+      }
+    }
+  }
+  if (gState === 'seeking') {
+    // 1P seeker: E or Space or F to search
+    if (code === 'KeyE' || code === 'Space' || code === 'KeyF') {
+      if (gameMode === '1p') doSearch(P1);
+    }
+    // 2P seeker (P2): Enter, Space, or Slash to search
+    if (code === 'Enter' || code === 'NumpadEnter' || code === 'Slash' || code === 'Numpad0') {
+      if (gameMode === '2p' && !P2.isHider) doSearch(P2);
+    }
+  }
+}
+
+function doHide(player, spot) {
+  sfxHide();
+  player.hidden = true;
+  spot.occupied = player === P1 ? 'p1' : 'p2';
+  if (spot.marker) spot.marker.material.opacity = 0.08;
+  if (player.mesh) player.mesh.visible = false;
+}
+
+function doSearch(seeker) {
+  if (!seeker.nearSpot) return;
+  const spot = seeker.nearSpot;
+
+  // Check bots
+  bots.forEach(bot => {
+    if (!bot.found && bot.hidden && bot.targetSpot === spot) {
+      revealBot(bot, spot);
+    }
+  });
+
+  // Check P1 hider (2P)
+  if (gameMode === '2p' && P1.hidden && P1.nearSpot === spot) {
+    sfxFound();
+    flashFound(true);
+    P1.hidden = false;
+    if (P1.mesh) P1.mesh.visible = true;
+    spot.occupied = null;
+    if (spot.marker) spot.marker.material.opacity = 0.4;
+    foundCount++;
+    document.getElementById('fc').textContent = foundCount;
+    checkWin();
+  }
+}
+
+function revealBot(bot, spot) {
+  sfxFound();
+  flashFound(gameMode === '2p' ? true : '50%');
+  bot.found = true;
+  bot.hidden = false;
+  bot.mesh.visible = true;
+  bot.pos.x += (Math.random()-0.5)*2;
+  bot.mesh.position.set(bot.pos.x, bot.pos.y-0.9, bot.pos.z);
+  if (spot) {
+    spot.occupied = null;
+    if (spot.marker) spot.marker.material.opacity = 0.4;
+  }
+  foundCount++;
+  document.getElementById('fc').textContent = foundCount;
+  checkWin();
+}
+
+// ─────────────────────────────────────────────────────────────
+//  GAME FLOW
+// ─────────────────────────────────────────────────────────────
+function startGame(mode) {
+  gameMode = mode;
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('ui').style.display   = 'block';
+  document.getElementById('hud').style.display  = 'flex';
+  document.getElementById('floorInd').style.display = 'block';
+  document.getElementById('minimapWrap').style.display = 'block';
+
+  const numBots = mode === '1p' ? 20 : 10;
+  totalHiders   = numBots + (mode === '2p' ? 1 : 0);
+
+  for (let i=0; i<numBots; i++) createBot(i);
+  assignBots();
+
+  if (mode === '1p') {
+    // Player = seeker, bots = hiders
+    P1.isHider = false;
+    P1.pos.set(0, EYE_H, 40);
+    P1.yaw = Math.PI;
+    document.getElementById('crosshair').style.display = 'block';
+    document.getElementById('modeTag').textContent = '1 PLAYER vs 20 BOTS';
+    document.getElementById('controls').textContent = 'WASD + Mouse | E = Search | Click canvas to lock mouse';
+    document.getElementById('tc').textContent = numBots;
+    document.getElementById('foundBox').style.display = 'block';
+  } else {
+    // P1 = hider, P2 = seeker
+    P1.isHider = true;
+    P2.isHider = false;
+    P1.pos.set(-3, EYE_H, 3);  P1.yaw = Math.PI;
+    P2.pos.set(0, EYE_H, 40);  P2.yaw = Math.PI;
+    createPlayerMesh(P2, 0xef9a9a);
+    createPlayerMesh(P1, 0x4fc3f7);
+    document.getElementById('divider').style.display = 'block';
+    document.getElementById('p1label').style.display = 'block';
+    document.getElementById('p2label').style.display = 'block';
+    document.getElementById('p1ch').style.display    = 'block';
+    document.getElementById('p2ch').style.display    = 'block';
+    document.getElementById('modeTag').textContent = '2 PLAYERS + 10 BOTS';
+    document.getElementById('roundDisplay').style.display = 'block';
+    document.getElementById('rTotal').textContent = TOTAL_ROUNDS;
+    document.getElementById('tc').textContent = totalHiders;
+    document.getElementById('foundBox').style.display = 'block';
+    document.getElementById('controls').textContent =
+      'P1: WASD + Q/E · F/Space = Hide · Shift = Sprint  |  P2: Arrows + Z/X · Enter or / = Search · Shift = Sprint';
+  }
+
+  startHiding();
+}
+
+function createPlayerMesh(P, color) {
+  const g = new THREE.CylinderGeometry(0.38, 0.42, 1.75, 10);
+  const mat = new THREE.MeshPhongMaterial({color});
+  P.mesh = new THREE.Mesh(g, mat);
+  P.mesh.castShadow = true;
+  scene.add(P.mesh);
+  // Hat
+  const hatG = new THREE.CylinderGeometry(0.5,0.5,0.2,10);
+  const hat = new THREE.Mesh(hatG, new THREE.MeshPhongMaterial({color:0x222}));
+  hat.position.y = 0.97; P.mesh.add(hat);
+}
+
+function startHiding() {
+  gState = 'hiding';
+  timeLeft = HIDE_TIME;
+  setNightMode(false); // daylight while hiding
+  document.getElementById('phase').textContent = '🙈  HIDING PHASE';
+  document.getElementById('phase').style.color  = '#00ff88';
+  updateTimerUI();
+
+  if (gameMode === '1p') {
+    document.getElementById('controls').textContent = 'Bots are hiding... Wait for the seeking phase!';
+  } else {
+    document.getElementById('hint').style.left = '25%';
+    document.getElementById('eHint').style.left = '75%';
+  }
+
+  ticker = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 10) sfxTick();
+    updateTimerUI();
+    if (timeLeft <= 0) { clearInterval(ticker); runCountdown(startSeeking); }
+  }, 1000);
+}
+
+// 3-2-1-GO countdown before seeking
+function runCountdown(cb) {
+  let n = 3;
+  const el = document.getElementById('countdown');
+  el.style.display = 'flex';
+  const tick = () => {
+    if (n < 0) { el.style.display = 'none'; cb(); return; }
+    el.textContent = n === 0 ? 'GO!' : n;
+    el.style.color = n === 0 ? '#00ff88' : '#fff';
+    sfxCount(n);
+    n--;
+    setTimeout(tick, n < 0 ? 600 : 900);
+  };
+  tick();
+}
+
+function startSeeking() {
+  gState = 'seeking';
+  timeLeft = SEEK_TIME;
+  setNightMode(true); // switch to dark night + flashlight
+  document.getElementById('phase').textContent = '🔍  SEEKING PHASE';
+  document.getElementById('phase').style.color  = '#ff9900';
+  updateTimerUI();
+
+  // Hide all spot markers — seeker must explore without visual hints
+  spots.forEach(s => {
+    if (s.marker) s.marker.material.opacity = 0;
+  });
+
+  if (gameMode === '1p') {
+    document.getElementById('controls').textContent = 'WASD + Mouse · E / Space / F = Search · Shift = Sprint · Click canvas to lock mouse';
+    document.getElementById('lockPrompt').style.display = 'flex';
+    document.getElementById('gc').addEventListener('click', lockMouseOnce, {once:true});
+    document.getElementById('proximity').style.display = 'block';
+    P1.pos.set(0, EYE_H, 15);
+  } else {
+    // Black out P1 screen
+    const bo = document.getElementById('p1blackout');
+    bo.style.display = 'flex';
+    document.getElementById('p2label').textContent = 'P2 — SEEKER (Arrows + ,/. + Enter)';
+    document.getElementById('p1label').textContent = 'P1 — HIDDEN 🙈';
+    // Move P2 (seeker) to start position
+    P2.pos.set(0, EYE_H, 15);
+    P2.yaw = Math.PI;
+  }
+
+  document.getElementById('proximity').style.display = 'block';
+
+  ticker = setInterval(() => {
+    timeLeft--;
+    document.getElementById('boTimer').textContent = timeLeft;
+    if (timeLeft <= 10) sfxTick();
+    updateTimerUI();
+    if (timeLeft <= 0) { clearInterval(ticker); endGame('hider'); }
+  }, 1000);
+}
+
+function lockMouseOnce() {
+  document.getElementById('lockPrompt').style.display = 'none';
+  document.getElementById('gc').requestPointerLock();
+}
+
+function updateTimerUI() {
+  document.getElementById('timeDisplay').textContent = timeLeft;
+  const c = timeLeft > 20 ? '#00f5ff' : timeLeft > 8 ? '#ffaa00' : '#ff4444';
+  document.getElementById('timeDisplay').style.color = c;
+}
+
+function checkWin() {
+  if (foundCount >= totalHiders) { clearInterval(ticker); endGame('seeker'); }
+}
+
+function endGame(winner) {
+  gState = 'gameover';
+  clearInterval(ticker);
+  setNightMode(false); // restore daylight for end screen
+  if (document.pointerLockElement) document.exitPointerLock();
+
+  const go = document.getElementById('gameover');
+  const gt = document.getElementById('goText');
+  const gs = document.getElementById('goSub');
+  const gst= document.getElementById('goStats');
+
+  // Round scoring (2P)
+  const seekerIsP2 = (gameMode === '2p' && !P2.isHider);
+  if (gameMode === '2p') {
+    if (winner === 'seeker') {
+      if (seekerIsP2) p2Score++; else p1Score++;
+    } else {
+      if (seekerIsP2) p1Score++; else p2Score++; // hider wins
+    }
+  }
+
+  if (winner === 'seeker') sfxWin(); else sfxLose();
+  launchConfetti();
+
+  const roundLabel = gameMode === '2p' ? ` (Round ${roundNum}/${TOTAL_ROUNDS})` : '';
+
+  if (winner === 'seeker') {
+    gt.textContent = '🔦 SEEKER WINS!' + roundLabel;
+    gt.style.color  = '#ff6b6b';
+    gs.textContent  = 'All hiders were found!';
+    gst.textContent = `Found ${foundCount} / ${totalHiders} · ${gameMode==='2p' ? `P1 ${p1Score}–${p2Score} P2` : ''}`;
+  } else {
+    gt.textContent = '🙈 HIDER WINS!' + roundLabel;
+    gt.style.color  = '#66ff88';
+    gs.textContent  = 'The seeker ran out of time!';
+    gst.textContent = `${totalHiders - foundCount} hider(s) survived · ${gameMode==='2p' ? `P1 ${p1Score}–${p2Score} P2` : ''}`;
+  }
+
+  go.style.display = 'flex';
+
+  // In 2P with rounds remaining, offer Next Round
+  if (gameMode === '2p' && roundNum < TOTAL_ROUNDS) {
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'btn';
+    nextBtn.style.marginTop = '16px';
+    nextBtn.textContent = `▶ Next Round (${roundNum + 1}/${TOTAL_ROUNDS})`;
+    nextBtn.onclick = nextRound;
+    go.appendChild(nextBtn);
+  } else if (gameMode === '2p' && roundNum >= TOTAL_ROUNDS) {
+    const finalWinner = p1Score > p2Score ? 'P1' : p2Score > p1Score ? 'P2' : 'TIE';
+    const finEl = document.createElement('div');
+    finEl.style.cssText = 'font-size:1.8em;margin-top:14px;color:#ffd700;';
+    finEl.textContent = finalWinner === 'TIE' ? '🤝 It\'s a TIE!' : `🏆 ${finalWinner} wins the match!`;
+    go.appendChild(finEl);
+  }
+}
+
+function nextRound() {
+  roundNum++;
+  foundCount = 0;
+  // Swap hider / seeker
+  P1.isHider = !P1.isHider;
+  P2.isHider = !P2.isHider;
+  P1.hidden = false; P2.hidden = false;
+  P1.nearSpot = null; P2.nearSpot = null;
+  if (P1.mesh) P1.mesh.visible = true;
+  if (P2.mesh) P2.mesh.visible = true;
+
+  // Clear bots
+  bots.forEach(b => scene.remove(b.mesh));
+  bots.length = 0;
+  spots.forEach(s => { s.occupied = null; if (s.marker) s.marker.material.opacity = 0; });
+
+  // Reset UI
+  const go = document.getElementById('gameover');
+  go.style.display = 'none';
+  // Remove extra buttons added for round system
+  while (go.children.length > 4) go.removeChild(go.lastChild);
+
+  document.getElementById('p1blackout').style.display = 'none';
+  document.getElementById('fc').textContent = '0';
+  document.getElementById('rNum').textContent = roundNum;
+  document.getElementById('r1s').textContent = p1Score;
+  document.getElementById('r2s').textContent = p2Score;
+  document.getElementById('p1label').textContent = `P1 — ${P1.isHider ? 'HIDER' : 'SEEKER'} (WASD + Q/E · F/Space)`;
+  document.getElementById('p2label').textContent = `P2 — ${P2.isHider ? 'HIDER' : 'SEEKER'} (Arrows + Z/X · Enter//)`;
+
+  // Start fresh bots
+  const numBots = 10;
+  for (let i = 0; i < numBots; i++) createBot(i);
+  assignBots();
+
+  // Reposition players
+  P1.pos.set(-3, EYE_H, 3); P1.yaw = Math.PI;
+  P2.pos.set(0, EYE_H, 40); P2.yaw = Math.PI;
+
+  startHiding();
+}
+
+// ─────────────────────────────────────────────────────────────
+//  NIGHT MODE + FLASHLIGHT
+// ─────────────────────────────────────────────────────────────
+function setNightMode(on) {
+  if (on) {
+    // Warm golden afternoon — brighter and fun, not scary
+    scene.background = new THREE.Color(0xf4c97a);
+    scene.fog = new THREE.FogExp2(0xf4c97a, 0.006);
+    if (ambLight)  ambLight.intensity  = 0.7;
+    if (sunLight)  { sunLight.intensity = 1.0; sunLight.color.set(0xffb347); }
+    indoorLights.forEach(l => { l.intensity = 0.8; l.color.set(0xffe4b5); });
+  } else {
+    // Normal daytime
+    scene.background = new THREE.Color(0x87ceeb);
+    scene.fog = new THREE.FogExp2(0x87ceeb, 0.007);
+    if (ambLight)  ambLight.intensity  = 0.55;
+    if (sunLight)  { sunLight.intensity = 1.1; sunLight.color.set(0xfff5e0); }
+    indoorLights.forEach(l => { l.intensity = 0.7; l.color.set(0xffe4b5); });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+//  CONFETTI
+// ─────────────────────────────────────────────────────────────
+const CONFETTI_COLORS = ['#ff6b6b','#ffd700','#00f5ff','#ff69b4','#98fb98','#ffa500','#c084fc','#67e8f9'];
+let confParts = [], confRafId = null;
+
+function launchConfetti() {
+  const cv = document.getElementById('confettiCanvas');
+  cv.width = innerWidth; cv.height = innerHeight;
+  cv.style.display = 'block';
+  confParts = [];
+  for (let i = 0; i < 180; i++) {
+    confParts.push({
+      x: Math.random() * innerWidth,
+      y: -16 - Math.random() * innerHeight * 0.5,
+      vx: (Math.random() - 0.5) * 7,
+      vy: 3 + Math.random() * 4,
+      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+      w: 7 + Math.random() * 9,
+      h: 4 + Math.random() * 5,
+      rot: Math.random() * Math.PI * 2,
+      rv: (Math.random() - 0.5) * 0.22
+    });
+  }
+  if (confRafId) cancelAnimationFrame(confRafId);
+  animateConf();
+}
+
+function animateConf() {
+  const cv = document.getElementById('confettiCanvas');
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  confParts = confParts.filter(p => p.y < cv.height + 20);
+  confParts.forEach(p => {
+    p.x += p.vx; p.y += p.vy; p.rot += p.rv; p.vy += 0.06;
+    ctx.save();
+    ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+    ctx.restore();
+  });
+  if (confParts.length) confRafId = requestAnimationFrame(animateConf);
+  else cv.style.display = 'none';
+}
+
+// ─────────────────────────────────────────────────────────────
+//  FOUND FLASH
+// ─────────────────────────────────────────────────────────────
+let _flashTO1 = null, _flashTO2 = null;
+function flashFound(x2p) {
+  const el = document.getElementById('foundFlash');
+  if (!el) return;
+  el.style.left = (x2p === true) ? '75%' : (x2p === false ? '25%' : '50%');
+  el.style.opacity = '1';
+  el.style.transform = 'translate(-50%,-50%) scale(1.2)';
+  clearTimeout(_flashTO1); clearTimeout(_flashTO2);
+  _flashTO1 = setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translate(-50%,-60%) scale(1)'; }, 200);
+  _flashTO2 = setTimeout(() => { el.style.opacity = '0'; }, 1000);
+}
+
+// ─────────────────────────────────────────────────────────────
+//  PROXIMITY
+// ─────────────────────────────────────────────────────────────
+let _proxBeepAt = 0;
+function updateProximity() {
+  const seeker = gameMode === '1p' ? P1 : P2;
+  const proxEl = document.getElementById('proximity');
+  const proxLabel = document.getElementById('proxLabel');
+
+  let minDist = Infinity;
+  bots.forEach(b => {
+    if (!b.found && b.hidden) {
+      const d = seeker.pos.distanceTo(b.pos);
+      if (d < minDist) minDist = d;
+    }
+  });
+  if (gameMode === '2p' && P1.hidden) {
+    const d = seeker.pos.distanceTo(P1.pos);
+    if (d < minDist) minDist = d;
+  }
+
+  if (minDist > 18) { proxEl.style.display = 'none'; return; }
+  proxEl.style.display = 'block';
+
+  let label, beepInterval;
+  if      (minDist < 3)  { label = '🔴 VERY CLOSE!'; beepInterval = 280;  }
+  else if (minDist < 6)  { label = '🟠 Close';        beepInterval = 580;  }
+  else if (minDist < 12) { label = '🟡 Nearby';       beepInterval = 1100; }
+  else                   { label = '🟢 Far';           beepInterval = 0;    }
+
+  proxLabel.textContent = label;
+
+  // Friendly cheerful ping (not scary)
+  const now = Date.now();
+  if (beepInterval && now - _proxBeepAt > beepInterval) {
+    _proxBeepAt = now;
+    const freq = minDist < 3 ? 1047 : minDist < 6 ? 784 : 523; // C5, G4, C4
+    beep(freq, 0.06, 0.18); // short bright ping
+  }
+
+}
+
+// ─────────────────────────────────────────────────────────────
+//  HINTS UI
+// ─────────────────────────────────────────────────────────────
+function updateHints() {
+  const hintEl  = document.getElementById('hint');
+  const eHintEl = document.getElementById('eHint');
+
+  // Hider hint (2P hiding phase)
+  if (gState === 'hiding' && gameMode === '2p' && P1.isHider && P1.nearSpot && !P1.hidden) {
+    hintEl.style.display = 'block';
+  } else {
+    hintEl.style.display = 'none';
+  }
+
+  // Seeker hint
+  const seeker = gameMode === '1p' ? P1 : P2;
+  if (gState === 'seeking' && seeker.nearSpot) {
+    eHintEl.textContent = gameMode === '2p'
+      ? 'Press Enter or / to SEARCH!'
+      : 'Press E / Space / F to SEARCH!';
+    eHintEl.style.display = 'block';
+    eHintEl.style.left = gameMode === '1p' ? '50%' : '75%';
+  } else {
+    eHintEl.style.display = 'none';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+//  MINIMAP
+// ─────────────────────────────────────────────────────────────
+function drawMinimap() {
+  const mm = document.getElementById('minimap');
+  if (!mm) return;
+  const ctx = mm.getContext('2d');
+  const MW = mm.width, MH = mm.height;
+
+  // Which player to center on
+  const P = (gameMode === '2p' && !P1.isHider) ? P2 : P1;
+  const floor = P.floorIdx;
+
+  // Coordinate conversions (house: x -12..12, z -9..9)
+  const SX = (MW - 12) / 24; // ~6.83 px per world unit
+  const SZ = (MH - 12) / 18;
+  const toMX = wx => 6 + (wx + 12) * SX;
+  const toMZ = wz => 6 + (9 - wz) * SZ;  // flip Z so north is up
+
+  // Background
+  ctx.fillStyle = '#060e08';
+  ctx.fillRect(0, 0, MW, MH);
+
+  // House outline
+  ctx.strokeStyle = '#2a4a2a';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(toMX(-12), toMZ(9), 24*SX, 18*SZ);
+
+  // Door opening (south wall gap)
+  ctx.fillStyle = '#060e08';
+  ctx.fillRect(toMX(-3), toMZ(9)-2, 6*SX, 5);
+
+  // Simplified interior walls per floor
+  ctx.strokeStyle = '#1e3e1e';
+  ctx.lineWidth = 1;
+  const wallSets = [
+    // F1
+    [[3,9,3,4.5],[3,-1,3,-9],[-6,-1,-12,-1],[-6,-1,-6,-9],[6,-4,12,-4]],
+    // F2
+    [[-3,9,-3,4],[3,9,3,4],[-3,0.5,-12,0.5],[3,0.5,12,0.5],[-6,-3,-6,-9],[6,-3,6,-9]],
+    // F3 (attic)
+    [[5,-2,5,-5]]
+  ];
+  (wallSets[floor] || []).forEach(([x1,z1,x2,z2]) => {
+    ctx.beginPath();
+    ctx.moveTo(toMX(x1), toMZ(z1));
+    ctx.lineTo(toMX(x2), toMZ(z2));
+    ctx.stroke();
+  });
+
+  // Hiding spots (during hiding only — don't spoil in seeking phase)
+  if (gState === 'hiding') {
+    spots.forEach(s => {
+      if (getFloorIdx(s.pos.y) !== floor) return;
+      ctx.fillStyle = s.occupied ? '#ff8800' : '#00cc66';
+      ctx.fillRect(toMX(s.pos.x)-2.5, toMZ(s.pos.z)-2.5, 5, 5);
+    });
+  }
+
+  // Bots found (show them on the map after found)
+  if (gState === 'seeking') {
+    bots.filter(b => b.found).forEach(b => {
+      if (getFloorIdx(b.pos.y) !== floor) return;
+      ctx.fillStyle = '#555';
+      ctx.beginPath();
+      ctx.arc(toMX(b.pos.x), toMZ(b.pos.z), 3, 0, Math.PI*2);
+      ctx.fill();
+    });
+  }
+
+  // Player dot + direction arrow
+  function drawPlayerDot(px, pz, pyaw, color, label) {
+    const mx = toMX(px), mz = toMZ(pz);
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(mx, mz, 4.5, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(mx, mz);
+    ctx.lineTo(mx + Math.sin(pyaw)*10, mz - Math.cos(pyaw)*10);
+    ctx.stroke();
+    if (label) {
+      ctx.fillStyle = color; ctx.font = 'bold 8px Arial';
+      ctx.fillText(label, mx+5, mz-5);
+    }
+  }
+
+  drawPlayerDot(P1.pos.x, P1.pos.z, P1.yaw, '#4fc3f7', gameMode==='2p'?'P1':null);
+  if (gameMode === '2p') {
+    drawPlayerDot(P2.pos.x, P2.pos.z, P2.yaw, '#ef9a9a', 'P2');
+  }
+
+  // Floor label
+  document.getElementById('mmFloor').textContent = ['F1','F2','F3 (Attic)'][floor];
+}
+
+// ─────────────────────────────────────────────────────────────
+//  RENDER LOOP
+// ─────────────────────────────────────────────────────────────
+function raf() {
+  requestAnimationFrame(raf);
+
+  if (gState === 'menu') {
+    // Rotate camera around house for menu
+    const t = Date.now()*0.0003;
+    cam1.position.set(Math.cos(t)*35, 12, Math.sin(t)*35);
+    cam1.lookAt(0,4,0);
+    renderer.render(scene, cam1);
+    return;
+  }
+
+  const dt = Math.min(clock.getDelta(), 0.05);
+
+  if (gState !== 'gameover') {
+    updatePlayer(P1, dt, true);
+    if (gameMode === '2p') updatePlayer(P2, dt, false);
+    updateBots(dt);
+    updateHints();
+
+    // Animate spot markers — only pulse during hiding phase
+    if (gState === 'hiding') {
+      const pulse = 0.3 + 0.15*Math.sin(Date.now()*0.004);
+      spots.forEach(s => {
+        if (s.marker && !s.occupied) s.marker.material.opacity = pulse;
+      });
+    }
+
+    // Proximity indicator (seeking phase only)
+    if (gState === 'seeking') updateProximity();
+
+    // Minimap
+    drawMinimap();
+  }
+
+  if (gameMode === '1p' || !gameMode) {
+    renderer.setViewport(0,0,innerWidth,innerHeight);
+    renderer.setScissorTest(false);
+    cam1.aspect = innerWidth/innerHeight;
+    cam1.updateProjectionMatrix();
+    renderer.render(scene, cam1);
+  } else {
+    // Split screen
+    const hw = Math.floor(innerWidth/2), h = innerHeight;
+    renderer.setScissorTest(true);
+
+    // Left — P1
+    renderer.setViewport(0,0,hw,h);
+    renderer.setScissor(0,0,hw,h);
+    cam1.aspect = hw/h;
+    cam1.updateProjectionMatrix();
+    renderer.render(scene, cam1);
+
+    // Right — P2
+    renderer.setViewport(hw,0,hw,h);
+    renderer.setScissor(hw,0,hw,h);
+    cam2.aspect = hw/h;
+    cam2.updateProjectionMatrix();
+    renderer.render(scene, cam2);
+
+    renderer.setScissorTest(false);
+  }
+}
+
+function onResize() {
+  renderer.setSize(innerWidth, innerHeight);
+  cam1.aspect = innerWidth/innerHeight;
+  cam1.updateProjectionMatrix();
+  cam2.aspect = innerWidth/innerHeight;
+  cam2.updateProjectionMatrix();
+}
+
+// ─────────────────────────────────────────────────────────────
+//  BOOT
+// ─────────────────────────────────────────────────────────────
+initThree();
+</script>
+</body>
+</html>
