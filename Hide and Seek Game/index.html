@@ -62,7 +62,7 @@ canvas{display:block;}
   <h1>Hide &amp; Seek</h1>
   <p class="sub">Can you find them all in time?</p>
   <button class="btn" onclick="startGame('1p')">🔍 1 Player vs 20 Bots</button>
-  <button class="btn btn-red" onclick="startGame('2p')">👥 2 Players + 10 Bots (Split Screen)</button>
+  <button class="btn btn-red" onclick="startGame('2p')">👥 2 Players — 1v1 (Split Screen)</button>
   <div class="controls-hint">
     1P&nbsp;&nbsp;WASD + Mouse to look &nbsp;|&nbsp; E / Space / F = Search &nbsp;|&nbsp; Shift = Sprint<br>
     2P&nbsp;&nbsp;Move mouse on your half of screen to turn &nbsp;|&nbsp; P1: WASD + F/Space=Hide &nbsp;|&nbsp; P2: Arrows + Enter/.=Search
@@ -84,8 +84,8 @@ canvas{display:block;}
 </div>
 
 <div id="divider"></div>
-<div id="p1label">P1 — HIDER (WASD + Q/E · F/Space = Hide)</div>
-<div id="p2label">P2 — SEEKER (Arrows + Z/X · Enter/Slash = Search)</div>
+<div id="p1label">🟢 P1 — HIDER (W/S=Move · A/D=Turn · F/Space=Hide)</div>
+<div id="p2label">🔴 P2 — SEEKER (↑↓=Move · ←→=Turn · Enter=Search)</div>
 
 <div id="vignette"></div>
 <div id="nightLabel">🔦 NIGHT MODE</div>
@@ -226,6 +226,11 @@ window.addEventListener('keydown', e => {
   onKeyPress(e.code);
 });
 window.addEventListener('keyup',   e => { keys[e.code] = false; });
+// Prevent arrow keys / space from scrolling the page during gameplay
+window.addEventListener('keydown', e => {
+  if (gState !== 'menu' && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))
+    e.preventDefault();
+}, { capture: true });
 
 document.addEventListener('mousemove', e => {
   if (gState === 'gameover') return;
@@ -927,18 +932,16 @@ function updatePlayer(P, dt, isP1) {
   if (isP1) {
     if (keys['KeyW']) { dx+=Math.sin(P.yaw); dz+=Math.cos(P.yaw); }
     if (keys['KeyS']) { dx-=Math.sin(P.yaw); dz-=Math.cos(P.yaw); }
-    if (keys['KeyA']) { dx+=Math.cos(P.yaw); dz-=Math.sin(P.yaw); }
-    if (keys['KeyD']) { dx-=Math.cos(P.yaw); dz+=Math.sin(P.yaw); }
-    if (keys['KeyQ']) P.yaw += TURN_SPD*dt;
-    if (keys['KeyE'] && gameMode==='2p') P.yaw -= TURN_SPD*dt;
+    // A/D = turn left/right (more intuitive than strafing for this game)
+    if (keys['KeyA']) P.yaw += TURN_SPD*dt;
+    if (keys['KeyD']) P.yaw -= TURN_SPD*dt;
+    // Mouse look also handles turning (pointer lock in 1P, free in 2P)
   } else {
     if (keys['ArrowUp'])    { dx+=Math.sin(P.yaw); dz+=Math.cos(P.yaw); }
     if (keys['ArrowDown'])  { dx-=Math.sin(P.yaw); dz-=Math.cos(P.yaw); }
-    if (keys['ArrowLeft'])  { dx+=Math.cos(P.yaw); dz-=Math.sin(P.yaw); }
-    if (keys['ArrowRight']) { dx-=Math.cos(P.yaw); dz+=Math.sin(P.yaw); }
-    // Z / Comma = turn left,  X / Period = turn right
-    if (keys['KeyZ'] || keys['Comma'])  P.yaw += TURN_SPD*dt;
-    if (keys['KeyX'] || keys['Period']) P.yaw -= TURN_SPD*dt;
+    // Left/Right arrows = turn (not strafe)
+    if (keys['ArrowLeft'])  P.yaw += TURN_SPD*dt;
+    if (keys['ArrowRight']) P.yaw -= TURN_SPD*dt;
   }
 
   const isMoving = dx !== 0 || dz !== 0;
@@ -960,11 +963,7 @@ function updatePlayer(P, dt, isP1) {
     P.mesh.rotation.y = P.yaw + Math.PI;
   }
 
-  // Head bob — stored on player object (not window[], which breaks with let)
-  const bobStep = sprint ? 10 : 6.5;
-  if (isMoving) P.bobT += dt * bobStep;
-  else          P.bobT *= Math.exp(-dt * 9);
-  const bob = Math.sin(P.bobT) * (sprint ? 0.10 : 0.055);
+  const bob = 0; // no head bob — keeps screen stable
 
   const cam = isP1 ? cam1 : cam2;
   cam.position.set(P.pos.x, P.pos.y + bob, P.pos.z);
@@ -1084,11 +1083,11 @@ function startGame(mode) {
   document.getElementById('hud').style.display  = 'flex';
   document.getElementById('floorInd').style.display = 'block';
 
-  const numBots = mode === '1p' ? 20 : 10;
+  const numBots = mode === '1p' ? 20 : 0; // 2P = pure 1v1, no bots
   totalHiders   = numBots + (mode === '2p' ? 1 : 0);
 
   for (let i=0; i<numBots; i++) createBot(i);
-  assignBots();
+  if (numBots > 0) assignBots();
 
   if (mode === '1p') {
     // Player = seeker, bots = hiders
@@ -1106,20 +1105,20 @@ function startGame(mode) {
     P2.isHider = false;
     P1.pos.set(-3, EYE_H, 3);  P1.yaw = Math.PI;
     P2.pos.set(0, EYE_H, 40);  P2.yaw = Math.PI;
-    createPlayerMesh(P2, 0xef9a9a);
-    createPlayerMesh(P1, 0x4fc3f7);
+    createPlayerMesh(P2, 0x8b0000); // dark red
+    createPlayerMesh(P1, 0x00897b); // teal green
     document.getElementById('divider').style.display = 'block';
     document.getElementById('p1label').style.display = 'block';
     document.getElementById('p2label').style.display = 'block';
     document.getElementById('p1ch').style.display    = 'block';
     document.getElementById('p2ch').style.display    = 'block';
-    document.getElementById('modeTag').textContent = '2 PLAYERS + 10 BOTS';
+    document.getElementById('modeTag').textContent = '2 PLAYERS — 1v1';
     document.getElementById('roundDisplay').style.display = 'block';
     document.getElementById('rTotal').textContent = TOTAL_ROUNDS;
     document.getElementById('tc').textContent = totalHiders;
     document.getElementById('foundBox').style.display = 'block';
     document.getElementById('controls').textContent =
-      'Move mouse on your screen half to look · P1: WASD + F/Space=Hide · P2: Arrows + Enter//.=Search';
+      'P1 (Teal): W/S=Move · A/D=Turn · F/Space=Hide    |    P2 (Red): ↑↓=Move · ←→=Turn · Enter=Search';
   }
 
   startHiding();
