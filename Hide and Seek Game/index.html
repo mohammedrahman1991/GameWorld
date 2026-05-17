@@ -961,7 +961,7 @@ function updatePlayer(P, dt, isP1) {
   const cam = isP1 ? cam1 : cam2;
   cam.position.set(P.pos.x, P.pos.y + bob, P.pos.z);
   cam.rotation.order = 'YXZ';
-  cam.rotation.y = P.yaw;
+  cam.rotation.y = P.yaw + Math.PI;
   cam.rotation.x = P.pitch;
 
   // Footstep sounds (seeker only, seeking phase)
