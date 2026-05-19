@@ -29,7 +29,7 @@ const GRAVITY    = 0.55;
 const JUMP_FORCE = -13;
 const MOVE_SPEED = 4.5;
 const GROUND_Y   = 575;
-const BLOCK_SZ   = 20;
+const BLOCK_SZ   = 28;
 
 const WEAPONS = {
   sword:    { name:'Sword',    color:'#aaaaff', damage:25, range:65,  cooldown:500,  ammo:-1, type:'melee',    speed:0,  spread:0  },
@@ -42,22 +42,58 @@ const WEAPONS = {
 // ================================================================
 // VOICE (Web Speech API — deep male voice)
 // ================================================================
+// VOICE — natural male, fun lines
+// ================================================================
+const DEATH_QUIPS = [
+  "Oof. That one hurt.",
+  "My castle! MY BEAUTIFUL CASTLE!",
+  "You got me. Don't get cocky.",
+  "I slipped on the snow. That's my excuse.",
+  "This is fine. Everything is fine.",
+  "I'll be back. Probably.",
+  "Did you just use a sword? In this economy?",
+  "Respawning... with REVENGE in my heart.",
+];
+const BLUE_WIN_LINES = [
+  "Blue wins! Red never stood a chance!",
+  "Blue team, let's gooo!",
+  "Blue wins! Someone call Red a doctor.",
+  "The blue side is victorious. As always.",
+];
+const RED_WIN_LINES = [
+  "Red wins! Blue is going home crying!",
+  "Red team dominates! Unstoppable!",
+  "Red wins! That castle crumbled like a cookie.",
+  "The red side wins. Better luck next time, Blue.",
+];
+const TIE_LINES = [
+  "It's a tie! Nobody wins. Nobody loses. Everybody cries.",
+  "A tie? Really? You two need to try harder.",
+  "Tie game! Both of you go home and think about what you've done.",
+];
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
 function speak(text) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.pitch = 0.55;   // low male voice
-  u.rate  = 0.88;
-  u.volume = 1;
-  // Prefer a male English voice if available
+  const u    = new SpeechSynthesisUtterance(text);
+  u.volume   = 1;
+  u.rate     = 1.05;   // slightly faster = more natural
+  u.pitch    = 1.0;    // normal pitch — not robotic low
+  // Pick the most natural-sounding English voice available
   const voices = window.speechSynthesis.getVoices();
-  const male = voices.find(v => /male|guy|david|mark|daniel|alex/i.test(v.name) && /en/i.test(v.lang));
-  if (male) u.voice = male;
+  const pref = voices.find(v => /samantha|karen|daniel|moira|fiona|tom|reed|evan|aaron/i.test(v.name) && /en/i.test(v.lang))
+            || voices.find(v => /en[-_]US|en[-_]GB|en[-_]AU/i.test(v.lang) && !v.name.includes('Google'))
+            || voices.find(v => /en/i.test(v.lang));
+  if (pref) u.voice = pref;
   window.speechSynthesis.speak(u);
 }
-// Pre-load voices (browser quirk — must call getVoices early)
-window.speechSynthesis && window.speechSynthesis.getVoices();
-window.speechSynthesis && window.speechSynthesis.addEventListener('voiceschanged', () => {});
+// Pre-load voices
+if (window.speechSynthesis) {
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.addEventListener('voiceschanged', () => window.speechSynthesis.getVoices());
+}
 
 // ================================================================
 // PIXEL ART — 10x14 character sprite (0 = transparent)
@@ -235,35 +271,38 @@ class Block {
 
     fillRect(this.x, this.y, this.w, this.h, stone);
 
-    // Brick mortar grid — alternating row offset
+    // Brick mortar grid — all positions proportional to block size
+    const hw = this.w / 2, hh = this.h / 2;
     ctx.fillStyle = mortar;
-    ctx.fillRect(this.x, this.y + 9, this.w, 2);   // horizontal mortar
+    ctx.fillRect(this.x,           this.y + hh - 1, this.w, 2);  // horizontal mortar
     const row = Math.round(this.y / BLOCK_SZ);
-    const vx  = (row % 2 === 0) ? this.x + 10 : this.x + 5;
-    ctx.fillRect(vx, this.y,      2, 9);  // upper vertical mortar
-    ctx.fillRect(vx, this.y + 11, 2, 9); // lower vertical mortar
+    const vx  = (row % 2 === 0) ? this.x + hw : this.x + hw * 0.5;
+    ctx.fillRect(vx, this.y,          2, hh - 1); // upper vertical mortar
+    ctx.fillRect(vx, this.y + hh + 1, 2, hh - 1); // lower vertical mortar
 
     // Left + top edge highlight
-    fillRect(this.x,     this.y + 4, 2, this.h - 4, hilite);
-    fillRect(this.x + 2, this.y + 4, this.w - 4, 2, hilite);
+    fillRect(this.x,     this.y + 5, 2, this.h - 5, hilite);
+    fillRect(this.x + 2, this.y + 5, this.w - 4, 2, hilite);
 
-    // Snow cap (top 4px, full width)
-    fillRect(this.x,     this.y,     this.w,     4, '#cce4f8');
+    // Snow cap (top 5px, full width)
+    fillRect(this.x,     this.y,     this.w,     5, '#cce4f8');
     fillRect(this.x + 1, this.y,     this.w - 2, 2, '#ffffff');
     // Snow drips at corners
-    fillRect(this.x,              this.y + 4, 3, 2, '#ddf0ff');
-    fillRect(this.x + this.w - 3, this.y + 4, 3, 2, '#ddf0ff');
+    fillRect(this.x,              this.y + 5, 4, 3, '#ddf0ff');
+    fillRect(this.x + this.w - 4, this.y + 5, 4, 3, '#ddf0ff');
 
-    // Damage cracks
+    // Damage cracks — proportional to block size
     if (pct < 0.66) {
       ctx.strokeStyle = '#1a0800'; ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(this.x + 4, this.y + 5); ctx.lineTo(this.x + 13, this.y + 18);
+      ctx.moveTo(this.x + hw*0.4, this.y + hh*0.4);
+      ctx.lineTo(this.x + hw*1.3, this.y + hh*1.8);
       ctx.stroke();
     }
     if (pct < 0.33) {
       ctx.beginPath();
-      ctx.moveTo(this.x + 15, this.y + 3); ctx.lineTo(this.x + 6,  this.y + 18);
+      ctx.moveTo(this.x + hw*1.5, this.y + hh*0.3);
+      ctx.lineTo(this.x + hw*0.6, this.y + hh*1.8);
       ctx.stroke();
       ctx.beginPath();
       ctx.moveTo(this.x + 2,  this.y + 11); ctx.lineTo(this.x + 16, this.y + 9);
@@ -436,7 +475,7 @@ class Player {
       killer.kills++;
       score[killer.team] = (score[killer.team] || 0) + 100;
     }
-    speak(`Get ready to battle again!`);
+    speak(pick(DEATH_QUIPS));
   }
 
   respawn() {
@@ -1048,7 +1087,9 @@ function updateBattle(dt) {
     gameOver = true;
     const w = score.blue > score.red ? 'BLUE' : score.red > score.blue ? 'RED' : null;
     goMessage = w ? `${w} WINS! (by score)` : "IT'S A TIE!";
-    if (w) speak(`${w} wins!`); else speak("It's a tie!");
+    if (w === 'BLUE') speak(pick(BLUE_WIN_LINES));
+    else if (w === 'RED') speak(pick(RED_WIN_LINES));
+    else speak(pick(TIE_LINES));
     return;
   }
 
@@ -1087,8 +1128,8 @@ function updateBattle(dt) {
   // Castle destroyed wins
   const lCastle = blocks.filter(b => b.x < CW/2 && !b.playerPlaced);
   const rCastle = blocks.filter(b => b.x >= CW/2 && !b.playerPlaced);
-  if (lCastle.length > 0 && lCastle.every(b => b.dead)) { gameOver = true; goMessage = 'BLUE WINS! Red castle destroyed!'; speak('Blue wins! Red castle destroyed!'); }
-  if (rCastle.length > 0 && rCastle.every(b => b.dead)) { gameOver = true; goMessage = 'RED WINS! Blue castle destroyed!'; speak('Red wins! Blue castle destroyed!'); }
+  if (lCastle.length > 0 && lCastle.every(b => b.dead)) { gameOver = true; goMessage = 'BLUE WINS! Red castle destroyed!'; speak(pick(BLUE_WIN_LINES)); }
+  if (rCastle.length > 0 && rCastle.every(b => b.dead)) { gameOver = true; goMessage = 'RED WINS! Blue castle destroyed!'; speak(pick(RED_WIN_LINES)); }
 
   handleBlockPlacement();
 }
