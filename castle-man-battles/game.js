@@ -40,6 +40,26 @@ const WEAPONS = {
 };
 
 // ================================================================
+// VOICE (Web Speech API — deep male voice)
+// ================================================================
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.pitch = 0.55;   // low male voice
+  u.rate  = 0.88;
+  u.volume = 1;
+  // Prefer a male English voice if available
+  const voices = window.speechSynthesis.getVoices();
+  const male = voices.find(v => /male|guy|david|mark|daniel|alex/i.test(v.name) && /en/i.test(v.lang));
+  if (male) u.voice = male;
+  window.speechSynthesis.speak(u);
+}
+// Pre-load voices (browser quirk — must call getVoices early)
+window.speechSynthesis && window.speechSynthesis.getVoices();
+window.speechSynthesis && window.speechSynthesis.addEventListener('voiceschanged', () => {});
+
+// ================================================================
 // PIXEL ART — 10x14 character sprite (0 = transparent)
 // 1=body 2=eye/face 3=dark
 // ================================================================
@@ -178,6 +198,9 @@ let blocks       = [];
 let platforms    = [];
 let poisonBalls  = [];
 let explosions   = [];
+let snowflakes   = [];
+let leftCastleX  = 30;
+let rightCastleX = CW - 30 - 10 * BLOCK_SZ;
 let plane        = null;
 let planeTimer   = 20000;
 let zombieSpawnT = 3000;
@@ -188,11 +211,12 @@ let showPoisonWarn = false;
 // CASTLE BLOCK
 // ================================================================
 class Block {
-  constructor(x, y) {
+  constructor(x, y, playerPlaced = false) {
     this.x = x; this.y = y;
     this.w = BLOCK_SZ; this.h = BLOCK_SZ;
     this.hp = 100; this.maxHp = 100;
     this.dead = false;
+    this.playerPlaced = playerPlaced;
   }
   damage(amt) {
     this.hp -= amt;
@@ -201,22 +225,48 @@ class Block {
   draw() {
     if (this.dead) return;
     const pct = this.hp / this.maxHp;
-    const c = pct > 0.66 ? '#778899' : pct > 0.33 ? '#996655' : '#774433';
-    fillRect(this.x, this.y, this.w, this.h, c);
-    // highlight
-    fillRect(this.x, this.y, this.w, 3, '#aabbcc');
-    fillRect(this.x, this.y, 3, this.h, '#aabbcc');
-    strokeRect(this.x, this.y, this.w, this.h, '#556677', 1);
-    // crack lines
+
+    // Stone base — warms to orange-red as damaged
+    const stone  = this.playerPlaced
+      ? (pct > 0.66 ? '#7a9a88' : pct > 0.33 ? '#88774a' : '#664433')
+      : (pct > 0.66 ? '#6e7d8e' : pct > 0.33 ? '#886655' : '#664433');
+    const mortar = pct > 0.66 ? '#4a5a6a' : '#3a2a18';
+    const hilite = pct > 0.66 ? '#9aaabb' : '#998866';
+
+    fillRect(this.x, this.y, this.w, this.h, stone);
+
+    // Brick mortar grid — alternating row offset
+    ctx.fillStyle = mortar;
+    ctx.fillRect(this.x, this.y + 9, this.w, 2);   // horizontal mortar
+    const row = Math.round(this.y / BLOCK_SZ);
+    const vx  = (row % 2 === 0) ? this.x + 10 : this.x + 5;
+    ctx.fillRect(vx, this.y,      2, 9);  // upper vertical mortar
+    ctx.fillRect(vx, this.y + 11, 2, 9); // lower vertical mortar
+
+    // Left + top edge highlight
+    fillRect(this.x,     this.y + 4, 2, this.h - 4, hilite);
+    fillRect(this.x + 2, this.y + 4, this.w - 4, 2, hilite);
+
+    // Snow cap (top 4px, full width)
+    fillRect(this.x,     this.y,     this.w,     4, '#cce4f8');
+    fillRect(this.x + 1, this.y,     this.w - 2, 2, '#ffffff');
+    // Snow drips at corners
+    fillRect(this.x,              this.y + 4, 3, 2, '#ddf0ff');
+    fillRect(this.x + this.w - 3, this.y + 4, 3, 2, '#ddf0ff');
+
+    // Damage cracks
     if (pct < 0.66) {
-      ctx.strokeStyle = '#445566'; ctx.lineWidth = 1;
+      ctx.strokeStyle = '#1a0800'; ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(this.x + 4, this.y + 4); ctx.lineTo(this.x + 12, this.y + 14);
+      ctx.moveTo(this.x + 4, this.y + 5); ctx.lineTo(this.x + 13, this.y + 18);
       ctx.stroke();
     }
     if (pct < 0.33) {
       ctx.beginPath();
-      ctx.moveTo(this.x + 15, this.y + 3); ctx.lineTo(this.x + 7, this.y + 17);
+      ctx.moveTo(this.x + 15, this.y + 3); ctx.lineTo(this.x + 6,  this.y + 18);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(this.x + 2,  this.y + 11); ctx.lineTo(this.x + 16, this.y + 9);
       ctx.stroke();
     }
   }
@@ -346,12 +396,12 @@ class Player {
           }
         }
       }
-      // Melee damages blocks too
+      // Melee damages blocks
       for (const b of blocks) {
         if (b.dead) continue;
         if (b.x + b.w > ax && b.x < ax + w.range &&
             b.y + b.h > this.y - 5 && b.y < this.y + this.h + 5) {
-          b.damage(w.damage * 0.4);
+          b.damage(w.damage); // full melee damage to blocks
         }
       }
     } else {
@@ -386,6 +436,7 @@ class Player {
       killer.kills++;
       score[killer.team] = (score[killer.team] || 0) + 100;
     }
+    speak(`Get ready to battle again!`);
   }
 
   respawn() {
@@ -394,17 +445,18 @@ class Player {
     this.weapon = 'sword';
     this.ammo = { sword:-1, pistol:0, smg:0, shotgun:0, launcher:0 };
     if (gameMode === 'zombie') {
-      this.x = this.team === 'blue' ? 80  : 130;
-      this.y = GROUND_Y - 200;
+      this.x = this.team === 'blue' ? 60  : 110;
+      this.y = GROUND_Y - 250;
     } else {
-      this.x = this.team === 'blue' ? CW - 210 : 180;
-      this.y = GROUND_Y - 200;
+      this.x = this.team === 'blue' ? rightCastleX + BLOCK_SZ + 10 : leftCastleX + BLOCK_SZ + 10;
+      this.y = GROUND_Y - 250;
     }
   }
 
   quickPlaceBlock() {
+    if (this.onGround) return; // only usable while in the air
     const gx = snapGrid(this.x + this.w / 2 - BLOCK_SZ / 2);
-    const gy = snapGrid(this.y - BLOCK_SZ);
+    const gy = snapGrid(this.y + this.h); // place block directly below feet
     if (placeBlockAt(gx, gy)) {
       this.blockCount--;
       this.buildCD = 280;
@@ -877,32 +929,77 @@ class PoisonBall {
 function makeBattleMap() {
   blocks = []; platforms = []; chests = [];
 
-  // Open arena — players build their own structures with [G] or click
-  platforms.push({ x: 100, y: GROUND_Y - 100, w: 120, h: 12 });
-  platforms.push({ x: 300, y: GROUND_Y - 80,  w: 130, h: 12 });
-  platforms.push({ x: 480, y: GROUND_Y - 160, w: 170, h: 12 });
-  platforms.push({ x: 540, y: GROUND_Y - 260, w: 110, h: 12 });
-  platforms.push({ x: 740, y: GROUND_Y - 80,  w: 130, h: 12 });
-  platforms.push({ x: 950, y: GROUND_Y - 100, w: 120, h: 12 });
-  platforms.push({ x: 200, y: GROUND_Y - 200, w: 100, h: 12 });
-  platforms.push({ x: 860, y: GROUND_Y - 200, w: 100, h: 12 });
+  const baseY    = GROUND_Y - BLOCK_SZ;
+  const castleH  = 16;
+  const castleW  = 10;
+  leftCastleX  = 30;
+  rightCastleX = CW - 30 - castleW * BLOCK_SZ; // 30 + 200 from right = 970
 
-  // Chests
-  [340, 555, 830, 145, 1010, 470].forEach((cx, i) => {
-    chests.push(new Chest(cx, i % 2 === 0 ? GROUND_Y - 24 : GROUND_Y - 84));
+  function makeCastle(startX) {
+    for (let r = 0; r < castleH; r++) {
+      for (let c = 0; c < castleW; c++) {
+        const isWall       = c === 0 || c === castleW - 1;
+        const isRoof       = r === castleH - 1;
+        const isBattlement = isRoof && c % 2 === 0; // alternating merlons on top
+        if (isWall || isBattlement) {
+          blocks.push(new Block(startX + c * BLOCK_SZ, baseY - r * BLOCK_SZ));
+        }
+      }
+    }
+  }
+
+  makeCastle(leftCastleX);
+  makeCastle(rightCastleX);
+
+  // Interior parkour platforms (3 levels per castle)
+  const iw = BLOCK_SZ; // inner offset
+  [leftCastleX, rightCastleX].forEach(sx => {
+    [4, 8, 12].forEach(lvl => {
+      platforms.push({ x: sx + iw, y: baseY - lvl * BLOCK_SZ, w: (castleW - 2) * BLOCK_SZ, h: 10 });
+    });
+  });
+
+  // Middle arena floating platforms
+  platforms.push({ x: 370, y: GROUND_Y - 95,  w: 140, h: 10 });
+  platforms.push({ x: 680, y: GROUND_Y - 95,  w: 140, h: 10 });
+  platforms.push({ x: 480, y: GROUND_Y - 180, w: 240, h: 10 });
+  platforms.push({ x: 520, y: GROUND_Y - 265, w: 160, h: 10 });
+
+  // Chests (spread across map)
+  [300, 580, 870, 160, 1000, 495].forEach((cx, i) => {
+    chests.push(new Chest(cx, i % 2 === 0 ? GROUND_Y - 24 : GROUND_Y - 98));
   });
 }
 
 function makeZombieMap() {
   blocks = []; platforms = [];
 
-  // Open map — build your own wall with [G] or click before zombies arrive
-  platforms.push({ x: 40,  y: GROUND_Y - 90,  w: 140, h: 12 });
-  platforms.push({ x: 40,  y: GROUND_Y - 190, w: 140, h: 12 });
-  platforms.push({ x: 40,  y: GROUND_Y - 290, w: 140, h: 12 });
-  platforms.push({ x: 220, y: GROUND_Y - 110, w: 110, h: 12 });
-  platforms.push({ x: 370, y: GROUND_Y - 150, w: 110, h: 12 });
-  platforms.push({ x: 520, y: GROUND_Y - 90,  w: 100, h: 12 });
+  const baseY   = GROUND_Y - BLOCK_SZ;
+  const castleH = 18;
+  const castleW = 12;
+  const startX  = 15;
+
+  for (let r = 0; r < castleH; r++) {
+    for (let c = 0; c < castleW; c++) {
+      const isWall       = c === 0 || c === castleW - 1;
+      const isRoof       = r === castleH - 1;
+      const isBattlement = isRoof && c % 2 === 0;
+      if (isWall || isBattlement) {
+        blocks.push(new Block(startX + c * BLOCK_SZ, baseY - r * BLOCK_SZ));
+      }
+    }
+  }
+
+  // Interior parkour platforms
+  const iw = BLOCK_SZ;
+  [4, 8, 12, 16].forEach(lvl => {
+    platforms.push({ x: startX + iw, y: baseY - lvl * BLOCK_SZ, w: (castleW - 2) * BLOCK_SZ, h: 10 });
+  });
+
+  // Outside platforms
+  platforms.push({ x: 265, y: GROUND_Y - 95,  w: 120, h: 10 });
+  platforms.push({ x: 430, y: GROUND_Y - 155, w: 110, h: 10 });
+  platforms.push({ x: 580, y: GROUND_Y - 90,  w: 100, h: 10 });
 }
 
 // ================================================================
@@ -917,9 +1014,10 @@ function initBattle() {
   projectiles = []; weaponDrops = []; fallingCrates = [];
   poisonBalls = []; explosions = [];
   makeBattleMap();
+  initSnowflakes();
   players = [
-    new Player(CW - 210, GROUND_Y - 200, 'blue', CTRL_P1),
-    new Player(180,      GROUND_Y - 200, 'red',  CTRL_P2),
+    new Player(rightCastleX + BLOCK_SZ + 10, GROUND_Y - 250, 'blue', CTRL_P1),
+    new Player(leftCastleX  + BLOCK_SZ + 10, GROUND_Y - 250, 'red',  CTRL_P2),
   ];
 }
 
@@ -933,9 +1031,10 @@ function initZombie(numP) {
   projectiles = []; weaponDrops = []; fallingCrates = [];
   poisonBalls = []; explosions = []; chests = [];
   makeZombieMap();
+  initSnowflakes();
   zombies = [0,1,2].map(i => new Zombie(CW - 40 - i * 60, GROUND_Y - 50));
-  players = [new Player(80, GROUND_Y - 200, 'blue', CTRL_P1)];
-  if (numP === 2) players.push(new Player(130, GROUND_Y - 200, 'red', CTRL_P2));
+  players = [new Player(60, GROUND_Y - 250, 'blue', CTRL_P1)];
+  if (numP === 2) players.push(new Player(110, GROUND_Y - 250, 'red', CTRL_P2));
 }
 
 // ================================================================
@@ -948,7 +1047,9 @@ function updateBattle(dt) {
   if (battleTimeLeft <= 0) {
     gameOver = true;
     const w = score.blue > score.red ? 'BLUE' : score.red > score.blue ? 'RED' : null;
-    goMessage = w ? `${w} WINS! (by score)` : "IT'S A TIE!"; return;
+    goMessage = w ? `${w} WINS! (by score)` : "IT'S A TIE!";
+    if (w) speak(`${w} wins!`); else speak("It's a tie!");
+    return;
   }
 
   players.forEach(p => p.update(dt));
@@ -981,7 +1082,14 @@ function updateBattle(dt) {
     if (explosions[i].life <= 0) explosions.splice(i, 1);
   }
 
-  // Win by score when timer ends (no pre-built castle)
+  updateSnowflakes(dt);
+
+  // Castle destroyed wins
+  const lCastle = blocks.filter(b => b.x < CW/2 && !b.playerPlaced);
+  const rCastle = blocks.filter(b => b.x >= CW/2 && !b.playerPlaced);
+  if (lCastle.length > 0 && lCastle.every(b => b.dead)) { gameOver = true; goMessage = 'BLUE WINS! Red castle destroyed!'; speak('Blue wins! Red castle destroyed!'); }
+  if (rCastle.length > 0 && rCastle.every(b => b.dead)) { gameOver = true; goMessage = 'RED WINS! Blue castle destroyed!'; speak('Red wins! Blue castle destroyed!'); }
+
   handleBlockPlacement();
 }
 
@@ -1040,15 +1148,55 @@ function updateZombie(dt) {
     if (explosions[i].life <= 0) explosions.splice(i, 1);
   }
 
-  // Game over check
+  updateSnowflakes(dt);
+
+  // Game over checks
   const allDead = players.every(p => !p.alive && p.respawnT <= 0);
   if (allDead) {
     gameOver = true;
     const m = Math.floor(zombieElapsed/60000), s = Math.floor((zombieElapsed%60000)/1000);
     goMessage = `GAME OVER! Survived ${m}m ${s}s | Kills: ${zombieKills}`;
   }
+  const castleBlocks = blocks.filter(b => !b.playerPlaced);
+  if (castleBlocks.length > 0 && castleBlocks.every(b => b.dead)) {
+    gameOver = true;
+    const m = Math.floor(zombieElapsed/60000), s = Math.floor((zombieElapsed%60000)/1000);
+    goMessage = `CASTLE FALLEN! Survived ${m}m ${s}s | Kills: ${zombieKills}`;
+  }
 
   handleBlockPlacement();
+}
+
+// ================================================================
+// SNOWFLAKE SYSTEM
+// ================================================================
+function initSnowflakes() {
+  snowflakes = Array.from({ length: 160 }, () => ({
+    x:     Math.random() * CW,
+    y:     Math.random() * CH,
+    spd:   0.7 + Math.random() * 1.8,
+    sz:    1 + Math.floor(Math.random() * 3),
+    drift: (Math.random() - 0.5) * 0.45,
+    a:     0.4 + Math.random() * 0.55,
+  }));
+}
+
+function updateSnowflakes(dt) {
+  const t = dt / 16;
+  for (const s of snowflakes) {
+    s.y += s.spd * t;
+    s.x += s.drift * t;
+    if (s.y > CH)  { s.y = -4; s.x = Math.random() * CW; }
+    if (s.x < -4)  s.x = CW + 4;
+    if (s.x > CW + 4) s.x = -4;
+  }
+}
+
+function drawSnowflakes() {
+  for (const s of snowflakes) {
+    ctx.fillStyle = `rgba(255,255,255,${s.a.toFixed(2)})`;
+    ctx.fillRect(s.x, s.y, s.sz, s.sz);
+  }
 }
 
 // ================================================================
@@ -1060,10 +1208,10 @@ function blockAt(gx, gy) {
   return blocks.find(b => !b.dead && b.x === gx && b.y === gy);
 }
 
-function placeBlockAt(gx, gy) {
+function placeBlockAt(gx, gy, playerPlaced = false) {
   if (gx < 0 || gx + BLOCK_SZ > CW || gy < 0 || gy + BLOCK_SZ > GROUND_Y) return false;
   if (blockAt(gx, gy)) return false;
-  blocks.push(new Block(gx, gy));
+  blocks.push(new Block(gx, gy, playerPlaced));
   return true;
 }
 
@@ -1089,7 +1237,7 @@ function handleBlockPlacement() {
         const d = Math.hypot(p.x + p.w/2 - mx, p.y + p.h/2 - my);
         if (d < bestDist) { bestDist = d; closest = p; }
       }
-      if (closest && placeBlockAt(gx, gy)) closest.blockCount--;
+      if (closest && placeBlockAt(gx, gy, true)) closest.blockCount--;
     }
   }
 
@@ -1115,37 +1263,112 @@ function drawGhostBlock() {
 // RENDER HELPERS
 // ================================================================
 function drawBG() {
+  // Wintry daytime sky
   const g = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
-  g.addColorStop(0, '#0d1b2a'); g.addColorStop(0.65, '#1a3a5c'); g.addColorStop(1, '#2a4a20');
+  g.addColorStop(0, '#8fb4d0'); g.addColorStop(0.55, '#c8dcea'); g.addColorStop(1, '#ddeaf4');
   ctx.fillStyle = g; ctx.fillRect(0, 0, CW, CH);
-  // stars
+
+  // Far snow mountains
+  ctx.fillStyle = '#b8ccda';
+  ctx.beginPath();
+  ctx.moveTo(0, GROUND_Y);
+  [[0,0],[60,180],[140,60],[240,200],[350,50],[450,170],[570,30],[680,190],[790,55],[910,175],[1020,40],[1130,165],[1200,90],[1200,0]].forEach(([x,h]) => ctx.lineTo(x, GROUND_Y - h));
+  ctx.closePath(); ctx.fill();
+  // Snow caps on mountains
   ctx.fillStyle = '#ffffff';
-  [[80,30],[200,55],[370,22],[540,48],[710,18],[880,42],[1060,28],[1150,60],[170,110],[430,90],[660,115],[910,100]].forEach(([sx,sy]) => ctx.fillRect(sx,sy,2,2));
-  fillRect(0, GROUND_Y, CW, CH - GROUND_Y, '#3d2b1f');
-  fillRect(0, GROUND_Y, CW, 7, '#4a7a2a');
+  [[60,180,28],[240,200,32],[570,30,7],[680,190,30],[1020,40,8],[1130,165,26]].forEach(([px,h,sz]) => {
+    ctx.beginPath();
+    ctx.moveTo(px - sz, GROUND_Y - h + sz * 0.5);
+    ctx.lineTo(px, GROUND_Y - h - 3);
+    ctx.lineTo(px + sz, GROUND_Y - h + sz * 0.5);
+    ctx.closePath(); ctx.fill();
+  });
+
+  // Fluffy clouds
+  [[110,70,62,22],[360,52,78,20],[620,65,72,22],[900,58,60,19],[1090,72,55,18]].forEach(([cx,cy,rw,rh]) => {
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    ctx.beginPath(); ctx.ellipse(cx, cy, rw, rh, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx - rw*0.38, cy + 6, rw*0.65, rh*0.75, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx + rw*0.4,  cy + 5, rw*0.60, rh*0.70, 0, 0, Math.PI*2); ctx.fill();
+  });
+
+  // Snowflakes
+  drawSnowflakes();
+
+  // Snowy ground
+  fillRect(0, GROUND_Y, CW, CH - GROUND_Y, '#9ab8cc');
+  fillRect(0, GROUND_Y, CW, 10, '#ddeefa');
+  ctx.fillStyle = '#ffffff';
+  for (let sx = 0; sx < CW; sx += 55) {
+    ctx.beginPath(); ctx.ellipse(sx + 28, GROUND_Y, 34, 9, 0, Math.PI, 0); ctx.fill();
+  }
 }
 
 function drawZombieBG() {
+  // Deep winter night sky
   const g = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
-  g.addColorStop(0, '#080812'); g.addColorStop(0.7, '#14142e'); g.addColorStop(1, '#141e14');
+  g.addColorStop(0, '#040810'); g.addColorStop(0.6, '#0a1220'); g.addColorStop(1, '#101828');
   ctx.fillStyle = g; ctx.fillRect(0, 0, CW, CH);
-  // moon
-  ctx.fillStyle = '#eeeebb';
-  ctx.beginPath(); ctx.arc(940, 75, 38, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = '#0a0a18'; // crescent
-  ctx.beginPath(); ctx.arc(955, 68, 32, 0, Math.PI*2); ctx.fill();
-  // danger zone
-  ctx.fillStyle = 'rgba(180,0,0,0.06)';
+
+  // Stars
+  ctx.fillStyle = '#ffffff';
+  [[55,28],[170,50],[300,16],[440,42],[595,20],[750,52],[895,28],[1055,46],[1165,18],[140,88],[410,78],[700,92],[1010,75]].forEach(([sx,sy]) => {
+    ctx.fillRect(sx, sy, Math.random() < 0.3 ? 2 : 1, Math.random() < 0.3 ? 2 : 1);
+  });
+
+  // Glowing moon
+  ctx.fillStyle = 'rgba(200,220,180,0.15)';
+  ctx.beginPath(); ctx.arc(940, 80, 60, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#ccddb8';
+  ctx.beginPath(); ctx.arc(940, 80, 42, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#ddeec8';
+  ctx.beginPath(); ctx.arc(936, 76, 36, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#0a1220'; // crescent shadow
+  ctx.beginPath(); ctx.arc(952, 72, 33, 0, Math.PI*2); ctx.fill();
+
+  // Dark snowy mountain silhouettes
+  ctx.fillStyle = '#0c1824';
+  ctx.beginPath();
+  ctx.moveTo(0, GROUND_Y);
+  [[0,0],[70,140],[160,45],[270,170],[380,55],[490,145],[600,35],[710,125],[830,65],[950,155],[1070,48],[1160,130],[1200,85],[1200,0]].forEach(([x,h]) => ctx.lineTo(x, GROUND_Y - h));
+  ctx.closePath(); ctx.fill();
+  // Snow on mountain tops
+  ctx.fillStyle = 'rgba(180,210,230,0.4)';
+  [[70,140,22],[270,170,27],[600,35,7],[830,65,11],[1070,48,9]].forEach(([px,h,sz]) => {
+    ctx.beginPath();
+    ctx.moveTo(px-sz, GROUND_Y-h+sz*0.5); ctx.lineTo(px, GROUND_Y-h-2); ctx.lineTo(px+sz, GROUND_Y-h+sz*0.5);
+    ctx.closePath(); ctx.fill();
+  });
+
+  // Red danger zone (zombie spawn side)
+  ctx.fillStyle = 'rgba(180,0,0,0.08)';
   ctx.fillRect(CW * 0.45, 0, CW * 0.55, CH);
-  fillRect(0, GROUND_Y, CW, CH - GROUND_Y, '#111111');
-  fillRect(0, GROUND_Y, CW, 7, '#1e2e1e');
+
+  // Snowflakes
+  drawSnowflakes();
+
+  // Snowy ground (icy blue-gray)
+  fillRect(0, GROUND_Y, CW, CH - GROUND_Y, '#14202c');
+  fillRect(0, GROUND_Y, CW, 10, '#8aacc0');
+  ctx.fillStyle = '#a8c8d8';
+  for (let sx = 0; sx < CW; sx += 55) {
+    ctx.beginPath(); ctx.ellipse(sx + 28, GROUND_Y, 34, 8, 0, Math.PI, 0); ctx.fill();
+  }
 }
 
 function drawPlatforms() {
   for (const p of platforms) {
-    fillRect(p.x, p.y, p.w, p.h, '#445566');
-    fillRect(p.x, p.y, p.w, 4, '#5d7799');
-    strokeRect(p.x, p.y, p.w, p.h, '#334455', 1);
+    // Wood planks (snow-covered)
+    fillRect(p.x, p.y, p.w, p.h, '#6a4e30');
+    // Plank lines
+    ctx.strokeStyle = '#4a3218'; ctx.lineWidth = 1;
+    for (let px = p.x + 22; px < p.x + p.w - 4; px += 22) {
+      ctx.beginPath(); ctx.moveTo(px, p.y + 2); ctx.lineTo(px, p.y + p.h); ctx.stroke();
+    }
+    // Snow on top
+    fillRect(p.x,     p.y,     p.w,     4, '#cce8f8');
+    fillRect(p.x + 1, p.y,     p.w - 2, 2, '#ffffff');
+    strokeRect(p.x, p.y, p.w, p.h, '#3a2210', 1);
   }
 }
 
