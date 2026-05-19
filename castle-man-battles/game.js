@@ -41,59 +41,74 @@ const WEAPONS = {
 };
 
 // ================================================================
-// VOICE (Web Speech API — deep male voice)
 // ================================================================
-// VOICE — natural male, fun lines
+// VOICE — human-sounding, funny commentary
 // ================================================================
 const DEATH_QUIPS = [
-  "Oof. That one hurt.",
-  "My castle! MY BEAUTIFUL CASTLE!",
-  "You got me. Don't get cocky.",
-  "I slipped on the snow. That's my excuse.",
-  "This is fine. Everything is fine.",
-  "I'll be back. Probably.",
-  "Did you just use a sword? In this economy?",
-  "Respawning... with REVENGE in my heart.",
+  "Oof... yeah, that one stung a little.",
+  "My castle! My beautiful, beautiful castle!",
+  "Okay okay, you got me. Don't celebrate yet.",
+  "I slipped on the snow. That is genuinely my excuse.",
+  "This is fine. Everything is completely fine.",
+  "I'll be back. With a bigger sword.",
+  "Did you seriously just use a sword right now? In this day and age?",
+  "Alright, shake it off. Shake it off.",
+  "I was not expecting that. At all.",
+  "My guy really just blew up my wall. My wall!",
 ];
 const BLUE_WIN_LINES = [
-  "Blue wins! Red never stood a chance!",
-  "Blue team, let's gooo!",
-  "Blue wins! Someone call Red a doctor.",
-  "The blue side is victorious. As always.",
+  "Blue wins! Red, go sit in the corner and think about what happened.",
+  "Blue team takes it! That castle didn't stand a chance.",
+  "Blue wins! Honestly? Not even close.",
+  "Blue side wins! Someone call Red a snow plow because they got swept.",
 ];
 const RED_WIN_LINES = [
-  "Red wins! Blue is going home crying!",
-  "Red team dominates! Unstoppable!",
-  "Red wins! That castle crumbled like a cookie.",
-  "The red side wins. Better luck next time, Blue.",
+  "Red wins! Blue, you tried. You really tried.",
+  "Red team wins! That was an absolute demolition.",
+  "Red wins! That castle crumbled faster than my confidence on a Monday.",
+  "Red side wins! Blue, pack it up.",
 ];
 const TIE_LINES = [
-  "It's a tie! Nobody wins. Nobody loses. Everybody cries.",
-  "A tie? Really? You two need to try harder.",
-  "Tie game! Both of you go home and think about what you've done.",
+  "It's a tie! Nobody wins. Nobody loses. Everybody is sad.",
+  "A tie?! Come on guys, one of you had to be better than the other.",
+  "Tie game. You are both equally bad. Congratulations.",
 ];
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
+// Cache the best voice once loaded
+let _bestVoice = null;
+function getBestVoice() {
+  if (_bestVoice) return _bestVoice;
+  const voices = window.speechSynthesis.getVoices();
+  // Priority: natural-sounding named voices > non-Google en-US > any English
+  _bestVoice =
+    voices.find(v => /samantha|karen|daniel|moira|fiona|tom|reed|evan|aaron|zoe|nicky/i.test(v.name)) ||
+    voices.find(v => /en[-_]US/i.test(v.lang) && !/google/i.test(v.name)) ||
+    voices.find(v => /en[-_]GB/i.test(v.lang) && !/google/i.test(v.name)) ||
+    voices.find(v => /en/i.test(v.lang) && !/google/i.test(v.name)) ||
+    voices.find(v => /en/i.test(v.lang)) ||
+    null;
+  return _bestVoice;
+}
+
 function speak(text) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
-  const u    = new SpeechSynthesisUtterance(text);
-  u.volume   = 1;
-  u.rate     = 1.05;   // slightly faster = more natural
-  u.pitch    = 1.0;    // normal pitch — not robotic low
-  // Pick the most natural-sounding English voice available
-  const voices = window.speechSynthesis.getVoices();
-  const pref = voices.find(v => /samantha|karen|daniel|moira|fiona|tom|reed|evan|aaron/i.test(v.name) && /en/i.test(v.lang))
-            || voices.find(v => /en[-_]US|en[-_]GB|en[-_]AU/i.test(v.lang) && !v.name.includes('Google'))
-            || voices.find(v => /en/i.test(v.lang));
-  if (pref) u.voice = pref;
+  const u  = new SpeechSynthesisUtterance(text);
+  u.volume = 1;
+  // Natural conversational tone: normal pitch, slightly varied rate
+  u.pitch  = 1.08;
+  u.rate   = 0.96 + Math.random() * 0.1; // tiny rate variation each call
+  const v  = getBestVoice();
+  if (v) u.voice = v;
   window.speechSynthesis.speak(u);
 }
-// Pre-load voices
+
 if (window.speechSynthesis) {
-  window.speechSynthesis.getVoices();
-  window.speechSynthesis.addEventListener('voiceschanged', () => window.speechSynthesis.getVoices());
+  // Voices load asynchronously — bust cache on change
+  window.speechSynthesis.addEventListener('voiceschanged', () => { _bestVoice = null; getBestVoice(); });
+  getBestVoice();
 }
 
 // ================================================================
