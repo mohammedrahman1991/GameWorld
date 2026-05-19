@@ -29,7 +29,8 @@ const GRAVITY    = 0.55;
 const JUMP_FORCE = -13;
 const MOVE_SPEED = 4.5;
 const GROUND_Y   = 575;
-const BLOCK_SZ   = 28;
+const BLOCK_SZ   = 28;   // castle block size
+const PLACE_SZ   = 56;   // player-placed block size (2× castle)
 
 const WEAPONS = {
   sword:    { name:'Sword',    color:'#aaaaff', damage:25, range:65,  cooldown:500,  ammo:-1, type:'melee',    speed:0,  spread:0  },
@@ -249,7 +250,8 @@ let showPoisonWarn = false;
 class Block {
   constructor(x, y, playerPlaced = false) {
     this.x = x; this.y = y;
-    this.w = BLOCK_SZ; this.h = BLOCK_SZ;
+    const sz = playerPlaced ? PLACE_SZ : BLOCK_SZ;
+    this.w = sz; this.h = sz;
     this.hp = 100; this.maxHp = 100;
     this.dead = false;
     this.playerPlaced = playerPlaced;
@@ -494,9 +496,10 @@ class Player {
 
   quickPlaceBlock() {
     if (this.onGround) return; // only usable while in the air
-    const gx = snapGrid(this.x + this.w / 2 - BLOCK_SZ / 2);
-    const gy = snapGrid(this.y + this.h); // place block directly below feet
-    if (placeBlockAt(gx, gy)) {
+    // Center the big placed block under the player's feet
+    const gx = Math.floor((this.x + this.w / 2 - PLACE_SZ / 2) / PLACE_SZ) * PLACE_SZ;
+    const gy = Math.floor((this.y + this.h) / PLACE_SZ) * PLACE_SZ;
+    if (placeBlockAt(gx, gy, true)) {
       this.blockCount--;
       this.buildCD = 280;
     }
@@ -1250,14 +1253,20 @@ function blockAt(gx, gy) {
 }
 
 function placeBlockAt(gx, gy, playerPlaced = false) {
-  if (gx < 0 || gx + BLOCK_SZ > CW || gy < 0 || gy + BLOCK_SZ > GROUND_Y) return false;
-  if (blockAt(gx, gy)) return false;
+  const sz = playerPlaced ? PLACE_SZ : BLOCK_SZ;
+  if (gx < 0 || gx + sz > CW || gy < 0 || gy + sz > GROUND_Y) return false;
+  // Reject if this footprint overlaps any existing block
+  const overlaps = blocks.some(b => !b.dead &&
+    gx < b.x + b.w && gx + sz > b.x &&
+    gy < b.y + b.h && gy + sz > b.y);
+  if (overlaps) return false;
   blocks.push(new Block(gx, gy, playerPlaced));
   return true;
 }
 
-function removeBlockAt(gx, gy) {
-  const b = blockAt(gx, gy);
+function removeBlockAt(px, py) {
+  // Find whichever block the cursor actually overlaps (works for any block size)
+  const b = blocks.find(b => !b.dead && px >= b.x && px < b.x + b.w && py >= b.y && py < b.y + b.h);
   if (b) { b.dead = true; return true; }
   return false;
 }
@@ -1268,10 +1277,10 @@ function handleBlockPlacement() {
   if (gameState !== 'battle' && gameState !== 'zombie') return;
 
   if (mclick) {
-    const gx = snapGrid(mx);
-    const gy = snapGrid(my);
+    // Snap to PLACE_SZ grid, centered on cursor
+    const gx = Math.floor((mx - PLACE_SZ / 2) / PLACE_SZ) * PLACE_SZ;
+    const gy = Math.floor((my - PLACE_SZ / 2) / PLACE_SZ) * PLACE_SZ;
     if (gy < GROUND_Y) {
-      // Charge block to the closest alive player
       let closest = null, bestDist = Infinity;
       for (const p of players) {
         if (!p.alive || p.blockCount <= 0) continue;
@@ -1283,21 +1292,24 @@ function handleBlockPlacement() {
   }
 
   if (mrclick) {
-    removeBlockAt(snapGrid(mx), snapGrid(my));
+    removeBlockAt(mx, my); // overlap-based, works for any block size
   }
 }
 
 function drawGhostBlock() {
   if (paused || gameOver) return;
-  const gx = snapGrid(mx);
-  const gy = snapGrid(my);
+  const gx = Math.floor((mx - PLACE_SZ / 2) / PLACE_SZ) * PLACE_SZ;
+  const gy = Math.floor((my - PLACE_SZ / 2) / PLACE_SZ) * PLACE_SZ;
   if (gy >= GROUND_Y || gy < 0) return;
-  const occupied = !!blockAt(gx, gy);
+  // Occupied if anything overlaps the placed footprint
+  const occupied = blocks.some(b => !b.dead &&
+    gx < b.x + b.w && gx + PLACE_SZ > b.x &&
+    gy < b.y + b.h && gy + PLACE_SZ > b.y);
   ctx.fillStyle   = occupied ? 'rgba(255,60,60,0.3)' : 'rgba(100,210,255,0.3)';
-  ctx.fillRect(gx, gy, BLOCK_SZ, BLOCK_SZ);
+  ctx.fillRect(gx, gy, PLACE_SZ, PLACE_SZ);
   ctx.strokeStyle = occupied ? 'rgba(255,60,60,0.9)' : 'rgba(100,210,255,0.9)';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(gx, gy, BLOCK_SZ, BLOCK_SZ);
+  ctx.lineWidth = 2;
+  ctx.strokeRect(gx, gy, PLACE_SZ, PLACE_SZ);
 }
 
 // ================================================================
