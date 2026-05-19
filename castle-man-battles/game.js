@@ -112,7 +112,7 @@ function hover(x, y, w, h) {
 // INPUT
 // ================================================================
 const keys = {};
-let mx = 0, my = 0, mclick = false;
+let mx = 0, my = 0, mclick = false, mrclick = false;
 
 document.addEventListener('keydown', e => {
   keys[e.code] = true;
@@ -134,6 +134,15 @@ canvas.addEventListener('click', e => {
   mx = (e.clientX - r.left) * scaleX;
   my = (e.clientY - r.top)  * scaleY;
   mclick = true;
+});
+canvas.addEventListener('contextmenu', e => {
+  e.preventDefault();
+  const r = canvas.getBoundingClientRect();
+  const scaleX = CW / r.width;
+  const scaleY = CH / r.height;
+  mx = (e.clientX - r.left) * scaleX;
+  my = (e.clientY - r.top)  * scaleY;
+  mrclick = true;
 });
 document.addEventListener('keydown', e => {
   if (e.code === 'Escape') {
@@ -216,8 +225,8 @@ class Block {
 // ================================================================
 // PLAYER
 // ================================================================
-const CTRL_P1 = { left:'KeyA', right:'KeyD', jump:'KeyW', attack:'KeyF', block:'KeyG' };
-const CTRL_P2 = { left:'ArrowLeft', right:'ArrowRight', jump:'ArrowUp', attack:'Slash', block:'Period' };
+const CTRL_P1 = { left:'KeyA', right:'KeyD', jump:'KeyW', attack:'KeyF', build:'KeyG' };
+const CTRL_P2 = { left:'ArrowLeft', right:'ArrowRight', jump:'ArrowUp', attack:'Slash', build:'Period' };
 
 class Player {
   constructor(x, y, team, ctrl) {
@@ -231,7 +240,8 @@ class Player {
     this.weapon = 'sword';
     this.ammo = { sword:-1, pistol:0, smg:0, shotgun:0, launcher:0 };
     this.atkCD = 0;
-    this.blocking = false;
+    this.blockCount = 40;
+    this.buildCD = 0;
     this.facingR = team === 'red';
     this.alive = true;
     this.respawnT = 0;
@@ -250,7 +260,7 @@ class Player {
     const right  = keys[this.ctrl.right];
     const jump   = keys[this.ctrl.jump];
     const attack = keys[this.ctrl.attack];
-    const block  = keys[this.ctrl.block];
+    const build  = keys[this.ctrl.build];
 
     if (left)       { this.vx = -MOVE_SPEED; this.facingR = false; }
     else if (right) { this.vx =  MOVE_SPEED; this.facingR = true;  }
@@ -258,7 +268,9 @@ class Player {
 
     if (jump && this.onGround) { this.vy = JUMP_FORCE; this.onGround = false; }
 
-    this.blocking = !!block;
+    if (build && this.buildCD <= 0 && this.blockCount > 0) {
+      this.quickPlaceBlock();
+    }
 
     if (attack && this.atkCD <= 0) {
       this.doAttack();
@@ -272,7 +284,8 @@ class Player {
     this.resolveCollisions();
 
     this.x = Math.max(0, Math.min(CW - this.w, this.x));
-    if (this.atkCD  > 0) this.atkCD  -= dt;
+    if (this.atkCD   > 0) this.atkCD   -= dt;
+    if (this.buildCD > 0) this.buildCD -= dt;
     if (this.hitFlash > 0) this.hitFlash -= dt;
   }
 
@@ -321,7 +334,7 @@ class Player {
         if (p === this || !p.alive) continue;
         if (p.x + p.w > ax && p.x < ax + w.range &&
             p.y + p.h > this.y - 10 && p.y < this.y + this.h + 10) {
-          p.hurt(p.blocking ? w.damage * 0.25 : w.damage, this);
+          p.hurt(w.damage, this);
         }
       }
       if (gameMode === 'zombie') {
@@ -389,6 +402,15 @@ class Player {
     }
   }
 
+  quickPlaceBlock() {
+    const gx = snapGrid(this.x + this.w / 2 - BLOCK_SZ / 2);
+    const gy = snapGrid(this.y - BLOCK_SZ);
+    if (placeBlockAt(gx, gy)) {
+      this.blockCount--;
+      this.buildCD = 280;
+    }
+  }
+
   pickup(weapon, ammo) {
     this.weapon = weapon;
     this.ammo[weapon] = ammo;
@@ -426,11 +448,8 @@ class Player {
       fillText('x' + this.ammo[this.weapon], this.x + this.w / 2, this.y - 8, 9, '#ffdd88');
     }
 
-    // block shield
-    if (this.blocking) {
-      ctx.fillStyle = 'rgba(80,160,255,0.35)';
-      ctx.fillRect(this.x - 6, this.y - 6, this.w + 12, this.h + 12);
-    }
+    // block count remaining
+    fillText(`■ ${this.blockCount}`, this.x + this.w / 2, this.y - 30, 9, '#88ddff');
   }
 
   drawWeapon(sc) {
@@ -493,7 +512,7 @@ class Proj {
     for (const p of players) {
       if (p === this.owner || !p.alive) continue;
       if (this.hits(p)) {
-        p.hurt(p.blocking ? this.wep.damage * 0.25 : this.wep.damage, this.owner);
+        p.hurt(this.wep.damage, this.owner);
         this.explosive ? this.explode() : (this.active = false); return;
       }
     }
@@ -858,70 +877,32 @@ class PoisonBall {
 function makeBattleMap() {
   blocks = []; platforms = []; chests = [];
 
-  const baseY = GROUND_Y - BLOCK_SZ;
-  const castleH = 14, castleW = 9;
-
-  function makeCastle(startX) {
-    for (let r = 0; r < castleH; r++) {
-      for (let c = 0; c < castleW; c++) {
-        const wall = c === 0 || c === castleW - 1 || r === 0;
-        const battlement = r === 0 && c % 2 === 0;
-        if (wall || battlement)
-          blocks.push(new Block(startX + c * BLOCK_SZ, baseY - r * BLOCK_SZ));
-      }
-    }
-  }
-
-  const lcx = 40;
-  const rcx = CW - 40 - castleW * BLOCK_SZ;
-  makeCastle(lcx);
-  makeCastle(rcx);
-
-  // Parkour platforms inside each castle
-  const ip = BLOCK_SZ;
-  [[lcx, 4],[lcx, 8],[lcx, 11]].forEach(([sx,lvl]) => {
-    platforms.push({ x: sx + ip, y: baseY - lvl * BLOCK_SZ, w: (castleW-2) * BLOCK_SZ, h: 8 });
-  });
-  [[rcx, 4],[rcx, 8],[rcx, 11]].forEach(([sx,lvl]) => {
-    platforms.push({ x: sx + ip, y: baseY - lvl * BLOCK_SZ, w: (castleW-2) * BLOCK_SZ, h: 8 });
-  });
-
-  // Middle arena platforms
-  platforms.push({ x: 360, y: GROUND_Y - 90,  w: 130, h: 12 });
-  platforms.push({ x: 600, y: GROUND_Y - 90,  w: 130, h: 12 });
-  platforms.push({ x: 480, y: GROUND_Y - 170, w: 170, h: 12 });
-  platforms.push({ x: 540, y: GROUND_Y - 250, w: 120, h: 12 });
+  // Open arena — players build their own structures with [G] or click
+  platforms.push({ x: 100, y: GROUND_Y - 100, w: 120, h: 12 });
+  platforms.push({ x: 300, y: GROUND_Y - 80,  w: 130, h: 12 });
+  platforms.push({ x: 480, y: GROUND_Y - 160, w: 170, h: 12 });
+  platforms.push({ x: 540, y: GROUND_Y - 260, w: 110, h: 12 });
+  platforms.push({ x: 740, y: GROUND_Y - 80,  w: 130, h: 12 });
+  platforms.push({ x: 950, y: GROUND_Y - 100, w: 120, h: 12 });
+  platforms.push({ x: 200, y: GROUND_Y - 200, w: 100, h: 12 });
+  platforms.push({ x: 860, y: GROUND_Y - 200, w: 100, h: 12 });
 
   // Chests
   [340, 555, 830, 145, 1010, 470].forEach((cx, i) => {
-    chests.push(new Chest(cx, i % 2 === 0 ? GROUND_Y - 24 : GROUND_Y - 94));
+    chests.push(new Chest(cx, i % 2 === 0 ? GROUND_Y - 24 : GROUND_Y - 84));
   });
 }
 
 function makeZombieMap() {
   blocks = []; platforms = [];
 
-  const baseY = GROUND_Y - BLOCK_SZ;
-  const castleH = 16, castleW = 11;
-  const startX = 15;
-
-  for (let r = 0; r < castleH; r++) {
-    for (let c = 0; c < castleW; c++) {
-      const wall = c === 0 || c === castleW - 1 || r === 0;
-      const battlement = r === 0 && c % 2 === 0;
-      if (wall || battlement)
-        blocks.push(new Block(startX + c * BLOCK_SZ, baseY - r * BLOCK_SZ));
-    }
-  }
-
-  const inner = BLOCK_SZ;
-  [[3],[7],[11]].forEach(([lvl]) => {
-    platforms.push({ x: startX + inner, y: baseY - lvl * BLOCK_SZ, w: (castleW-2)*BLOCK_SZ, h: 8 });
-  });
-
-  // Outside the castle
-  platforms.push({ x: 270, y: GROUND_Y - 90,  w: 120, h: 12 });
-  platforms.push({ x: 440, y: GROUND_Y - 150, w: 110, h: 12 });
+  // Open map — build your own wall with [G] or click before zombies arrive
+  platforms.push({ x: 40,  y: GROUND_Y - 90,  w: 140, h: 12 });
+  platforms.push({ x: 40,  y: GROUND_Y - 190, w: 140, h: 12 });
+  platforms.push({ x: 40,  y: GROUND_Y - 290, w: 140, h: 12 });
+  platforms.push({ x: 220, y: GROUND_Y - 110, w: 110, h: 12 });
+  platforms.push({ x: 370, y: GROUND_Y - 150, w: 110, h: 12 });
+  platforms.push({ x: 520, y: GROUND_Y - 90,  w: 100, h: 12 });
 }
 
 // ================================================================
@@ -1000,11 +981,8 @@ function updateBattle(dt) {
     if (explosions[i].life <= 0) explosions.splice(i, 1);
   }
 
-  // Win: castle destroyed
-  const leftDead  = blocks.filter(b => b.x < CW/2).every(b => b.dead);
-  const rightDead = blocks.filter(b => b.x >= CW/2).every(b => b.dead);
-  if (leftDead  && blocks.filter(b => b.x < CW/2).length > 0) { gameOver = true; goMessage = 'BLUE WINS! Red castle destroyed!'; }
-  if (rightDead && blocks.filter(b => b.x >= CW/2).length > 0) { gameOver = true; goMessage = 'RED WINS! Blue castle destroyed!'; }
+  // Win by score when timer ends (no pre-built castle)
+  handleBlockPlacement();
 }
 
 function updateZombie(dt) {
@@ -1062,18 +1040,75 @@ function updateZombie(dt) {
     if (explosions[i].life <= 0) explosions.splice(i, 1);
   }
 
-  // Game over checks
+  // Game over check
   const allDead = players.every(p => !p.alive && p.respawnT <= 0);
   if (allDead) {
     gameOver = true;
     const m = Math.floor(zombieElapsed/60000), s = Math.floor((zombieElapsed%60000)/1000);
     goMessage = `GAME OVER! Survived ${m}m ${s}s | Kills: ${zombieKills}`;
   }
-  if (blocks.length > 0 && blocks.every(b => b.dead)) {
-    gameOver = true;
-    const m = Math.floor(zombieElapsed/60000), s = Math.floor((zombieElapsed%60000)/1000);
-    goMessage = `CASTLE FALLEN! Survived ${m}m ${s}s | Kills: ${zombieKills}`;
+
+  handleBlockPlacement();
+}
+
+// ================================================================
+// BLOCK PLACEMENT HELPERS
+// ================================================================
+function snapGrid(v) { return Math.floor(v / BLOCK_SZ) * BLOCK_SZ; }
+
+function blockAt(gx, gy) {
+  return blocks.find(b => !b.dead && b.x === gx && b.y === gy);
+}
+
+function placeBlockAt(gx, gy) {
+  if (gx < 0 || gx + BLOCK_SZ > CW || gy < 0 || gy + BLOCK_SZ > GROUND_Y) return false;
+  if (blockAt(gx, gy)) return false;
+  blocks.push(new Block(gx, gy));
+  return true;
+}
+
+function removeBlockAt(gx, gy) {
+  const b = blockAt(gx, gy);
+  if (b) { b.dead = true; return true; }
+  return false;
+}
+
+function handleBlockPlacement() {
+  if (paused || gameOver) return;
+  // Only in gameplay screens
+  if (gameState !== 'battle' && gameState !== 'zombie') return;
+
+  if (mclick) {
+    const gx = snapGrid(mx);
+    const gy = snapGrid(my);
+    if (gy < GROUND_Y) {
+      // Charge block to the closest alive player
+      let closest = null, bestDist = Infinity;
+      for (const p of players) {
+        if (!p.alive || p.blockCount <= 0) continue;
+        const d = Math.hypot(p.x + p.w/2 - mx, p.y + p.h/2 - my);
+        if (d < bestDist) { bestDist = d; closest = p; }
+      }
+      if (closest && placeBlockAt(gx, gy)) closest.blockCount--;
+    }
   }
+
+  if (mrclick) {
+    removeBlockAt(snapGrid(mx), snapGrid(my));
+  }
+}
+
+function drawGhostBlock() {
+  if (paused || gameOver) return;
+  const gx = snapGrid(mx);
+  const gy = snapGrid(my);
+  if (gy >= GROUND_Y || gy < 0) return;
+  const occupied = !!blockAt(gx, gy);
+  ctx.fillStyle   = occupied ? 'rgba(255,60,60,0.3)' : 'rgba(100,210,255,0.3)';
+  ctx.fillRect(gx, gy, BLOCK_SZ, BLOCK_SZ);
+  ctx.strokeStyle = occupied ? 'rgba(255,60,60,0.9)' : 'rgba(100,210,255,0.9)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(gx, gy, BLOCK_SZ, BLOCK_SZ);
 }
 
 // ================================================================
@@ -1171,18 +1206,14 @@ function drawZombieUI() {
 
   fillText(`KILLS: ${zombieKills}`, 130, 34, 16, '#ffaa44');
 
-  // Castle HP
-  const alive = blocks.filter(b => !b.dead).length;
-  const pct = blocks.length ? alive / blocks.length : 0;
-  fillRect(CW - 230, 8,  210, 18, '#330000');
-  fillRect(CW - 230, 8,  210 * pct, 18, pct > 0.6 ? '#00ee44' : pct > 0.3 ? '#ffaa00' : '#ff2200');
-  strokeRect(CW - 230, 8, 210, 18, '#ffffff', 1);
-  fillText('CASTLE HP', CW - 125, 40, 11, '#aaaaaa');
+  // Blocks standing
+  const aliveBlocks = blocks.filter(b => !b.dead).length;
+  fillText(`BLOCKS: ${aliveBlocks}`, CW - 125, 28, 13, '#88ccff');
 
   // Poison bar
   const ppct = poisonT / 30000;
-  fillRect(CW - 230, 32, 210, 10, '#001100');
-  fillRect(CW - 230, 32, 210 * ppct, 10, '#00aa00');
+  fillRect(CW - 230, 34, 210, 10, '#001100');
+  fillRect(CW - 230, 34, 210 * ppct, 10, '#00aa00');
   fillText('POISON TIMER', CW - 125, 54, 10, '#44aa44');
 
   // Pause
@@ -1201,14 +1232,14 @@ function drawControlsHUD() {
   strokeRect(8, y, 210, 50, '#4488ff', 1);
   fillText('P1 BLUE', 58, y + 15, 11, '#4488ff', 'center');
   fillText('[W] Jump  [A][D] Move', 108, y + 30, 10, '#aabbff', 'center');
-  fillText('[F] Attack   [G] Block', 108, y + 44, 10, '#aabbff', 'center');
+  fillText('[F] Attack  [G] Place Block', 108, y + 44, 10, '#aabbff', 'center');
 
   if (players.length > 1) {
     fillRect(CW - 218, y, 210, 50, 'rgba(80,0,0,0.75)');
     strokeRect(CW - 218, y, 210, 50, '#ff4444', 1);
     fillText('P2 RED', CW - 163, y + 15, 11, '#ff4444', 'center');
     fillText('[↑] Jump  [←][→] Move', CW - 113, y + 30, 10, '#ffaaaa', 'center');
-    fillText('[/] Attack   [.] Block', CW - 113, y + 44, 10, '#ffaaaa', 'center');
+    fillText('[/] Attack  [.] Place Block', CW - 113, y + 44, 10, '#ffaaaa', 'center');
   }
 }
 
@@ -1371,6 +1402,7 @@ function render() {
     case 'battle':
       drawBG();
       drawPlatforms();
+      drawGhostBlock();
       if (plane) plane.draw();
       blocks.forEach(b => b.draw());
       chests.forEach(c => c.draw());
@@ -1380,6 +1412,9 @@ function render() {
       drawExplosions();
       players.forEach(p => p.draw());
       drawBattleUI();
+      if (!paused && !gameOver) {
+        fillText('Click = place block  |  Right-click = remove', CW/2, CH - 8, 11, '#556688');
+      }
       if (paused)   drawPauseMenu();
       if (gameOver) drawGameOver();
       break;
@@ -1387,6 +1422,7 @@ function render() {
     case 'zombie':
       drawZombieBG();
       drawPlatforms();
+      drawGhostBlock();
       blocks.forEach(b => b.draw());
       weaponDrops.forEach(w => w.draw());
       projectiles.forEach(p => p.draw());
@@ -1395,6 +1431,9 @@ function render() {
       zombies.forEach(z => z.draw());
       players.forEach(p => p.draw());
       drawZombieUI();
+      if (!paused && !gameOver) {
+        fillText('Click = place block  |  Right-click = remove  |  [G]/[.] = quick stack above', CW/2, CH - 8, 11, '#335533');
+      }
       if (showPoisonWarn) drawPoisonWarning();
       if (paused)   drawPauseMenu();
       if (gameOver) drawGameOver();
@@ -1414,6 +1453,7 @@ function loop(ts) {
 
   render();
   mclick = false;
+  mrclick = false;
   requestAnimationFrame(loop);
 }
 
