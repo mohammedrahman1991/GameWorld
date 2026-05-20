@@ -689,39 +689,96 @@ class Zombie {
   constructor(x, y) {
     this.x = x; this.y = y;
     this.w = 26; this.h = 40;
-    this.vx = -1.6; this.vy = 0;
+    this.vx = 0; this.vy = 0;
     this.hp = 65; this.maxHp = 65;
     this.alive = true;
+    this.onGround = false;
     this.atkCD = 0;
+    this.lungeFlash = 0;  // red flash when attacking
     this.dropWeapon = null;
   }
 
   update(dt) {
     if (!this.alive) return;
+
+    // ── Find closest alive player to chase ──────────────────────
+    let target = null, nearDist = Infinity;
+    for (const p of players) {
+      if (!p.alive) continue;
+      const d = Math.hypot(p.x + p.w/2 - (this.x + this.w/2),
+                           p.y + p.h/2 - (this.y + this.h/2));
+      if (d < nearDist) { nearDist = d; target = p; }
+    }
+
+    // Base speed — scales up slowly over time
+    const spd = 1.8 + Math.min(zombieElapsed / 90000, 1.8);
+
+    if (target) {
+      const dx = (target.x + target.w/2) - (this.x + this.w/2);
+      this.vx = Math.abs(dx) > 6 ? (dx > 0 ? spd : -spd) : 0;
+    } else {
+      this.vx = -spd; // no player alive — shamble left toward castle
+    }
+
+    // ── Physics ──────────────────────────────────────────────────
     this.vy += GRAVITY;
-    this.x += this.vx;
-    this.y += this.vy;
+    this.x  += this.vx;
+    this.y  += this.vy;
 
-    if (this.y + this.h >= GROUND_Y) { this.y = GROUND_Y - this.h; this.vy = 0; }
+    // Ground
+    this.onGround = false;
+    if (this.y + this.h >= GROUND_Y) {
+      this.y = GROUND_Y - this.h; this.vy = 0; this.onGround = true;
+    }
 
+    // Platforms — zombie can land on them
+    for (const p of platforms) {
+      if (this.vy >= 0 &&
+          this.x + this.w > p.x && this.x < p.x + p.w &&
+          this.y + this.h > p.y && this.y + this.h < p.y + p.h + 12) {
+        this.y = p.y - this.h; this.vy = 0; this.onGround = true;
+      }
+    }
+
+    // ── Block collision — attack AND try to jump over ─────────────
     for (const b of blocks) {
       if (b.dead) continue;
       if (this.x + this.w > b.x && this.x < b.x + b.w &&
-          this.y + this.h > b.y && this.y < b.y + b.h) {
+          this.y + this.h > b.y && this.y  < b.y + b.h) {
         if (this.atkCD <= 0) { b.damage(8); this.atkCD = 900; }
-        this.x = b.x + b.w + 1; this.vx = 0;
+        // Try to jump over the block to reach the player
+        if (this.onGround) this.vy = JUMP_FORCE * 0.78;
+        if (this.vx < 0) this.x = b.x + b.w + 1;
+        else             this.x = b.x - this.w - 1;
+        this.vx = 0;
         break;
       }
     }
 
-    for (const p of players) {
-      if (!p.alive) continue;
-      if (Math.abs(this.x - p.x) < 35 && Math.abs(this.y - p.y) < 40) {
-        if (this.atkCD <= 0) { p.hurt(15, null); this.atkCD = 900; }
+    // ── Jump toward player if they are above ─────────────────────
+    if (target && this.onGround) {
+      const dy = (target.y + target.h/2) - (this.y + this.h/2);
+      if (dy < -55) this.vy = JUMP_FORCE * 0.82; // leap up after player
+    }
+
+    // ── Melee attack player on contact ───────────────────────────
+    if (this.atkCD <= 0) {
+      for (const p of players) {
+        if (!p.alive) continue;
+        const cx = Math.abs((this.x + this.w/2) - (p.x + p.w/2));
+        const cy = Math.abs((this.y + this.h/2) - (p.y + p.h/2));
+        if (cx < 40 && cy < 46) {
+          p.hurt(15, null);
+          this.atkCD    = 850;
+          this.lungeFlash = 180;
+          this.vy = -4;  // small lunge on attack
+          break;
+        }
       }
     }
 
-    if (this.atkCD > 0) this.atkCD -= dt;
+    if (this.atkCD    > 0) this.atkCD    -= dt;
+    if (this.lungeFlash > 0) this.lungeFlash -= dt;
   }
 
   hurt(amt, killer) {
@@ -746,7 +803,21 @@ class Zombie {
   draw() {
     if (!this.alive) return;
     const sc = 3;
-    drawSprite(this.x, this.y, sc, PAL_ZOMBIE, false);
+
+    // Flash red when lunging at player
+    if (this.lungeFlash > 0 && Math.floor(this.lungeFlash / 45) % 2 === 0) {
+      ctx.globalAlpha = 0.5;
+    }
+    drawSprite(this.x, this.y, sc, PAL_ZOMBIE, this.vx > 0);
+    ctx.globalAlpha = 1;
+
+    // Red attack glow when lunging
+    if (this.lungeFlash > 0) {
+      ctx.fillStyle = `rgba(255,0,0,${(this.lungeFlash / 180) * 0.35})`;
+      ctx.fillRect(this.x - 4, this.y - 4, this.w + 8, this.h + 8);
+    }
+
+    // HP bar
     const pct = this.hp / this.maxHp;
     fillRect(this.x,           this.y - 8, this.w, 5, '#220000');
     fillRect(this.x,           this.y - 8, this.w * pct, 5, '#00ee44');
