@@ -690,7 +690,7 @@ class Zombie {
     this.x = x; this.y = y;
     this.w = 26; this.h = 40;
     this.vx = 0; this.vy = 0;
-    this.hp = 65; this.maxHp = 65;
+    this.hp = 35; this.maxHp = 35;
     this.alive = true;
     this.onGround = false;
     this.atkCD = 0;
@@ -745,7 +745,7 @@ class Zombie {
       if (b.dead) continue;
       if (this.x + this.w > b.x && this.x < b.x + b.w &&
           this.y + this.h > b.y && this.y  < b.y + b.h) {
-        if (this.atkCD <= 0) { b.damage(8); this.atkCD = 900; }
+        if (this.atkCD <= 0) { b.damage(4); this.atkCD = 1200; }
         // Try to jump over the block to reach the player
         if (this.onGround) this.vy = JUMP_FORCE * 0.78;
         if (this.vx < 0) this.x = b.x + b.w + 1;
@@ -768,8 +768,8 @@ class Zombie {
         const cx = Math.abs((this.x + this.w/2) - (p.x + p.w/2));
         const cy = Math.abs((this.y + this.h/2) - (p.y + p.h/2));
         if (cx < 40 && cy < 46) {
-          p.hurt(15, null);
-          this.atkCD    = 850;
+          p.hurt(8, null);
+          this.atkCD    = 1200;
           this.lungeFlash = 180;
           this.vy = -4;  // small lunge on attack
           break;
