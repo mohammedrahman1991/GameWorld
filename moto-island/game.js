@@ -106,6 +106,7 @@ class Bike {
   update(dt) {
     if (this.finished) return;
     this.isBot ? this._bot() : this._player();
+    this._constrain();
     this._advanceWP();
     // dust
     this.dust = this.dust.filter(d => { d.life -= dt; return d.life > 0; });
@@ -140,6 +141,29 @@ class Bike {
     this.speed  = Math.min(this.speed + ACCEL*0.55, this.botSpd);
     this.x += Math.cos(this.angle) * this.speed;
     this.y += Math.sin(this.angle) * this.speed;
+  }
+
+  // Invisible wall — clamp bike to road ellipse boundaries
+  _constrain() {
+    const dx = this.x - CX, dy = this.y - CY;
+
+    // Hit outer wall
+    const outerD = (dx / OUT_RX) ** 2 + (dy / OUT_RY) ** 2;
+    if (outerD > 1.0) {
+      const t = 1 / Math.sqrt(outerD);
+      this.x   = CX + dx * t;
+      this.y   = CY + dy * t;
+      this.speed *= 0.18; // bounce kills speed
+    }
+
+    // Hit inner wall
+    const innerD = (dx / INN_RX) ** 2 + (dy / INN_RY) ** 2;
+    if (innerD < 1.0 && innerD > 0.001) {
+      const t = 1 / Math.sqrt(innerD);
+      this.x   = CX + dx * t;
+      this.y   = CY + dy * t;
+      this.speed *= 0.18;
+    }
   }
 
   _advanceWP() {
