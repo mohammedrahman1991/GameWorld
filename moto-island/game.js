@@ -38,7 +38,7 @@ const ACCEL      = 0.18;
 const MAX_SPD    = 5.8;
 const FRICTION   = 0.93;
 const BRAKE_F    = 0.18;
-const TURN_R     = 0.075;
+const TURN_R     = 0.11;
 const GRASS_MULT = 0.68;
 
 // ── Input ───────────────────────────────────────────────────────
@@ -118,8 +118,8 @@ class Bike {
     else              this.speed *= FRICTION;
     if (keys[k.down]) this.speed = Math.max(this.speed - BRAKE_F, 0);
     if (this.speed > 0.1) {
-      // Flat 65% turn rate + 35% speed bonus — responsive at all speeds
-      const t = TURN_R * (0.65 + 0.35 * (this.speed / MAX_SPD));
+      // Flat 80% turn rate + 20% speed bonus — turns sharply at any speed
+      const t = TURN_R * (0.80 + 0.20 * (this.speed / MAX_SPD));
       if (keys[k.left])  this.angle -= t;
       if (keys[k.right]) this.angle += t;
     }
