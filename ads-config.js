@@ -19,5 +19,15 @@ var WACKY_ADS = [
     title: 'Shop on Amazon',
     badge: '⭐'
   }
-  // ← ADD MORE LINKS HERE, copy the block above and paste below
+  ,
+  { url: 'https://amzn.to/4dpZq9u', title: 'Shop on Amazon', badge: '🎯' },
+  { url: 'https://amzn.to/4dPst7O', title: 'Shop on Amazon', badge: '🔥' },
+  { url: 'https://amzn.to/4wFGWe8', title: 'Shop on Amazon', badge: '💡' },
+  { url: 'https://amzn.to/4wznVd5', title: 'Shop on Amazon', badge: '🚀' },
+  { url: 'https://amzn.to/3PtYvNd', title: 'Shop on Amazon', badge: '⚡' },
+  { url: 'https://amzn.to/4fsAGjv', title: 'Shop on Amazon', badge: '🎲' },
+  { url: 'https://amzn.to/4ftoIWN', title: 'Shop on Amazon', badge: '🏆' },
+  { url: 'https://amzn.to/4tF9AZQ', title: 'Shop on Amazon', badge: '✨' },
+  { url: 'https://amzn.to/4tErXhu', title: 'Shop on Amazon', badge: '🎁' }
+  // ← ADD MORE LINKS HERE, copy a block above and paste below
 ];
