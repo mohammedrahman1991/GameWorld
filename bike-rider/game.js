@@ -5,6 +5,7 @@ const canvas = document.getElementById('c');
 const ctx    = canvas.getContext('2d');
 const CW = 900, CH = 520;
 canvas.width = CW; canvas.height = CH;
+canvas.style.touchAction = 'none';
 (function resize() {
   const s = Math.min(window.innerWidth/CW, window.innerHeight/CH);
   canvas.style.width = CW*s+'px'; canvas.style.height = CH*s+'px';
@@ -37,6 +38,83 @@ canvas.addEventListener('click', e => {
   mx = (e.clientX-r.left)*(CW/r.width); my = (e.clientY-r.top)*(CH/r.height);
   mclick = true;
 });
+
+// ── Virtual (on-screen) buttons ───────────────────────────────────
+const vBtn = { p1Left:false, p1Right:false, p1Jump:false, p2Left:false, p2Right:false, p2Jump:false };
+const _ptrs = new Map();
+
+function _getVBtns(np) {
+  if (np === 1) return [
+    {id:'p1Left',  x:18,       y:CH-92, w:78, h:78, label:'◀'},
+    {id:'p1Right', x:104,      y:CH-92, w:78, h:78, label:'▶'},
+    {id:'p1Jump',  x:CW-100,   y:CH-92, w:78, h:78, label:'▲'},
+  ];
+  return [
+    {id:'p1Left',  x:8,           y:CH-75, w:58, h:62, label:'◀'},
+    {id:'p1Right', x:70,          y:CH-75, w:58, h:62, label:'▶'},
+    {id:'p1Jump',  x:CW/2-70,     y:CH-75, w:58, h:62, label:'▲'},
+    {id:'p2Left',  x:CW/2+8,      y:CH-75, w:58, h:62, label:'◀'},
+    {id:'p2Right', x:CW/2+70,     y:CH-75, w:58, h:62, label:'▶'},
+    {id:'p2Jump',  x:CW-70,       y:CH-75, w:58, h:62, label:'▲'},
+  ];
+}
+
+function _toCanvas(e) {
+  const r = canvas.getBoundingClientRect();
+  return { x:(e.clientX-r.left)*(CW/r.width), y:(e.clientY-r.top)*(CH/r.height) };
+}
+
+function _hitVBtn(px, py) {
+  if (state !== 'playing') return null;
+  for (const b of _getVBtns(numPlayers)) {
+    if (px>=b.x && px<=b.x+b.w && py>=b.y && py<=b.y+b.h) return b.id;
+  }
+  return null;
+}
+
+canvas.addEventListener('pointerdown', e => {
+  const {x,y} = _toCanvas(e);
+  const bid = _hitVBtn(x,y);
+  if (bid) { _ptrs.set(e.pointerId, bid); vBtn[bid]=true; e.preventDefault(); }
+});
+canvas.addEventListener('pointermove', e => {
+  if (!_ptrs.has(e.pointerId)) return;
+  const {x,y} = _toCanvas(e);
+  const prev = _ptrs.get(e.pointerId);
+  const cur  = _hitVBtn(x,y);
+  if (cur !== prev) {
+    if (prev) vBtn[prev]=false;
+    if (cur)  vBtn[cur]=true;
+    _ptrs.set(e.pointerId, cur);
+  }
+});
+canvas.addEventListener('pointerup',     e => { const b=_ptrs.get(e.pointerId); if(b) vBtn[b]=false; _ptrs.delete(e.pointerId); });
+canvas.addEventListener('pointercancel', e => { const b=_ptrs.get(e.pointerId); if(b) vBtn[b]=false; _ptrs.delete(e.pointerId); });
+
+function drawVirtualButtons(np) {
+  const btns = _getVBtns(np);
+  for (const b of btns) {
+    const on = vBtn[b.id];
+    ctx.save();
+    ctx.globalAlpha = 0.7;
+    ctx.beginPath();
+    const r=12, {x,y,w,h} = b;
+    ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r);
+    ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+    ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
+    ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r); ctx.closePath();
+    ctx.fillStyle   = on ? 'rgba(255,230,50,0.6)' : 'rgba(0,0,0,0.45)';
+    ctx.strokeStyle = on ? '#FFD700' : 'rgba(255,255,255,0.45)';
+    ctx.lineWidth = 2.5; ctx.fill(); ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.font = `bold ${w>70?30:24}px monospace`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = on ? '#FFD700' : '#ffffff';
+    ctx.fillText(b.label, x+w/2, y+h/2);
+    ctx.textBaseline = 'alphabetic';
+    ctx.restore();
+  }
+}
 
 // ── Helpers ───────────────────────────────────────────────────────
 function fR(x,y,w,h,c) { ctx.fillStyle=c; ctx.fillRect(x,y,w,h); }
@@ -266,7 +344,7 @@ class Bike {
     this.jumpUsed = false;
   }
 
-  update(dt, map) {
+  update(dt, map, vkeys) {
     this.notifs = this.notifs.filter(n => { n.life-=dt; n.y-=dt*0.045; return n.life>0; });
 
     if (this.dead) {
@@ -276,10 +354,10 @@ class Bike {
     }
 
     const k = this.ctrl;
-    if (keys[k.right]) this.vx = Math.min(this.vx + ACCEL, MAX_SPD);
-    if (keys[k.left])  this.vx = Math.max(this.vx - ACCEL, -MAX_SPD * 0.4);
+    if (keys[k.right] || vkeys?.right) this.vx = Math.min(this.vx + ACCEL, MAX_SPD);
+    if (keys[k.left]  || vkeys?.left)  this.vx = Math.max(this.vx - ACCEL, -MAX_SPD * 0.4);
 
-    const jumpKey = keys[k.jump] || keys[k.jump2];
+    const jumpKey = keys[k.jump] || keys[k.jump2] || vkeys?.jump;
     if (jumpKey && this.onGround && !this.jumpUsed) {
       this.vy = JUMP_VEL;
       this.onGround = false;
@@ -683,7 +761,11 @@ function renderPlaying(dt) {
   if (!activMap) return;
   const map = activMap;
   for (const lz of map._lasers) lz.update(dt);
-  for (const b of bikes) b.update(dt, map);
+
+  const vk1 = { right:vBtn.p1Right, left:vBtn.p1Left, jump:vBtn.p1Jump };
+  const vk2 = { right:vBtn.p2Right, left:vBtn.p2Left, jump:vBtn.p2Jump };
+  bikes[0].update(dt, map, vk1);
+  if (numPlayers > 1) bikes[1].update(dt, map, vk2);
 
   if (numPlayers === 1) {
     drawViewport(bikes[0], map, 0, CW);
@@ -694,6 +776,8 @@ function renderPlaying(dt) {
     ctx.fillStyle = '#FFD700';
     ctx.fillRect(CW/2-2, 0, 4, CH);
   }
+
+  drawVirtualButtons(numPlayers);
 
   // Check finish
   const done = numPlayers === 1 ? bikes[0].finished
