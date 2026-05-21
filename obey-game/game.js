@@ -276,6 +276,7 @@ CO(0,1.8,-300);
 T(0,  0,-320,  18, 1, 22, 0x55BB44);   // gap 1
 CO(0,1.8,-317); CO(3,1.8,-325);
 CP(0,  0,-338, 1);
+T(0,  0,-350, 18, 1, 24, 0x55BB44);  // bridge straight into lava section, no gap
 
 // SECTION 2 — LAVA FIELDS (z=-355 to z=-490)
 // Lava floor
