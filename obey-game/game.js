@@ -1,5 +1,5 @@
 'use strict';
-/* ── OBEY GAME ── Three.js 3D obstacle course ──────────────────── */
+/* ── OBSTACLE GAME ── Three.js 3D obstacle course ─────────────── */
 
 // ── Physics constants ─────────────────────────────────────────────
 const GRAVITY    = 30;
