@@ -631,7 +631,8 @@ for(let i=0;i<30;i++){
   mesh.position.set(lane,0,oz);
   bots.push({mesh, spd, x:lane, z:oz, y:0, vy:0, lane,
     legT:Math.random()*Math.PI*2, wpIdx:0, wobble:Math.random()*Math.PI*2,
-    onGround:true, dead:false, deadTimer:0, jumpTimer:2+Math.random()*4});
+    onGround:true, dead:false, deadTimer:0, jumpTimer:2+Math.random()*4,
+    finished:false, wanderTX:0, wanderTZ:-1590, wanderTimer:0});
 }
 
 // Sprint trail particles
@@ -1079,13 +1080,42 @@ function animate() {
       continue;
     }
 
-    // Loop back when finished
-    if (b.z < -1610) {
-      b.z=-(Math.random()*60); b.y=0; b.vy=0; b.wpIdx=0;
-      b.lane=(Math.random()-0.5)*8;
+    // Reached end platform — switch to wander mode
+    if (!b.finished && b.z < -1545) {
+      b.finished = true;
+      b.wanderTX = (Math.random()-0.5)*60;
+      b.wanderTZ = -1590 + (Math.random()-0.5)*60;
+      b.wanderTimer = 0;
     }
 
-    // Animation
+    // Wander around the finish island forever
+    if (b.finished) {
+      b.wanderTimer -= dt;
+      if (b.wanderTimer <= 0) {
+        // Pick new random spot on the end platform
+        b.wanderTX = (Math.random()-0.5)*70;
+        b.wanderTZ = -1590 + (Math.random()-0.5)*70;
+        b.wanderTimer = 2 + Math.random()*4;
+      }
+      const dxw = b.wanderTX - b.x;
+      const dzw = b.wanderTZ - b.z;
+      const distW = Math.sqrt(dxw*dxw + dzw*dzw);
+      const wandSpd = Math.min(b.spd*0.5, 6);
+      if (distW > 0.5) {
+        b.x += (dxw/distW)*wandSpd*dt;
+        b.z += (dzw/distW)*wandSpd*dt;
+        b.mesh.rotation.y = Math.atan2(dxw, dzw) + Math.PI;
+      }
+      b.legT += dt * wandSpd * 1.6;
+      b.mesh.position.set(b.x, b.y, b.z);
+      b.mesh.userData.ll.rotation.x =  Math.sin(b.legT)*0.55;
+      b.mesh.userData.rl.rotation.x = -Math.sin(b.legT)*0.55;
+      b.mesh.userData.la.rotation.x = -Math.sin(b.legT)*0.5;
+      b.mesh.userData.ra.rotation.x =  Math.sin(b.legT)*0.5;
+      continue;
+    }
+
+    // Animation (still running)
     b.legT += dt * curSpd * 1.6;
     b.mesh.position.set(b.x, b.y, b.z);
     b.mesh.rotation.y = Math.PI;
