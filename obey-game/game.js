@@ -335,23 +335,23 @@ CO(-4,1.5,-602); CO(0,1.5,-602); CO(4,1.5,-602);
 CO(-4,1.5,-614); CO(0,1.5,-614); CO(4,1.5,-614);
 CP(0, 0,-635, 3);
 
-// SECTION 4 — SKY BRIDGES (z=-650 to z=-790) — easier: wider, centred, slow movers
+// SECTION 4 — SKY BRIDGES — all y=0, near-touching, wide platforms
 P(0,-18,-720, 120, 1, 160, 0x220011, true); // deep void below
-T(0,  1,-658, 12, 0.6, 16, 0xAABBFF);                                       // wide entry
-T(0,  1,-682, 10, 0.6, 14, 0xAABBFF);                                       // wide
-CO(3,2.8,-682); CO(-3,2.8,-682);
-T(0,  1,-704,  9, 0.6, 12, 0x99AAEE);                                       // wide
-T(0,  1,-722, 10, 0.6, 12, 0xAABBFF, false, {axis:'x',range:2,spd:0.45});  // slow drift
-CO(0,2.8,-704); CO(0,2.8,-722);
-T(0,  1,-742,  9, 0.6, 12, 0x99AAEE);                                       // wide
-T(0,  1,-760, 10, 0.6, 12, 0xAABBFF, false, {axis:'x',range:1.5,spd:0.4}); // barely moves
-CO(0,2.8,-742); CO(0,2.8,-760);
-T(0,  1,-780, 12, 0.6, 14, 0x8899EE);                                       // wide landing
-CP(0, 1,-792, 4);
+// Bridge from laser hall directly into cloud section (no gap, no height change)
+T(0,  0,-648, 16, 0.8, 22, 0xAABBFF);   // front=-637, back=-659
+T(0,  0,-671, 16, 0.8, 22, 0xAABBFF);   // gap 0 (touching)
+CO(3,1.8,-660); CO(-3,1.8,-672);
+T(0,  0,-693, 16, 0.8, 22, 0x99AAEE);   // gap 0
+T(0,  0,-715, 16, 0.8, 22, 0xAABBFF);   // gap 0
+CO(0,1.8,-694); CO(0,1.8,-716);
+T(0,  0,-737, 16, 0.8, 22, 0x99AAEE);   // gap 0
+T(0,  0,-759, 16, 0.8, 22, 0xAABBFF);   // gap 0
+CO(0,1.8,-738); CO(0,1.8,-760);
+T(0,  0,-781, 16, 0.8, 22, 0x8899EE);   // gap 0
+CP(0,  0,-792, 4);
 
-// SECTION 5 — CHAOS ZONE (z=-810 to z=-950)
-// CHAOS ZONE — totally clear wide floor, just walk straight through
-T(0,  0,-880,  18, 1, 140, 0x442255);   // wide floor, no obstacles
+// SECTION 5 — CHAOS ZONE — wide floor connected directly from cloud CP
+T(0,  0,-887,  18, 1, 190, 0x442255);   // front=-792, covers all the way through
 CO(0,1.8,-830); CO(3,1.8,-855); CO(-3,1.8,-880); CO(0,1.8,-905);
 CP(0, 0,-945, 5);
 
