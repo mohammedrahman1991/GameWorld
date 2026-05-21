@@ -807,18 +807,19 @@ function resolveCollisions() {
   }
 }
 
-// ── Laser hit test ────────────────────────────────────────────────
-function laserHits(lz) {
-  const dy=player.y+0.9-lz.y;
+// ── Laser hit test (player or bot) ───────────────────────────────
+function laserHitsPos(lz, px, py, pz) {
+  const dy=py+0.9-lz.y;
   if (Math.abs(dy)>1.5) return false;
   const ang=lz.piv.rotation.y;
   const dx_=Math.cos(ang), dz_=-Math.sin(ang);
-  const vx=player.x-lz.x, vz=player.z-lz.z;
+  const vx=px-lz.x, vz=pz-lz.z;
   const along=vx*dx_+vz*dz_;
   if (Math.abs(along)>lz.armLen) return false;
   const perpX=vx-along*dx_, perpZ=vz-along*dz_;
   return Math.sqrt(perpX*perpX+perpZ*perpZ)<0.7;
 }
+function laserHits(lz) { return laserHitsPos(lz,player.x,player.y,player.z); }
 
 // ── Sky color per section ─────────────────────────────────────────
 const SKIES=[
@@ -1119,6 +1120,16 @@ function animate() {
       b.mesh.userData.ra.rotation.x =  Math.sin(b.legT)*0.5;
       continue;
     }
+
+    // Laser collision — bot dies if hit
+    for (const lz of laserPivots) {
+      if (laserHitsPos(lz, b.x, b.y, b.z)) {
+        b.dead=true; b.deadTimer=1.5+Math.random();
+        b.mesh.visible=false;
+        break;
+      }
+    }
+    if (b.dead) continue;
 
     // Animation (still running)
     b.legT += dt * curSpd * 1.6;
