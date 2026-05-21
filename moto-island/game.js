@@ -34,11 +34,11 @@ const WP = Array.from({length: NUM_WP}, (_, i) => {
 const START_ANG = Math.atan2(WP[1].y - WP[0].y, WP[1].x - WP[0].x);
 
 // ── Physics ─────────────────────────────────────────────────────
-const ACCEL      = 0.18;
-const MAX_SPD    = 5.8;
-const FRICTION   = 0.93;
+const ACCEL      = 0.09;
+const MAX_SPD    = 2.8;
+const FRICTION   = 0.91;
 const BRAKE_F    = 0.18;
-const TURN_R     = 0.11;
+const TURN_R     = 0.055;
 const GRASS_MULT = 0.68;
 
 // ── Input ───────────────────────────────────────────────────────
@@ -368,7 +368,7 @@ let finishCount  = 0;
 let lastTime     = 0;
 
 const COLORS  = ['#3388ff','#ff3333','#ff9900','#ffee00','#aa44ff','#00ccaa'];
-const BOT_SPD = [2.6, 2.3, 2.1, 2.5, 1.9, 2.2];
+const BOT_SPD = [1.3, 1.1, 1.0, 1.2, 0.9, 1.1];
 
 function initRace(np) {
   numP = np;
