@@ -333,17 +333,17 @@ CP(0, 0,-635, 3);
 
 // SECTION 4 — SKY BRIDGES (z=-650 to z=-790) — easier: wider, centred, slow movers
 P(0,-18,-720, 120, 1, 160, 0x220011, true); // deep void below
-T(0,  5,-658, 12, 0.6, 16, 0xAABBFF);                                       // wide entry
-T(0,  5,-682, 10, 0.6, 14, 0xAABBFF);                                       // wide
-CO(3,6.8,-682); CO(-3,6.8,-682);
-T(0,  5,-704,  9, 0.6, 12, 0x99AAEE);                                       // wide
-T(0,  5,-722, 10, 0.6, 12, 0xAABBFF, false, {axis:'x',range:2,spd:0.45});  // slow drift
-CO(0,6.8,-704); CO(0,6.8,-722);
-T(0,  5,-742,  9, 0.6, 12, 0x99AAEE);                                       // wide
-T(0,  5,-760, 10, 0.6, 12, 0xAABBFF, false, {axis:'x',range:1.5,spd:0.4}); // barely moves
-CO(0,6.8,-742); CO(0,6.8,-760);
-T(0,  5,-780, 12, 0.6, 14, 0x8899EE);                                       // wide landing
-CP(0, 5,-792, 4);
+T(0,  1,-658, 12, 0.6, 16, 0xAABBFF);                                       // wide entry
+T(0,  1,-682, 10, 0.6, 14, 0xAABBFF);                                       // wide
+CO(3,2.8,-682); CO(-3,2.8,-682);
+T(0,  1,-704,  9, 0.6, 12, 0x99AAEE);                                       // wide
+T(0,  1,-722, 10, 0.6, 12, 0xAABBFF, false, {axis:'x',range:2,spd:0.45});  // slow drift
+CO(0,2.8,-704); CO(0,2.8,-722);
+T(0,  1,-742,  9, 0.6, 12, 0x99AAEE);                                       // wide
+T(0,  1,-760, 10, 0.6, 12, 0xAABBFF, false, {axis:'x',range:1.5,spd:0.4}); // barely moves
+CO(0,2.8,-742); CO(0,2.8,-760);
+T(0,  1,-780, 12, 0.6, 14, 0x8899EE);                                       // wide landing
+CP(0, 1,-792, 4);
 
 // SECTION 5 — CHAOS ZONE (z=-810 to z=-950)
 // Mixed floor with lava patches
