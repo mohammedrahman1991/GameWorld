@@ -346,31 +346,17 @@ T(0,  1,-780, 12, 0.6, 14, 0x8899EE);                                       // w
 CP(0, 1,-792, 4);
 
 // SECTION 5 — CHAOS ZONE (z=-810 to z=-950)
-// Mixed floor with lava patches
-// Wide safe floor the whole way — lava patches are small and easy to avoid
-T(0,  0,-870,  16, 1, 120, 0x442255);   // wide floor covers entire section
-// Tiny lava patches (small, off to the side, easy to walk around)
-T(-5, 0.1,-830, 2, 0.2, 3, 0xFF4400, true);
-T(5,  0.1,-860, 2, 0.2, 3, 0xFF4400, true);
-T(-5, 0.1,-900, 2, 0.2, 3, 0xFF4400, true);
-// Moving platforms are now wide and slow — optional shortcuts above
-T(0, 1.5,-830, 10, 0.8, 10, 0x8844BB, false, {axis:'x',range:2,spd:0.45});
-T(0, 1.5,-865, 10, 0.8, 10, 0x9955CC, false, {axis:'x',range:2,spd:0.4});
-T(0, 1.5,-900, 10, 0.8, 10, 0x7733AA, false, {axis:'x',range:2,spd:0.42});
-// Slow lasers — easy to time
-L(0, 2.8,-840, 0.5, 3.5, 0);
-L(0, 2.8,-875,-0.5, 3.5, Math.PI/2);
-L(0, 2.8,-910, 0.5, 3.5, Math.PI);
-CO(0,1.8,-830); CO(0,1.8,-855); CO(0,1.8,-880); CO(0,1.8,-905);
-CP(0, 0,-930, 5);
+// CHAOS ZONE — totally clear wide floor, just walk straight through
+T(0,  0,-880,  18, 1, 140, 0x442255);   // wide floor, no obstacles
+CO(0,1.8,-830); CO(3,1.8,-855); CO(-3,1.8,-880); CO(0,1.8,-905);
+CP(0, 0,-945, 5);
 
-// FINAL SPRINT (z=-958 to z=-1000)
-T(0,  0,-970,  16, 1, 30, 0x44AA44);
-CO(2,1.8,-965); CO(-2,1.8,-975); CO(0,1.8,-985);
+// FINAL SPRINT — connected directly, no gap
+T(0,  0,-985,  18, 1,  90, 0x44AA44);   // covers -940 to -1030, no gap after CP
+CO(2,1.8,-960); CO(-2,1.8,-978); CO(0,1.8,-998);
 
-// ── SECTION 6: FROZEN PEAKS (z=-1010 to z=-1170) ──────────────────
-// Ice floor + platforms. Some bounce pads.
-T(0,  0,-1015,  12, 1, 16, 0xCCEEFF);   // entry bridge
+// ── SECTION 6: FROZEN PEAKS — entry bridge, no gap ────────────────
+T(0,  0,-1040,  16, 1, 20, 0xCCEEFF);   // overlaps final sprint, no gap
 // Death floor below (void)
 P(0,-18,-1090, 120, 1, 180, 0x112233, true);
 // Ice platforms (light blue, narrow)
