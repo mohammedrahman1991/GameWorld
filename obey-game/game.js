@@ -1080,21 +1080,23 @@ function animate() {
       continue;
     }
 
+    // Clamp X to course width so bots can't pass through side walls
+    b.x = Math.max(-6, Math.min(6, b.x));
+
     // Reached end platform — switch to wander mode
     if (!b.finished && b.z < -1545) {
       b.finished = true;
-      b.wanderTX = (Math.random()-0.5)*60;
-      b.wanderTZ = -1590 + (Math.random()-0.5)*60;
+      b.wanderTX = (Math.random()-0.5)*44;
+      b.wanderTZ = -1590 + (Math.random()-0.5)*44;
       b.wanderTimer = 0;
     }
 
-    // Wander around the finish island forever
+    // Wander around the finish island forever (stay inside walls)
     if (b.finished) {
       b.wanderTimer -= dt;
       if (b.wanderTimer <= 0) {
-        // Pick new random spot on the end platform
-        b.wanderTX = (Math.random()-0.5)*70;
-        b.wanderTZ = -1590 + (Math.random()-0.5)*70;
+        b.wanderTX = (Math.random()-0.5)*44; // x: -22 to +22, well inside side walls
+        b.wanderTZ = -1590 + (Math.random()-0.5)*44; // z inside back/front walls
         b.wanderTimer = 2 + Math.random()*4;
       }
       const dxw = b.wanderTX - b.x;
@@ -1106,6 +1108,9 @@ function animate() {
         b.z += (dzw/distW)*wandSpd*dt;
         b.mesh.rotation.y = Math.atan2(dxw, dzw) + Math.PI;
       }
+      // Hard clamp to island interior
+      b.x = Math.max(-44, Math.min(44, b.x));
+      b.z = Math.max(-1630, Math.min(-1552, b.z));
       b.legT += dt * wandSpd * 1.6;
       b.mesh.position.set(b.x, b.y, b.z);
       b.mesh.userData.ll.rotation.x =  Math.sin(b.legT)*0.55;
