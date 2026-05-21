@@ -30,6 +30,9 @@
       display:none;pointer-events:none;z-index:10;white-space:nowrap;}
 
     /* Buy confirmation flash */
+    #fort-level{position:fixed;top:60px;left:18px;background:rgba(0,0,0,0.72);
+      color:#aaddff;font:bold 14px monospace;padding:6px 14px;border-radius:14px;
+      border:1px solid rgba(150,200,255,0.4);pointer-events:none;z-index:10;}
     #buy-msg{position:fixed;top:70px;left:50%;transform:translateX(-50%);
       background:rgba(0,180,80,0.9);color:#fff;font:bold 16px monospace;
       padding:8px 20px;border-radius:12px;opacity:0;transition:opacity 0.4s;
@@ -84,6 +87,7 @@
   <canvas id="c"></canvas>
 
   <div id="coins">💰 50</div>
+  <div id="fort-level">🏰 Fort: Not built</div>
   <div id="inv-display">No seeds — open Shop</div>
   <button id="shop-btn" onclick="openShop()">🛒 SHOP</button>
   <div id="hint"></div>
