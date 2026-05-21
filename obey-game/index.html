@@ -95,59 +95,6 @@
       display:flex;align-items:center;justify-content:center;
       font:bold 12px monospace;color:#FF8800;cursor:pointer;z-index:10;
       user-select:none;touch-action:none;}
-
-    /* Cosmetic Shop */
-    #cos-btn{position:fixed;top:50%;right:0;transform:translateY(-50%);
-      background:linear-gradient(135deg,#8833FF,#CC44FF);color:#fff;
-      font:bold 13px monospace;padding:12px 8px;border:none;border-radius:12px 0 0 12px;
-      cursor:pointer;z-index:20;writing-mode:vertical-rl;text-orientation:mixed;
-      letter-spacing:2px;box-shadow:-3px 0 12px rgba(136,51,255,0.6);
-      user-select:none;}
-    #cos-btn:hover{background:linear-gradient(135deg,#9944FF,#DD55FF);}
-    #cos-panel{position:fixed;top:0;right:0;width:290px;height:100vh;
-      background:linear-gradient(180deg,#0d0d1a,#1a0d2e);
-      border-left:2px solid #8833FF;z-index:19;
-      transform:translateX(100%);transition:transform 0.3s ease;
-      overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;}
-    #cos-panel.open{transform:translateX(0);}
-    #cos-panel::-webkit-scrollbar{width:5px;}
-    #cos-panel::-webkit-scrollbar-thumb{background:#8833FF;border-radius:4px;}
-    .cos-header{background:linear-gradient(135deg,#8833FF,#CC44FF);
-      color:#fff;font:900 18px monospace;padding:14px 18px;
-      letter-spacing:2px;display:flex;justify-content:space-between;align-items:center;
-      flex-shrink:0;}
-    .cos-close{background:none;border:none;color:#fff;font-size:22px;
-      cursor:pointer;line-height:1;padding:0 4px;}
-    .cos-coins{background:rgba(255,215,0,0.15);color:#FFD700;
-      font:bold 15px monospace;padding:8px 18px;border-bottom:1px solid #333;
-      flex-shrink:0;}
-    .cos-tabs{display:flex;flex-shrink:0;}
-    .cos-tab{flex:1;padding:8px 4px;background:rgba(255,255,255,0.05);
-      color:#aaa;font:bold 11px monospace;border:none;border-bottom:2px solid transparent;
-      cursor:pointer;transition:all 0.2s;}
-    .cos-tab.active{background:rgba(136,51,255,0.25);color:#CC88FF;
-      border-bottom-color:#8833FF;}
-    .cos-tab:hover{background:rgba(136,51,255,0.15);color:#CC88FF;}
-    .cos-grid{padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1;}
-    .cos-item{background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.1);
-      border-radius:12px;padding:10px 8px;text-align:center;cursor:pointer;
-      transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:6px;}
-    .cos-item:hover{background:rgba(136,51,255,0.2);border-color:#8833FF;}
-    .cos-item.owned{border-color:#22CC44;background:rgba(34,204,68,0.1);}
-    .cos-item.equipped{border-color:#FFD700;background:rgba(255,215,0,0.15);
-      box-shadow:0 0 10px rgba(255,215,0,0.3);}
-    .cos-icon{font-size:28px;line-height:1;}
-    .cos-name{color:#ddd;font:bold 10px monospace;line-height:1.3;}
-    .cos-price{color:#FFD700;font:bold 12px monospace;}
-    .cos-price.owned{color:#22CC44;}
-    .cos-price.equipped{color:#FFD700;}
-    .cos-buy-btn{background:linear-gradient(135deg,#8833FF,#CC44FF);color:#fff;
-      border:none;border-radius:8px;padding:5px 10px;font:bold 10px monospace;
-      cursor:pointer;width:100%;margin-top:2px;}
-    .cos-buy-btn:hover{opacity:0.85;}
-    .cos-buy-btn.equip{background:linear-gradient(135deg,#228833,#33AA44);}
-    .cos-buy-btn.unequip{background:linear-gradient(135deg,#665500,#AA8800);}
-    .cos-buy-btn:disabled{background:#333;color:#666;cursor:not-allowed;}
   </style>
 </head>
 <body>
@@ -194,24 +141,6 @@
   </div>
   <div id="b-jump">JUMP</div>
   <div id="b-sprint">RUN</div>
-
-  <!-- Cosmetic Shop -->
-  <button id="cos-btn" onclick="toggleCosShop()">🛍 SHOP</button>
-  <div id="cos-panel">
-    <div class="cos-header">
-      <span>🛍 SHOP</span>
-      <button class="cos-close" onclick="toggleCosShop()">✕</button>
-    </div>
-    <div class="cos-coins" id="cos-coins-display">💰 0 coins</div>
-    <div class="cos-tabs" id="cos-tabs">
-      <button class="cos-tab active" onclick="setCosTab('hat')">🧢 Hats</button>
-      <button class="cos-tab" onclick="setCosTab('glass')">😎 Glasses</button>
-      <button class="cos-tab" onclick="setCosTab('wings')">🪽 Wings</button>
-      <button class="cos-tab" onclick="setCosTab('shirt')">👕 Shirts</button>
-      <button class="cos-tab" onclick="setCosTab('pants')">👖 Pants</button>
-    </div>
-    <div class="cos-grid" id="cos-grid"></div>
-  </div>
 
   <script src="game.js"></script>
 </body>
