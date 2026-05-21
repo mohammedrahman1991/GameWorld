@@ -567,6 +567,37 @@ const playerMesh = (function(){
   return g;
 })();
 
+// ── Bot AI helpers ────────────────────────────────────────────────
+function getBotGround(bx, bz) {
+  let best = -999;
+  for (const p of platforms) {
+    if (p.deadly) continue;
+    const mx=p.mesh.position.x, my=p.mesh.position.y, mz=p.mesh.position.z;
+    if (bx>mx-p.w/2-0.25 && bx<mx+p.w/2+0.25 && bz>mz-p.d/2-0.25 && bz<mz+p.d/2+0.25) {
+      const top=my+p.h/2; if (top>best) best=top;
+    }
+  }
+  return best;
+}
+function botOnDeadly(bx, by, bz) {
+  for (const p of platforms) {
+    if (!p.deadly) continue;
+    const mx=p.mesh.position.x, my=p.mesh.position.y, mz=p.mesh.position.z;
+    if (bx>mx-p.w/2 && bx<mx+p.w/2 && bz>mz-p.d/2 && bz<mz+p.d/2 && Math.abs(by-(my+p.h/2))<0.3) return true;
+  }
+  return false;
+}
+function botLaserDanger(bx, bz) {
+  for (const lz of laserPivots) {
+    if (Math.abs(bz-lz.z)>12) continue;
+    const ang=lz.piv.rotation.y;
+    const toBotAng=Math.atan2(-(bz-lz.z), bx-lz.x);
+    const diff=Math.abs(((toBotAng-ang+Math.PI*3)%(Math.PI*2))-Math.PI);
+    if (diff<0.35 && Math.sqrt((bx-lz.x)**2+(bz-lz.z)**2)<lz.armLen+0.6) return true;
+  }
+  return false;
+}
+
 // ── Bots ──────────────────────────────────────────────────────────
 const BOT_COLS=[
   0xFF4444,0xFF8844,0xFFDD00,0x44FF44,0x44FFFF,0x4488FF,0xFF44FF,0xFFAA44,
@@ -1062,31 +1093,73 @@ function animate() {
     const targetX = b.lane + Math.sin(b.wobble)*0.6;
     b.x += (targetX - b.x) * Math.min(dt*3, 1);
 
-    // Move forward (only if not yet on finish island)
-    if (!b.finished) b.z -= curSpd * dt;
-
-    // Gravity + ground (no floor clamp in void sections — bots fall and die)
-    b.vy -= GRAVITY * dt;
-    b.y  += b.vy * dt;
-    const inVoidG = (b.z < -640 && b.z > -810) || (b.z < -1015 && b.z > -1175);
-    if (b.y <= 0 && !inVoidG) { b.y=0; b.vy=0; b.onGround=true; }
-    else b.onGround = false;
-
-    // Auto-jump: random jumps while on ground
-    b.jumpTimer -= dt;
-    if (b.jumpTimer <= 0 && b.onGround) {
-      b.vy = JUMP_VEL * (0.7 + Math.random()*0.5);
-      b.onGround = false;
-      b.jumpTimer = 2 + Math.random()*5;
+    // Move forward — pause in laser danger zone, normal otherwise
+    if (!b.finished) {
+      const laserPause = botLaserDanger(b.x, b.z - 1);
+      if (!laserPause) b.z -= curSpd * dt;
     }
 
-    // In void sections (sky bridges, frozen peaks) die instantly on any fall
-    const inVoid = (b.z < -640 && b.z > -810) || (b.z < -1015 && b.z > -1175);
-    const deathY = inVoid ? -1.5 : -12;
-    if (b.y < deathY) {
-      b.dead=true; b.deadTimer=1.8+Math.random();
-      b.mesh.visible=false;
-      continue;
+    // ── Smart physics ────────────────────────────────────────
+    // Real ground detection from platform geometry
+    const gY = getBotGround(b.x, b.z);
+    const hasGround = gY > -100;
+    b.vy -= GRAVITY * dt;
+    b.y  += b.vy * dt;
+    if (hasGround && b.y <= gY) {
+      b.y=gY; b.vy=0; b.onGround=true;
+    } else if (!hasGround && b.y <= 0) {
+      b.y=0; b.vy=0; b.onGround=true;  // flat fallback
+    } else {
+      b.onGround=false;
+    }
+
+    // Bounce pad
+    if (b.onGround) {
+      for (const bp of bouncePads) {
+        if (Math.abs(b.x-bp.x)<bp.w/2 && Math.abs(b.z-bp.z)<bp.d/2) {
+          b.vy=JUMP_VEL*2.0; b.onGround=false; break;
+        }
+      }
+    }
+
+    // Lava/deadly check — die if standing on it
+    if (b.onGround && botOnDeadly(b.x, b.y, b.z)) {
+      b.dead=true; b.deadTimer=1.5+Math.random()*0.5; b.mesh.visible=false; continue;
+    }
+
+    // Gap detection — look 3 units ahead; jump if no ground
+    if (b.onGround && b.vy<=0) {
+      const aheadG = getBotGround(b.x, b.z-3);
+      if (aheadG < -50) { b.vy=JUMP_VEL*0.95; b.onGround=false; }
+    }
+
+    // Laser avoidance — pause and let laser sweep past before running through
+    const danger = botLaserDanger(b.x, b.z);
+    if (danger) {
+      // Side-dodge slightly while waiting
+      b.x += Math.sign(b.x||1) * b.spd * dt * 0.4;
+    }
+
+    // Lava steering — nudge x away from nearby deadly patches
+    for (const p of platforms) {
+      if (!p.deadly) continue;
+      const mx=p.mesh.position.x, mz=p.mesh.position.z;
+      if (Math.abs(b.z-mz)<p.d/2+1.5 && Math.abs(b.x-mx)<p.w/2+1.5) {
+        b.x += (b.x>mx ? 1 : -1) * b.spd * dt * 2;
+      }
+    }
+
+    // Random jump (occasional, for flair)
+    b.jumpTimer -= dt;
+    if (b.jumpTimer<=0 && b.onGround) {
+      b.vy=JUMP_VEL*(0.6+Math.random()*0.4); b.onGround=false;
+      b.jumpTimer=3+Math.random()*6;
+    }
+
+    // Death check
+    const deathY = (b.z<-640&&b.z>-810)||(b.z<-1015&&b.z>-1175) ? -2 : -12;
+    if (b.y<deathY) {
+      b.dead=true; b.deadTimer=1.8+Math.random(); b.mesh.visible=false; continue;
     }
 
     // Clamp X to course width so bots can't pass through side walls
