@@ -792,8 +792,10 @@ function animate() {
   requestAnimationFrame(animate);
   const dt=Math.min(clock.getDelta(), 0.05);
 
-  // Start music on first frame
-  if (!musicStarted) { musicStarted=true; startMusic(); }
+  // Start music on first user interaction (Chrome blocks AudioContext before gesture)
+  if (!musicStarted && (Object.values(keys).some(Boolean)||Object.values(touch).some(Boolean))) {
+    musicStarted=true; try{startMusic();}catch(e){}
+  }
 
   // Game over — freeze
   if (gameOver) { renderer.render(scene,camera); return; }
@@ -971,9 +973,10 @@ function animate() {
   renderer.render(scene, camera);
 }
 
-// Set camera to correct position immediately so first frame isn't black
+// Set camera and render one frame immediately — no black flash
 camera.position.set(player.x, player.y + 6, player.z + 10);
 camera.lookAt(player.x, player.y + 1, player.z - 5);
+renderer.render(scene, camera);
 
 updateHUD();
 animate();
