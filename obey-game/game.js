@@ -640,8 +640,6 @@ let jumpsLeft=2;
 function updateHUD() {
   document.getElementById('coins-hud').textContent=`💰 ${coinCount}`;
   document.getElementById('cp-hud').textContent=`CP: ${cpCount}/9`;
-  const secs=Math.floor(elapsed), m=String(Math.floor(secs/60)).padStart(2,'0'), s=String(secs%60).padStart(2,'0');
-  document.getElementById('timer-hud').textContent=`⏱ ${m}:${s}`;
 }
 function flashRed() {
   const f=document.getElementById('flash'); f.style.opacity='1';
