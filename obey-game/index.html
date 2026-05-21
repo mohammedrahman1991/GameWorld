@@ -27,6 +27,28 @@
     #hint-hud{position:fixed;top:60px;left:50%;transform:translateX(-50%);
       color:#fff;font:bold 16px monospace;text-shadow:0 1px 4px #000;
       pointer-events:none;text-align:center;}
+    #lives-hud{position:fixed;top:56px;left:18px;background:rgba(0,0,0,0.7);
+      color:#FF4444;font:bold 17px monospace;padding:6px 13px;border-radius:14px;
+      border:1px solid #CC2222;}
+    #timer-hud{position:fixed;top:56px;right:18px;background:rgba(0,0,0,0.7);
+      color:#AAFFDD;font:bold 15px monospace;padding:6px 13px;border-radius:14px;
+      border:1px solid #44AAAA;}
+    #section-hud{position:fixed;bottom:68px;left:50%;transform:translateX(-50%);
+      background:rgba(0,0,0,0.65);color:#AAD4FF;font:bold 13px monospace;
+      padding:5px 14px;border-radius:10px;pointer-events:none;}
+    /* Section announcement */
+    #sec-announce{position:fixed;top:38%;left:50%;transform:translate(-50%,-50%);
+      font:900 44px monospace;color:#FFD700;text-shadow:0 0 20px #FF8800,0 3px 0 #000;
+      pointer-events:none;opacity:0;transition:opacity 0.5s;letter-spacing:3px;
+      text-align:center;z-index:30;}
+    /* Game over */
+    #over-modal{position:fixed;inset:0;background:rgba(0,0,0,0.9);
+      display:none;align-items:center;justify-content:center;z-index:100;}
+    #over-modal.open{display:flex;}
+    #over-box{background:linear-gradient(135deg,#2a0a0a,#1a0000);
+      border:3px solid #CC2222;border-radius:22px;padding:36px;text-align:center;width:min(400px,90vw);}
+    #over-box h1{color:#CC2222;font-size:2.5rem;margin-bottom:12px;}
+    #over-box p{color:#ffaaaa;font-size:1.05rem;margin:8px 0;}
 
     /* Respawn flash */
     #flash{position:fixed;inset:0;background:rgba(255,50,50,0.55);
@@ -79,11 +101,26 @@
   <canvas id="c"></canvas>
   <div id="title-badge">OBEY</div>
   <div id="coins-hud">💰 0</div>
-  <div id="cp-hud">CP: 0 / 6</div>
+  <div id="cp-hud">CP: 0 / 9</div>
+  <div id="lives-hud">❤️❤️❤️</div>
+  <div id="timer-hud">00:00</div>
+  <div id="section-hud">GREEN PLAINS</div>
   <div id="sprint-hud">⚡ SPRINTING</div>
   <div id="hint-hud"></div>
   <div id="flash"></div>
   <div id="cp-pop">✓ CHECKPOINT!</div>
+  <div id="sec-announce"></div>
+
+  <!-- Game Over -->
+  <div id="over-modal">
+    <div id="over-box">
+      <h1>💀 GAME OVER</h1>
+      <p>You ran out of lives!</p>
+      <p id="over-sub"></p>
+      <br>
+      <button class="wbtn" id="btn-retry" onclick="restartGame()" style="background:linear-gradient(135deg,#CC2222,#AA1111);color:#fff;display:inline-block;margin-top:10px;padding:14px 30px;font:bold 17px monospace;border:none;border-radius:12px;cursor:pointer;">🔄 Try Again</button>
+    </div>
+  </div>
 
   <div id="win-modal">
     <div id="win-box">

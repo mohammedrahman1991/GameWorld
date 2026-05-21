@@ -97,21 +97,42 @@ function sfxDie()        { sfx(220,0.3,'sawtooth',0.2); }
 function sfxWin()        { [523,659,784,1046].forEach((f,i)=>setTimeout(()=>sfx(f,0.4),i*140)); }
 
 // ── Game state ────────────────────────────────────────────────────
-const player = {x:0, y:2, z:5, vx:0, vy:0, vz:0, onGround:false};
-let spawnPos = {x:0, y:2, z:5};
-let cpCount  = 0;
+const player = {x:0, y:1, z:-10, vx:0, vy:0, vz:0, onGround:false};
+let spawnPos = {x:0, y:1, z:-10};
+let cpCount   = 0;
 let coinCount = 0;
-let isDead   = false;
+let lives     = 3;
+let isDead    = false;
 let deadTimer = 0;
 let chestOpened = false;
-let gameWon  = false;
+let gameWon   = false;
+let gameOver  = false;
+let startTime = null;
+let elapsed   = 0;
+let curSecIdx = -1;
 const touch  = {up:false,down:false,left:false,right:false,jump:false,sprint:false};
+
+// Section definitions (by min Z threshold descending)
+const SECTIONS=[
+  {zMin: 0,    name:'GREEN PLAINS'},
+  {zMin:-205,  name:'FIRST GAPS'},
+  {zMin:-355,  name:'LAVA FIELDS 🔥'},
+  {zMin:-500,  name:'LASER HALL ⚡'},
+  {zMin:-650,  name:'SKY BRIDGES ☁️'},
+  {zMin:-810,  name:'CHAOS ZONE 💥'},
+  {zMin:-958,  name:'FINAL SPRINT 🏃'},
+  {zMin:-1025, name:'FROZEN PEAKS 🧊'},
+  {zMin:-1185, name:'DARK DUNGEON 💀'},
+  {zMin:-1355, name:'RAINBOW ROAD 🌈'},
+  {zMin:-1485, name:'GRAND FINISH 🏆'},
+];
 
 // ── Object lists ──────────────────────────────────────────────────
 const platforms   = [];
 const laserPivots = [];
 const cpList      = [];
 const coinMeshes  = [];
+const bouncePads  = [];
 
 // ── Platform builder ──────────────────────────────────────────────
 function P(x,cy,z,w,h,d,col,deadly=false,mov=null) {
@@ -132,6 +153,28 @@ function P(x,cy,z,w,h,d,col,deadly=false,mov=null) {
 // Shorthand: platform at given TOP-surface Y
 function T(x,topY,z,w,h,d,col,deadly=false,mov=null) {
   return P(x, topY-h/2, z, w, h, d, col, deadly, mov);
+}
+
+// ── Bounce pad builder ────────────────────────────────────────────
+function BOUNCE(x,topY,z) {
+  // Base
+  const base=new THREE.Mesh(new THREE.BoxGeometry(3,0.3,3),
+    new THREE.MeshLambertMaterial({color:0x33CC33}));
+  base.position.set(x,topY-0.15,z); scene.add(base);
+  // Spring coils
+  for (let i=0;i<3;i++){
+    const coil=new THREE.Mesh(new THREE.TorusGeometry(0.5,0.12,6,10),
+      new THREE.MeshLambertMaterial({color:0xFFDD00,emissive:new THREE.Color(0xFFAA00).multiplyScalar(0.4)}));
+    coil.rotation.x=Math.PI/2;
+    coil.position.set(x+(i-1)*0.8, topY+0.18, z); scene.add(coil);
+  }
+  // Top pad
+  const pad=new THREE.Mesh(new THREE.BoxGeometry(3,0.18,3),
+    new THREE.MeshLambertMaterial({color:0xFFDD00,emissive:new THREE.Color(0xFFAA00).multiplyScalar(0.5)}));
+  pad.position.set(x,topY+0.36,z); scene.add(pad);
+  // Invisible solid platform underneath
+  T(x,topY,z,3,0.55,3,0x33CC33);
+  bouncePads.push({x,y:topY+0.36,z,w:3,d:3});
 }
 
 // ── Laser builder ─────────────────────────────────────────────────
@@ -323,10 +366,96 @@ CP(0, 0,-940, 5);
 T(0,  0,-970,  16, 1, 30, 0x44AA44);
 CO(2,1.8,-965); CO(-2,1.8,-975); CO(0,1.8,-985);
 
+// ── SECTION 6: FROZEN PEAKS (z=-1010 to z=-1170) ──────────────────
+// Ice floor + platforms. Some bounce pads.
+T(0,  0,-1015,  12, 1, 16, 0xCCEEFF);   // entry bridge
+// Death floor below (void)
+P(0,-18,-1090, 120, 1, 180, 0x112233, true);
+// Ice platforms (light blue, narrow)
+T(0,  2,-1030,  8,0.6,12,0xAADDFF);
+BOUNCE(4, 2, -1048);
+T(-3, 4,-1062,  4,0.6, 8,0x99CCEE);
+T(3,  2,-1078,  4,0.6, 8,0xAADDFF);
+T(-2, 5,-1094,  3,0.6, 7,0x99CCEE);
+T(2,  2,-1110,  3,0.6, 7,0xAADDFF);
+BOUNCE(0, 2, -1120);
+T(0,  6,-1132,  5,0.6,10,0x99CCEE);
+T(-3, 3,-1148,  4,0.6, 8,0xAADDFF);
+T(0,  2,-1162,  9,0.6,12,0xCCEEFF);
+CO(0,3.8,-1030); CO(-3,5.8,-1062); CO(2,3.8,-1110); CO(0,7.8,-1132);
+// Icicles decoration
+for(let i=0;i<8;i++){
+  const ic=new THREE.Mesh(new THREE.ConeGeometry(0.2,1.5+Math.random(),5),
+    new THREE.MeshLambertMaterial({color:0xAADDFF,transparent:true,opacity:0.8}));
+  ic.rotation.x=Math.PI; ic.position.set((Math.random()-0.5)*18, 8+Math.random()*2, -1040-i*15); scene.add(ic);
+}
+CP(0, 2,-1170, 6);
+
+// ── SECTION 7: DARK DUNGEON (z=-1185 to z=-1330) ─────────────────
+// Very dark, narrow, lasers + lava combo
+T(0,  0,-1200,  10,1,20,0x443322);  // dungeon floor entry
+P(0,-2,-1260,100,1,160,0xFF4400,true); // lava floor
+P(-8, 4,-1260, 1,10,160,0x332211);  // dungeon walls
+P( 8, 4,-1260, 1,10,160,0x332211);
+// Dungeon ceiling
+P(0, 9,-1260,18,1,160,0x221100);
+// Torch lights on walls
+for(let i=0;i<6;i++){
+  const torch=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.8,0.3),
+    new THREE.MeshLambertMaterial({color:0x884400}));
+  torch.position.set(i%2===0?-7.5:7.5, 4, -1210-i*20); scene.add(torch);
+  const flame=new THREE.Mesh(new THREE.ConeGeometry(0.22,0.6,6),
+    new THREE.MeshLambertMaterial({color:0xFF6600,emissive:new THREE.Color(0xFF4400).multiplyScalar(0.9)}));
+  flame.position.set(i%2===0?-7.5:7.5, 4.7, -1210-i*20); scene.add(flame);
+}
+// Platforms over lava in dungeon
+T(0, 2,-1215, 5,0.8, 7,0x664422);
+T(4, 2,-1231, 4,0.8, 6,0x664422,false,{axis:'x',range:2.5,spd:1.3});
+T(-3,2,-1247, 4,0.8, 6,0x775533,false,{axis:'x',range:2.5,spd:-1.5});
+T(2, 2,-1263, 4,0.8, 6,0x664422,false,{axis:'x',range:3,  spd:1.8});
+T(-2,3,-1279, 3,0.8, 6,0x775533,false,{axis:'y',range:2,  spd:1.2});
+T(0, 2,-1295, 5,0.8, 7,0x664422);
+T(0, 2,-1311, 7,0.8,10,0x775533);
+// Dungeon lasers (fast)
+L(0,3.5,-1225, 2.8, 5, 0);
+L(0,3.5,-1250,-3.2, 5, Math.PI/2);
+L(0,3.5,-1275, 2.5, 5, Math.PI);
+L(0,3.5,-1300,-3.0, 5, Math.PI*1.5);
+CO(0,3.8,-1215); CO(4,3.8,-1231); CO(0,4.8,-1279); CO(0,3.8,-1311);
+CP(0, 2,-1320, 7);
+
+// ── SECTION 8: RAINBOW ROAD (z=-1335 to z=-1475) ──────────────────
+// Crazy colorful fast-moving platforms over void
+P(0,-20,-1405,120,1,160,0x110022,true); // deep void
+T(0, 0,-1340,  10,1,16,0xFF4466);  // rainbow entry
+// Rainbow platforms (alternating colors)
+const rainCols=[0xFF4444,0xFF8844,0xFFDD00,0x44CC44,0x44AAFF,0x8844FF,0xFF44CC];
+let rainZ=-1360, rainY=0;
+for(let i=0;i<14;i++){
+  const col=rainCols[i%rainCols.length];
+  const w=3+Math.random()*2, gap=3.5+Math.random()*2;
+  const mov=i%2===0
+    ? {axis:'x',range:2.5+Math.random()*2,spd:1.5+Math.random()*1.5}
+    : {axis:'y',range:1.2,spd:1.2+Math.random()};
+  T((Math.random()-0.5)*4, rainY, rainZ, w, 0.6, 6+Math.random()*4, col, false, mov);
+  CO((Math.random()-0.5)*3, rainY+2.2, rainZ);
+  rainZ -= gap+w*0.5;
+  rainY += (Math.random()-0.4)*1.5;
+  rainY = Math.max(-1, Math.min(4, rainY));
+}
+// Final rainbow landing
+T(0, 0,-1463, 12, 1, 16, 0xFF44CC);
+CO(3,1.8,-1455); CO(-3,1.8,-1463); CO(0,1.8,-1468);
+CP(0, 0,-1473, 8);
+
+// ── FINAL RUSH to END ─────────────────────────────────────────────
+T(0, 0,-1490, 14, 1, 30, 0x44BB55);
+CO(2,1.8,-1485); CO(-2,1.8,-1495); CO(0,1.8,-1505);
+
 // ──────────────────────────────────────────────────────────────────
 // ── GRAND FINISH ISLAND ───────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────
-const END_Z = -1080;
+const END_Z = -1590;
 
 // Giant finish platform
 T(0,   0, END_Z, 100, 1,  90, 0x44AA55);
@@ -336,8 +465,8 @@ P(0, 14, END_Z-45, 100, 28, 2, 0x336633);
 P(-50, 8, END_Z, 2, 16, 90, 0x336633);
 P( 50, 8, END_Z, 2, 16, 90, 0x336633);
 
-// Entrance platform
-T(0,   0, -1012, 12, 1, 24, 0x44BB44);
+// Entrance platform (connects last rush to end island)
+T(0,   0, END_Z+52, 12, 1, 24, 0x44BB44);
 
 // ── Ball Pit ──────────────────────────────────────────────────────
 const PIT_X=-28, PIT_Z=END_Z;
@@ -499,9 +628,13 @@ if(sBtn){
 let jumpConsumed=false;
 
 // ── UI helpers ────────────────────────────────────────────────────
+function livesStr() { return '❤️'.repeat(Math.max(0,lives)); }
 function updateHUD() {
   document.getElementById('coins-hud').textContent=`💰 ${coinCount}`;
-  document.getElementById('cp-hud').textContent=`CP: ${cpCount}/6`;
+  document.getElementById('cp-hud').textContent=`CP: ${cpCount}/9`;
+  document.getElementById('lives-hud').textContent=livesStr()||'💔 GAME OVER';
+  const secs=Math.floor(elapsed), m=String(Math.floor(secs/60)).padStart(2,'0'), s=String(secs%60).padStart(2,'0');
+  document.getElementById('timer-hud').textContent=`⏱ ${m}:${s}`;
 }
 function flashRed() {
   const f=document.getElementById('flash'); f.style.opacity='1';
@@ -512,32 +645,55 @@ function showCPPop() {
   setTimeout(()=>{el.style.opacity='0';},1600);
 }
 function setHint(txt) { document.getElementById('hint-hud').textContent=txt; }
+function showSecAnnounce(name) {
+  const el=document.getElementById('sec-announce');
+  el.textContent=name; el.style.opacity='1';
+  setTimeout(()=>{ el.style.opacity='0'; },2000);
+}
 function openWin() {
+  const secs=Math.floor(elapsed);
+  const m=String(Math.floor(secs/60)).padStart(2,'0'), s=String(secs%60).padStart(2,'0');
   document.getElementById('win-modal').classList.add('open');
+  document.getElementById('win-sub').textContent=`Time: ${m}:${s}  •  Coins: ${coinCount}`;
   sfxWin();
+}
+function openGameOver() {
+  document.getElementById('over-modal').classList.add('open');
+  document.getElementById('over-sub').textContent=`You got ${cpCount}/9 checkpoints`;
+  sfxDie();
 }
 window.stayAtEnd = function() { document.getElementById('win-modal').classList.remove('open'); };
 window.restartGame = function() {
   document.getElementById('win-modal').classList.remove('open');
-  gameWon=false; chestOpened=false; coinCount=0; cpCount=0;
-  chestLidMesh.rotation.x=0;
+  document.getElementById('over-modal').classList.remove('open');
+  gameWon=false; gameOver=false; chestOpened=false; coinCount=0; cpCount=0; lives=3;
+  elapsed=0; startTime=null; curSecIdx=-1;
+  if(chestLidMesh) chestLidMesh.rotation.x=0;
   cpList.forEach(c=>c.collected=false);
   coinMeshes.forEach(c=>{c.collected=false; c.mesh.visible=true;});
-  player.x=0; player.y=2; player.z=5;
+  player.x=0; player.y=1; player.z=-10;
   player.vx=0; player.vy=0; player.vz=0;
-  spawnPos={x:0,y:2,z:5};
+  spawnPos={x:0,y:1,z:-10};
   isDead=false;
   updateHUD();
 };
 
 // ── Respawn ───────────────────────────────────────────────────────
 function respawn() {
-  if (isDead) return;
+  if (isDead || gameOver) return;
   isDead=true; deadTimer=0.9;
+  lives=Math.max(0, lives-1);
   sfxDie(); flashRed();
   player.vx=0; player.vy=0; player.vz=0;
+  updateHUD();
+  if (lives<=0) { deadTimer=1.5; }
+}
+function doGameOver() {
+  gameOver=true; isDead=false;
+  openGameOver();
 }
 function doRespawn() {
+  if (lives<=0) { doGameOver(); return; }
   player.x=spawnPos.x; player.y=spawnPos.y; player.z=spawnPos.z;
   player.vx=0; player.vy=0; player.vz=0;
   isDead=false;
@@ -600,22 +756,28 @@ function laserHits(lz) {
 
 // ── Sky color per section ─────────────────────────────────────────
 const SKIES=[
-  {sky:0x87CEEB,fog:0x87CEEB},  // plains
-  {sky:0x442200,fog:0x331100},  // lava
-  {sky:0x0a1428,fog:0x0a1428},  // lasers
-  {sky:0xCCE8FF,fog:0xAAD4F5},  // sky bridges
-  {sky:0x1a0a2e,fog:0x1a0a2e},  // chaos
-  {sky:0x336622,fog:0x224411},  // final sprint
-  {sky:0x336622,fog:0x224411},  // end island
+  {sky:0x87CEEB,fog:0x87CEEB},  // 0 plains
+  {sky:0x442200,fog:0x331100},  // 1 lava
+  {sky:0x0a1428,fog:0x0a1428},  // 2 lasers
+  {sky:0xCCE8FF,fog:0xAAD4F5},  // 3 sky bridges
+  {sky:0x1a0a2e,fog:0x1a0a2e},  // 4 chaos
+  {sky:0x336622,fog:0x224411},  // 5 final sprint
+  {sky:0xCCEEFF,fog:0xAADDEE},  // 6 ice world
+  {sky:0x110a05,fog:0x110a05},  // 7 dark dungeon
+  {sky:0x221133,fog:0x110022},  // 8 rainbow road
+  {sky:0x336622,fog:0x224411},  // 9 end island
 ];
 function getSkyIdx(z) {
-  if (z>-200)  return 0;
-  if (z>-360)  return 1;
-  if (z>-510)  return 2;
-  if (z>-660)  return 3;
-  if (z>-820)  return 4;
-  if (z>-975)  return 5;
-  return 6;
+  if (z>-355)  return 0;
+  if (z>-500)  return 1;
+  if (z>-650)  return 2;
+  if (z>-810)  return 3;
+  if (z>-958)  return 4;
+  if (z>-1025) return 5;
+  if (z>-1185) return 6;
+  if (z>-1355) return 7;
+  if (z>-1485) return 8;
+  return 9;
 }
 let lastSkyIdx=-1;
 
@@ -630,6 +792,13 @@ function animate() {
 
   // Start music on first frame
   if (!musicStarted) { musicStarted=true; startMusic(); }
+
+  // Game over — freeze
+  if (gameOver) { renderer.render(scene,camera); return; }
+
+  // Timer
+  if (!startTime) startTime=Date.now();
+  if (!gameWon && !gameOver) { elapsed=(Date.now()-startTime)/1000; updateHUD(); }
 
   // Dead countdown
   if (isDead) {
@@ -695,6 +864,26 @@ function animate() {
       cp.coin.visible=false;
       showCPPop(); sfxCheckpoint(); updateHUD();
     }
+  }
+
+  // Bounce pad check
+  if (player.onGround) {
+    for (const bp of bouncePads) {
+      if (Math.abs(player.x-bp.x)<bp.w/2+PW && Math.abs(player.z-bp.z)<bp.d/2+PW) {
+        player.vy=JUMP_VEL*2.1; player.onGround=false;
+        sfx(660,0.15,'square',0.15); sfx(880,0.1,'sine',0.1);
+        break;
+      }
+    }
+  }
+
+  // Section name tracking
+  let si=0; for(let i=SECTIONS.length-1;i>=0;i--){if(player.z<=SECTIONS[i].zMin){si=i;break;}}
+  if (si!==curSecIdx) {
+    curSecIdx=si;
+    const nm=SECTIONS[Math.max(0,si)]?.name||'';
+    document.getElementById('section-hud').textContent=nm;
+    if (si>0) showSecAnnounce(nm);
   }
 
   // Floating coin collection
