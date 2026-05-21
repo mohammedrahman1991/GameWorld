@@ -315,7 +315,6 @@ L(0, 1.8,-550, 0.5,  3.8, Math.PI*0.7);
 L(0, 1.8,-568,-0.55, 3.8, Math.PI/5);
 L(0, 1.8,-586, 0.65, 3.8, Math.PI*1.4);
 L(0, 1.8,-604,-0.5,  3.8, Math.PI*0.9);
-L(0, 1.8,-622, 0.6,  3.8, Math.PI*1.8);
 // 30 coins scattered across the laser hall floor
 CO(-4,1.5,-508); CO(0,1.5,-508); CO(4,1.5,-508);
 CO(-4,1.5,-519); CO(0,1.5,-519); CO(4,1.5,-519);
@@ -329,22 +328,18 @@ CO(-4,1.5,-602); CO(0,1.5,-602); CO(4,1.5,-602);
 CO(-4,1.5,-614); CO(0,1.5,-614); CO(4,1.5,-614);
 CP(0, 0,-635, 3);
 
-// SECTION 4 — SKY BRIDGES (z=-650 to z=-790)
-// Platforms high in the sky (big drop below)
-// Place a death floor far below
-P(0,-18,-720, 120, 1, 160, 0x220011, true); // deep lava below
-T(0,  5,-658,  6, 0.6, 12, 0xAABBFF);
-T(4,  5,-676,  3.5,0.6,  8, 0xAABBFF);
-CO(4,6.8,-676);
-T(-3, 6,-692,  3, 0.6,  8, 0x99AAEE);
-T(2,  5,-708,  3, 0.6,  7, 0xAABBFF, false, {axis:'x',range:3,spd:1.1});
-CO(-3,7.8,-692);
-T(-2, 6,-723,  3, 0.6,  7, 0x99AAEE);
-T(3,  5,-738,  3, 0.6,  7, 0xAABBFF, false, {axis:'x',range:2.8,spd:1.4});
-T(-1, 6,-753,  4, 0.6,  8, 0x99AAEE);
-CO(0,7.8,-753);
-T(0,  5,-768,  6, 0.6, 10, 0xAABBFF);
-T(0,  5,-782,  8, 0.6, 12, 0x8899EE);
+// SECTION 4 — SKY BRIDGES (z=-650 to z=-790) — easier: wider, centred, slow movers
+P(0,-18,-720, 120, 1, 160, 0x220011, true); // deep void below
+T(0,  5,-658, 12, 0.6, 16, 0xAABBFF);                                       // wide entry
+T(0,  5,-682, 10, 0.6, 14, 0xAABBFF);                                       // wide
+CO(3,6.8,-682); CO(-3,6.8,-682);
+T(0,  5,-704,  9, 0.6, 12, 0x99AAEE);                                       // wide
+T(0,  5,-722, 10, 0.6, 12, 0xAABBFF, false, {axis:'x',range:2,spd:0.45});  // slow drift
+CO(0,6.8,-704); CO(0,6.8,-722);
+T(0,  5,-742,  9, 0.6, 12, 0x99AAEE);                                       // wide
+T(0,  5,-760, 10, 0.6, 12, 0xAABBFF, false, {axis:'x',range:1.5,spd:0.4}); // barely moves
+CO(0,6.8,-742); CO(0,6.8,-760);
+T(0,  5,-780, 12, 0.6, 14, 0x8899EE);                                       // wide landing
 CP(0, 5,-792, 4);
 
 // SECTION 5 — CHAOS ZONE (z=-810 to z=-950)
