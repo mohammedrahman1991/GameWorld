@@ -347,26 +347,22 @@ CP(0, 1,-792, 4);
 
 // SECTION 5 — CHAOS ZONE (z=-810 to z=-950)
 // Mixed floor with lava patches
-T(0,  0,-840,  14, 1, 80, 0x442255);
-// Lava patches on floor
-T(-3, 0.15,-820, 4, 0.3, 5, 0xFF4400, true);
-T(3,  0.15,-838, 4, 0.3, 5, 0xFF4400, true);
-T(-2, 0.15,-858, 5, 0.3, 6, 0xFF4400, true);
-T(2,  0.15,-878, 5, 0.3, 6, 0xFF4400, true);
-T(0,  0.15,-898, 6, 0.3, 7, 0xFF4400, true);
-// Moving platforms over chaos floor
-T(0, 2,-816, 4, 0.8, 5, 0x8844BB, false, {axis:'x',range:4,spd:1.6});
-T(0, 2,-836, 4, 0.8, 5, 0x9955CC, false, {axis:'x',range:4,spd:-1.4});
-T(0, 3,-856, 4, 0.8, 5, 0x7733AA, false, {axis:'x',range:3.5,spd:1.8});
-T(0, 2,-876, 4, 0.8, 5, 0x8844BB, false, {axis:'x',range:4,spd:-1.5});
-T(0, 2,-896, 4, 0.8, 5, 0x9955CC, false, {axis:'y',range:2,spd:1.0});
-// Chaos lasers
-L(0, 3,-825, 2.2, 5.5, 0);
-L(0, 3,-855,-2.8, 5.5, Math.PI/2);
-L(0, 3,-885, 2.4, 5.5, Math.PI*1.3);
-L(0, 3,-915,-2.0, 5.5, Math.PI*0.6);
-CO(0,4,-840); CO(0,4,-868); CO(0,4,-896);
-CP(0, 0,-940, 5);
+// Wide safe floor the whole way — lava patches are small and easy to avoid
+T(0,  0,-870,  16, 1, 120, 0x442255);   // wide floor covers entire section
+// Tiny lava patches (small, off to the side, easy to walk around)
+T(-5, 0.1,-830, 2, 0.2, 3, 0xFF4400, true);
+T(5,  0.1,-860, 2, 0.2, 3, 0xFF4400, true);
+T(-5, 0.1,-900, 2, 0.2, 3, 0xFF4400, true);
+// Moving platforms are now wide and slow — optional shortcuts above
+T(0, 1.5,-830, 10, 0.8, 10, 0x8844BB, false, {axis:'x',range:2,spd:0.45});
+T(0, 1.5,-865, 10, 0.8, 10, 0x9955CC, false, {axis:'x',range:2,spd:0.4});
+T(0, 1.5,-900, 10, 0.8, 10, 0x7733AA, false, {axis:'x',range:2,spd:0.42});
+// Slow lasers — easy to time
+L(0, 2.8,-840, 0.5, 3.5, 0);
+L(0, 2.8,-875,-0.5, 3.5, Math.PI/2);
+L(0, 2.8,-910, 0.5, 3.5, Math.PI);
+CO(0,1.8,-830); CO(0,1.8,-855); CO(0,1.8,-880); CO(0,1.8,-905);
+CP(0, 0,-930, 5);
 
 // FINAL SPRINT (z=-958 to z=-1000)
 T(0,  0,-970,  16, 1, 30, 0x44AA44);
