@@ -100,7 +100,7 @@ function sfxDie()        { sfx(220,0.3,'sawtooth',0.2); }
 function sfxWin()        { [523,659,784,1046].forEach((f,i)=>setTimeout(()=>sfx(f,0.4),i*140)); }
 
 // ── Game state ────────────────────────────────────────────────────
-const player = {x:0, y:1, z:-10, vx:0, vy:0, vz:0, onGround:false};
+const player = {x:0, y:1, z:-10, vx:0, vy:0, vz:0, onGround:false, onIce:false};
 let spawnPos = {x:0, y:1, z:-10};
 let cpCount   = 0;
 let coinCount = 0;
@@ -118,7 +118,7 @@ const touch  = {up:false,down:false,left:false,right:false,jump:false,sprint:fal
 let gameMode = 0; // 0=waiting, 1=1P, 2=2P
 
 // ── Player 2 state ────────────────────────────────────────────────
-const player2 = {x:3, y:1, z:-10, vx:0, vy:0, vz:0, onGround:false};
+const player2 = {x:3, y:1, z:-10, vx:0, vy:0, vz:0, onGround:false, onIce:false};
 let spawnPos2  = {x:3, y:1, z:-10};
 let isDead2    = false, deadTimer2 = 0;
 let jumpsLeft2 = 2, jumpConsumed2 = false;
@@ -138,7 +138,7 @@ const SECTIONS=[
   {zMin:-958,  name:'FINAL SPRINT 🏃'},
   {zMin:-1025, name:'FROZEN PEAKS 🧊'},
   {zMin:-1185, name:'DARK DUNGEON 💀'},
-  {zMin:-1355, name:'RAINBOW ROAD 🌈'},
+  {zMin:-1355, name:'ICE ROAD ❄️'},
   {zMin:-1485, name:'GRAND FINISH 🏆'},
 ];
 
@@ -149,6 +149,7 @@ const cpList      = [];
 const coinMeshes  = [];
 const bouncePads  = [];
 const pitBalls    = [];
+const snowballs   = [];
 let soccerBall    = null;
 const sbv         = {x:4.5, y:0, z:3.5}; // soccer ball velocity (fast)
 
@@ -417,22 +418,82 @@ L(0, 2.5,-1290,-0.45, 3.5, Math.PI/2);
 CO(0,1.8,-1220); CO(0,1.8,-1250); CO(0,1.8,-1280); CO(0,1.8,-1310);
 CP(0, 0,-1320, 7);
 
-// ── SECTION 8: RAINBOW ROAD (z=-1335 to z=-1475) ──────────────────
-// Crazy colorful fast-moving platforms over void
-P(0,-20,-1405,120,1,160,0x110022,true); // deep void
-T(0, 0,-1340,  10,1,16,0xFF4466);  // rainbow entry
-// Rainbow platforms — wide, centred, all same height, tiny gaps
-T(0, 0,-1362, 14, 0.8, 18, 0xFF4444);  CO(0,1.8,-1362);
-T(0, 0,-1383, 14, 0.8, 18, 0xFF8844);  CO(0,1.8,-1383);
-T(0, 0,-1404, 14, 0.8, 18, 0xFFDD00);  CO(0,1.8,-1404);
-T(0, 0,-1425, 14, 0.8, 18, 0x44CC44);  CO(0,1.8,-1425);
-T(0, 0,-1446, 14, 0.8, 18, 0x44AAFF);  CO(0,1.8,-1446);
-T(0, 0,-1467, 14, 0.8, 18, 0x8844FF);  CO(0,1.8,-1467);
-T(0, 0,-1488, 14, 0.8, 18, 0xFF44CC);  CO(0,1.8,-1488);
-// Final rainbow landing
-T(0, 0,-1508, 16, 1, 20, 0xFF4444);
+// ── SECTION 8: ICE ROAD (z=-1335 to z=-1518) ─────────────────────
+// Snow & ice platforms — slippery! Rolling snowballs = instant death
+
+// Helper: rolling snowball hazard
+function SNOWBALL(cx, topY, cz, speed, rangeX) {
+  const r=0.55+Math.random()*0.2;
+  const sx=cx+(Math.random()-0.5)*rangeX*0.6;
+  const mat=new THREE.MeshLambertMaterial({
+    color:0xCCEEFF, emissive:new THREE.Color(0x6699FF).multiplyScalar(0.12)});
+  const mesh=new THREE.Mesh(new THREE.SphereGeometry(r,8,6),mat);
+  mesh.castShadow=true; mesh.position.set(sx,topY+r+0.05,cz); scene.add(mesh);
+  snowballs.push({mesh,x:sx,y:topY+r+0.05,z:cz,vx:speed*(Math.random()>0.5?1:-1),r,cx,rangeX});
+}
+// Helper: snow pile decoration
+function SNOWPILE(x,topY,cz,s=1) {
+  const m=new THREE.MeshLambertMaterial({color:0xEEEEFF});
+  const b=new THREE.Mesh(new THREE.SphereGeometry(0.5*s,6,4),m);
+  b.scale.y=0.45; b.position.set(x,topY+0.22*s,cz); scene.add(b);
+  const t=new THREE.Mesh(new THREE.SphereGeometry(0.3*s,6,4),m);
+  t.scale.y=0.45; t.position.set(x,topY+0.42*s,cz); scene.add(t);
+}
+// Helper: hanging icicle
+function ICICLE(x,topY,cz) {
+  const m=new THREE.MeshLambertMaterial({color:0xAADDFF,transparent:true,opacity:0.85});
+  const ic=new THREE.Mesh(new THREE.ConeGeometry(0.1,0.8+Math.random()*0.6,5),m);
+  ic.position.set(x,topY-0.5,cz); ic.rotation.z=Math.PI; scene.add(ic);
+}
+
+P(0,-20,-1405,120,1,160,0x001020,true); // icy void below
+
+// Ice entry ramp
+const ie0=T(0,0,-1340,12,1,16,0xAADDFF); ie0.icy=true;
+SNOWPILE(-3,0,-1337,0.8); SNOWPILE(3,0,-1342,0.8);
+
+// Platform 1 — ice blue, 1 snowball
+const ie1=T(0,0,-1362,14,0.8,18,0x88CCFF); ie1.icy=true;
+SNOWBALL(0,0,-1362,2.8,5); CO(0,1.8,-1362);
+SNOWPILE(-5,0,-1360,0.7); SNOWPILE(5,0,-1364,0.65);
+ICICLE(-4,-0.4,-1368); ICICLE(4,-0.4,-1356);
+
+// Platform 2 — snow white, 1 snowball
+const ie2=T(0,0,-1383,14,0.8,18,0xDDEEFF); ie2.icy=true;
+SNOWBALL(0,0,-1383,3.2,5); CO(0,1.8,-1383);
+SNOWPILE(-4,0,-1382,0.9); SNOWPILE(4,0,-1385,1.0);
+
+// Platform 3 — deep ice, 2 snowballs
+const ie3=T(0,0,-1404,15,0.8,18,0x77BBEE); ie3.icy=true;
+SNOWBALL(-2,0,-1404,2.5,5); SNOWBALL(3,0,-1404,3.8,5); CO(0,1.8,-1404);
+ICICLE(-5,-0.4,-1410); ICICLE(5,-0.4,-1398);
+
+// Platform 4 — snowy, wide, 1 snowball + piles
+const ie4=T(0,0,-1425,16,0.8,18,0xEEFFFF); ie4.icy=true;
+SNOWBALL(0,0,-1425,3.5,6); CO(0,1.8,-1425);
+SNOWPILE(-6,0,-1423,1.1); SNOWPILE(0,0,-1425,1.2); SNOWPILE(6,0,-1427,0.9);
+
+// Platform 5 — narrow ice, fast snowball
+const ie5=T(0,0,-1446,13,0.8,18,0x55AADD); ie5.icy=true;
+SNOWBALL(0,0,-1446,5.0,4); CO(0,1.8,-1446);
+SNOWPILE(-3,0,-1444,0.8); SNOWPILE(3,0,-1448,0.75);
+ICICLE(-4,-0.4,-1452); ICICLE(3,-0.4,-1440);
+
+// Platform 6 — snow, 2 snowballs
+const ie6=T(0,0,-1467,15,0.8,18,0xDDEEFF); ie6.icy=true;
+SNOWBALL(-2,0,-1467,4.0,5); SNOWBALL(3,0,-1467,2.8,5); CO(0,1.8,-1467);
+SNOWPILE(5,0,-1465,1.0);
+
+// Platform 7 — pure ice, fast + narrow
+const ie7=T(0,0,-1488,14,0.8,18,0x88DDFF); ie7.icy=true;
+SNOWBALL(0,0,-1488,5.5,5); CO(0,1.8,-1488);
+SNOWPILE(-4,0,-1486,0.85); ICICLE(4,-0.4,-1494);
+
+// Final ice landing pad
+const ieFin=T(0,0,-1508,16,1,20,0xCCEEFF); ieFin.icy=true;
+SNOWPILE(-5,0,-1506,1.1); SNOWPILE(5,0,-1510,1.0); SNOWPILE(0,0,-1508,1.3);
 CO(3,1.8,-1502); CO(-3,1.8,-1512);
-CP(0, 0,-1518, 8);
+CP(0,0,-1518,8);
 
 // ── FINAL RUSH to END ─────────────────────────────────────────────
 T(0, 0,-1490, 14, 1, 30, 0x44BB55);
@@ -860,7 +921,7 @@ function doRespawn2() {
 
 // ── Collision (AABB) ──────────────────────────────────────────────
 function resolveCollisions2() {
-  player2.onGround=false;
+  player2.onGround=false; player2.onIce=false;
   for (const plat of platforms) {
     const {w,h,d}=plat;
     const px=plat.mesh.position.x, py=plat.mesh.position.y, pz=plat.mesh.position.z;
@@ -872,14 +933,14 @@ function resolveCollisions2() {
     const ovT=pt-pb2, ovB=pt2-pb, ovL=pr2-pl, ovR=pr-pl2, ovF=pk2-pf, ovK=pk-pf2;
     const minY=Math.min(ovT,ovB), minX=Math.min(ovL,ovR), minZ=Math.min(ovF,ovK);
     if (minY<=minX && minY<=minZ) {
-      if (ovT<ovB) { player2.y=pt; if(player2.vy<0) player2.vy=0; player2.onGround=true; jumpsLeft2=2; if(plat.deadly) respawn2(); }
+      if (ovT<ovB) { player2.y=pt; if(player2.vy<0) player2.vy=0; player2.onGround=true; jumpsLeft2=2; if(plat.deadly) respawn2(); if(plat.icy) player2.onIce=true; }
       else { player2.y=pb-PH; if(player2.vy>0) player2.vy=0; }
     } else if (minX<=minZ) { if(ovL<ovR) player2.x=pl-PW; else player2.x=pr+PW; player2.vx=0; }
     else { if(ovF<ovK) player2.z=pf-PW; else player2.z=pk+PW; player2.vz=0; }
   }
 }
 function resolveCollisions() {
-  player.onGround=false;
+  player.onGround=false; player.onIce=false;
   for (const plat of platforms) {
     const {w,h,d} = plat;
     // Get actual center (moving platforms update plat.x/y/z)
@@ -906,6 +967,7 @@ function resolveCollisions() {
         player.onGround=true;
         jumpsLeft=2;
         if (plat.deadly) respawn();
+        if (plat.icy) player.onIce=true;
       } else {
         // Ceiling
         player.y=pb-PH; if(player.vy>0) player.vy=0;
@@ -944,7 +1006,7 @@ const SKIES=[
   {sky:0x336622,fog:0x224411},  // 5 final sprint
   {sky:0xCCEEFF,fog:0xAADDEE},  // 6 ice world
   {sky:0x110a05,fog:0x110a05},  // 7 dark dungeon
-  {sky:0x221133,fog:0x110022},  // 8 rainbow road
+  {sky:0xBBDDFF,fog:0xAADDFF},  // 8 ice road
   {sky:0x336622,fog:0x224411},  // 9 end island
 ];
 function getSkyIdx(z) {
@@ -1039,7 +1101,13 @@ function animate() {
     if (keys['KeyA']||(useArrows&&keys['ArrowLeft']) ||touch.left)  { mvx-=rgtX; mvz-=rgtZ; }
     if (keys['KeyD']||(useArrows&&keys['ArrowRight'])||touch.right) { mvx+=rgtX; mvz+=rgtZ; }
     const ml=Math.sqrt(mvx*mvx+mvz*mvz); if(ml>0){mvx/=ml;mvz/=ml;}
-    player.vx=mvx*spd; player.vz=mvz*spd;
+    if (player.onIce) {
+      // Slippery: slowly drift toward target velocity
+      player.vx+=(mvx*spd*0.65-player.vx)*0.07;
+      player.vz+=(mvz*spd*0.65-player.vz)*0.07;
+    } else {
+      player.vx=mvx*spd; player.vz=mvz*spd;
+    }
 
     const jumpHeld=keys['Space']||touch.jump;
     if (jumpHeld&&!jumpConsumed&&jumpsLeft>0) {
@@ -1132,7 +1200,12 @@ function animate() {
     if (keys['ArrowLeft'])  { mvx2-=rgtX2; mvz2-=rgtZ2; }
     if (keys['ArrowRight']) { mvx2+=rgtX2; mvz2+=rgtZ2; }
     const ml2=Math.sqrt(mvx2*mvx2+mvz2*mvz2); if(ml2>0){mvx2/=ml2;mvz2/=ml2;}
-    player2.vx=mvx2*spd2; player2.vz=mvz2*spd2;
+    if (player2.onIce) {
+      player2.vx+=(mvx2*spd2*0.65-player2.vx)*0.07;
+      player2.vz+=(mvz2*spd2*0.65-player2.vz)*0.07;
+    } else {
+      player2.vx=mvx2*spd2; player2.vz=mvz2*spd2;
+    }
 
     const jh2=keys['Enter']||keys['NumpadEnter'];
     if (jh2&&!jumpConsumed2&&jumpsLeft2>0) {
@@ -1288,6 +1361,27 @@ function animate() {
       if(!bot.finished)continue;
       const sdx=soccerBall.position.x-bot.x,sdz=soccerBall.position.z-bot.z,sd=Math.sqrt(sdx*sdx+sdz*sdz);
       if(sd<1.3&&sd>0.01){const f=(1.3-sd)/sd;sbv.x+=sdx*f*18;sbv.z+=sdz*f*18;sbv.y+=4;}
+    }
+  }
+
+  // ── Snowballs ─────────────────────────────────────────────────────
+  for (const sb of snowballs) {
+    sb.x += sb.vx * dt;
+    if (sb.x > sb.cx + sb.rangeX || sb.x < sb.cx - sb.rangeX) {
+      sb.vx = -sb.vx;
+      sb.x = Math.max(sb.cx-sb.rangeX, Math.min(sb.cx+sb.rangeX, sb.x));
+    }
+    sb.mesh.position.x = sb.x;
+    sb.mesh.rotation.z += sb.vx * dt * 2.5;
+    // P1 collision
+    if (!isDead) {
+      const dx=player.x-sb.x, dz=player.z-sb.z, dy=player.y+0.9-sb.y;
+      if (Math.sqrt(dx*dx+dz*dz+dy*dy) < sb.r+0.55) respawn();
+    }
+    // P2 collision
+    if (gameMode===2 && !isDead2) {
+      const dx=player2.x-sb.x, dz=player2.z-sb.z, dy=player2.y+0.9-sb.y;
+      if (Math.sqrt(dx*dx+dz*dz+dy*dy) < sb.r+0.55) respawn2();
     }
   }
 
