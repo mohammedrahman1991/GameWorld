@@ -971,5 +971,9 @@ function animate() {
   renderer.render(scene, camera);
 }
 
+// Set camera to correct position immediately so first frame isn't black
+camera.position.set(player.x, player.y + 6, player.z + 10);
+camera.lookAt(player.x, player.y + 1, player.z - 5);
+
 updateHUD();
 animate();
