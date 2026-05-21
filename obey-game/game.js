@@ -1040,9 +1040,14 @@ function animate() {
       b.deadTimer -= dt;
       b.mesh.visible = Math.floor(b.deadTimer*6)%2===0; // blink
       if (b.deadTimer <= 0) {
-        b.dead=false; b.mesh.visible=true;
-        b.z=-(Math.random()*100); b.y=2; b.vy=0;
-        b.wpIdx=0; b.lane=(Math.random()-0.5)*8;
+        b.dead=false; b.mesh.visible=true; b.y=0; b.vy=0;
+        if (b.finished) {
+          // Respawn back on the island, keep playing there
+          b.x=(Math.random()-0.5)*50; b.z=-1570+(Math.random()-0.5)*40;
+          b.wanderTimer=0;
+        } else {
+          b.z=-(Math.random()*100); b.wpIdx=0; b.lane=(Math.random()-0.5)*8;
+        }
       }
       continue;
     }
@@ -1057,14 +1062,15 @@ function animate() {
     const targetX = b.lane + Math.sin(b.wobble)*0.6;
     b.x += (targetX - b.x) * Math.min(dt*3, 1);
 
-    // Move forward
-    b.z -= curSpd * dt;
+    // Move forward (only if not yet on finish island)
+    if (!b.finished) b.z -= curSpd * dt;
 
-    // Gravity + ground
+    // Gravity + ground (no floor clamp in void sections — bots fall and die)
     b.vy -= GRAVITY * dt;
     b.y  += b.vy * dt;
-    if (b.y <= 0) { b.y=0; b.vy=0; b.onGround=true; }
-    else b.onGround=false;
+    const inVoidG = (b.z < -640 && b.z > -810) || (b.z < -1015 && b.z > -1175);
+    if (b.y <= 0 && !inVoidG) { b.y=0; b.vy=0; b.onGround=true; }
+    else b.onGround = false;
 
     // Auto-jump: random jumps while on ground
     b.jumpTimer -= dt;
@@ -1074,8 +1080,10 @@ function animate() {
       b.jumpTimer = 2 + Math.random()*5;
     }
 
-    // Die if fell into void
-    if (b.y < -12) {
+    // In void sections (sky bridges, frozen peaks) die instantly on any fall
+    const inVoid = (b.z < -640 && b.z > -810) || (b.z < -1015 && b.z > -1175);
+    const deathY = inVoid ? -1.5 : -12;
+    if (b.y < deathY) {
       b.dead=true; b.deadTimer=1.8+Math.random();
       b.mesh.visible=false;
       continue;
