@@ -580,6 +580,10 @@ function mkBotMesh(col) {
   const bm=new THREE.MeshLambertMaterial({color:col});
   const dm=new THREE.MeshLambertMaterial({color:new THREE.Color(col).multiplyScalar(0.55)});
   const sk=new THREE.MeshLambertMaterial({color:0xFFCC99});
+  // Boots
+  const bk=new THREE.MeshLambertMaterial({color:0x553311});
+  const lb=new THREE.Mesh(new THREE.BoxGeometry(0.24,0.18,0.3),bk); lb.position.set(-0.14,0.09,0.04); g.add(lb);
+  const rb=lb.clone(); rb.position.x=0.14; g.add(rb);
   // Legs
   const lg=new THREE.BoxGeometry(0.22,0.52,0.22);
   const ll=new THREE.Mesh(lg,dm); ll.position.set(-0.14,0.46,0);
@@ -587,9 +591,24 @@ function mkBotMesh(col) {
   g.add(ll,rl);
   // Body
   const body=new THREE.Mesh(new THREE.BoxGeometry(0.55,0.72,0.34),bm); body.position.y=0.97; g.add(body);
+  // Arms
+  const ag=new THREE.BoxGeometry(0.2,0.5,0.2);
+  const la=new THREE.Mesh(ag,bm); la.position.set(-0.42,0.9,0);
+  const ra=new THREE.Mesh(ag,bm); ra.position.set(0.42,0.9,0);
+  g.add(la,ra);
+  // Hands
+  const hg=new THREE.BoxGeometry(0.22,0.22,0.22);
+  const lh=new THREE.Mesh(hg,sk); lh.position.set(-0.42,0.62,0);
+  const rh=new THREE.Mesh(hg,sk); rh.position.set(0.42,0.62,0);
+  g.add(lh,rh);
   // Head
   const head=new THREE.Mesh(new THREE.BoxGeometry(0.44,0.44,0.44),sk); head.position.y=1.6; g.add(head);
-  g.userData.ll=ll; g.userData.rl=rl;
+  // Eyes
+  const em=new THREE.MeshLambertMaterial({color:0x111111});
+  const le=new THREE.Mesh(new THREE.BoxGeometry(0.09,0.09,0.05),em); le.position.set(-0.11,1.65,0.23); g.add(le);
+  const re=le.clone(); re.position.x=0.11; g.add(re);
+  g.userData.ll=ll; g.userData.rl=rl; g.userData.la=la; g.userData.ra=ra;
+  g.userData.lh=lh; g.userData.rh=rh;
   scene.add(g);
   return g;
 }
@@ -1007,9 +1026,10 @@ function animate() {
     if (b.z < -1600) { b.z = -(Math.random()*80); } // loop back to start
     b.legT += dt * b.spd * 1.6;
     b.mesh.position.set(b.x, 0, b.z);
-    b.mesh.userData.ll.rotation.x = Math.sin(b.legT)*0.55;
+    b.mesh.userData.ll.rotation.x =  Math.sin(b.legT)*0.55;
     b.mesh.userData.rl.rotation.x = -Math.sin(b.legT)*0.55;
-    // Face forward
+    b.mesh.userData.la.rotation.x = -Math.sin(b.legT)*0.5;
+    b.mesh.userData.ra.rotation.x =  Math.sin(b.legT)*0.5;
     b.mesh.rotation.y = Math.PI;
   }
 
