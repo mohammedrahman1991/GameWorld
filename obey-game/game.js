@@ -615,7 +615,7 @@ function mkBotMesh(col) {
 
 const bots=[];
 for(let i=0;i<30;i++){
-  const spd=4+Math.random()*6;           // speeds 4–10
+  const spd=10+Math.random()*8;          // speeds 10–18
   const ox=(Math.random()-0.5)*6;        // x spread -3 to +3
   const oz=-(Math.random()*60);          // stagger start 0 to -60
   const mesh=mkBotMesh(BOT_COLS[i%BOT_COLS.length]);
