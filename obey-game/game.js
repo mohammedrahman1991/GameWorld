@@ -132,6 +132,9 @@ const laserPivots = [];
 const cpList      = [];
 const coinMeshes  = [];
 const bouncePads  = [];
+const pitBalls    = [];
+let soccerBall    = null;
+const sbv         = {x:2.2, y:0, z:1.8}; // soccer ball velocity
 
 // ── Platform builder ──────────────────────────────────────────────
 function P(x,cy,z,w,h,d,col,deadly=false,mov=null) {
@@ -445,12 +448,18 @@ P(PIT_X, 1.5, PIT_Z+11, 20, 4, 1, 0xEE5577);       // front wall
 // Balls
 const BALL_COLS=[0xFF4444,0xFF8844,0xFFFF44,0x44FF44,0x44FFFF,0x4488FF,0xFF44FF,0xFF8888,0xFFFFAA,0xAAFFAA];
 for (let i=0;i<55;i++) {
+  const r=0.55+Math.random()*0.25;
   const b=new THREE.Mesh(
-    new THREE.SphereGeometry(0.55+Math.random()*0.25,8,8),
+    new THREE.SphereGeometry(r,8,8),
     new THREE.MeshLambertMaterial({color:BALL_COLS[i%BALL_COLS.length]})
   );
-  b.position.set(PIT_X+(Math.random()-0.5)*18, -0.3+Math.random()*1.8, PIT_Z+(Math.random()-0.5)*18);
+  const bx=PIT_X+(Math.random()-0.5)*16;
+  const bz=PIT_Z+(Math.random()-0.5)*16;
+  const by=0.5+Math.random()*1.5;
+  b.position.set(bx, by, bz);
   scene.add(b);
+  pitBalls.push({mesh:b, r, x:bx, y:by, z:bz,
+    vx:(Math.random()-0.5)*4, vy:1+Math.random()*3, vz:(Math.random()-0.5)*4});
 }
 // "BALL PIT" sign
 {
@@ -482,6 +491,7 @@ function mkGoal(gx,gz) {
 mkGoal(SOC_X-13,SOC_Z); mkGoal(SOC_X+13,SOC_Z);
 const sball=new THREE.Mesh(new THREE.SphereGeometry(0.55,12,12),new THREE.MeshLambertMaterial({color:0xffffff}));
 sball.position.set(SOC_X,0.55,SOC_Z); scene.add(sball);
+soccerBall = sball;
 // Scoreboard
 const sbp=new THREE.Mesh(new THREE.BoxGeometry(0.22,6.5,0.22),new THREE.MeshLambertMaterial({color:0x885533}));
 sbp.position.set(SOC_X,3.25,SOC_Z-12); scene.add(sbp);
@@ -918,6 +928,37 @@ function animate() {
     playerMesh.userData.rl.rotation.x*=0.8;
     playerMesh.userData.la.rotation.x*=0.8;
     playerMesh.userData.ra.rotation.x*=0.8;
+  }
+
+  // ── Ball pit physics ──────────────────────────────────────────────
+  const PIT_GRAV=18, PIT_DAMP=0.62;
+  const PX1=PIT_X-9.5, PX2=PIT_X+9.5, PZ1=PIT_Z-9.5, PZ2=PIT_Z+9.5, PY0=-0.5, PY1=3.4;
+  for (const b of pitBalls) {
+    b.vy -= PIT_GRAV*dt;
+    b.x += b.vx*dt; b.y += b.vy*dt; b.z += b.vz*dt;
+    if (b.y < PY0+b.r)  { b.y=PY0+b.r;  b.vy= Math.abs(b.vy)*PIT_DAMP; b.vx*=0.96; b.vz*=0.96; }
+    if (b.y > PY1-b.r)  { b.y=PY1-b.r;  b.vy=-Math.abs(b.vy)*PIT_DAMP; }
+    if (b.x < PX1+b.r)  { b.x=PX1+b.r;  b.vx= Math.abs(b.vx)*PIT_DAMP; }
+    if (b.x > PX2-b.r)  { b.x=PX2-b.r;  b.vx=-Math.abs(b.vx)*PIT_DAMP; }
+    if (b.z < PZ1+b.r)  { b.z=PZ1+b.r;  b.vz= Math.abs(b.vz)*PIT_DAMP; }
+    if (b.z > PZ2-b.r)  { b.z=PZ2-b.r;  b.vz=-Math.abs(b.vz)*PIT_DAMP; }
+    b.mesh.position.set(b.x, b.y, b.z);
+  }
+
+  // ── Soccer ball physics ───────────────────────────────────────────
+  if (soccerBall) {
+    sbv.y -= 18*dt;
+    soccerBall.position.x += sbv.x*dt;
+    soccerBall.position.y += sbv.y*dt;
+    soccerBall.position.z += sbv.z*dt;
+    const sx=soccerBall.position.x, sz=soccerBall.position.z;
+    if (soccerBall.position.y < 0.55) { soccerBall.position.y=0.55; sbv.y=Math.abs(sbv.y)*0.7; }
+    if (sx < SOC_X-12) { soccerBall.position.x=SOC_X-12; sbv.x= Math.abs(sbv.x)*0.8; }
+    if (sx > SOC_X+12) { soccerBall.position.x=SOC_X+12; sbv.x=-Math.abs(sbv.x)*0.8; }
+    if (sz < SOC_Z-8)  { soccerBall.position.z=SOC_Z-8;  sbv.z= Math.abs(sbv.z)*0.8; }
+    if (sz > SOC_Z+8)  { soccerBall.position.z=SOC_Z+8;  sbv.z=-Math.abs(sbv.z)*0.8; }
+    soccerBall.rotation.x += sbv.z*dt*1.5;
+    soccerBall.rotation.z -= sbv.x*dt*1.5;
   }
 
   // Camera: follow from behind and above
