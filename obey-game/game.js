@@ -563,9 +563,193 @@ const playerMesh = (function(){
   hair.position.y=1.97; g.add(hair);
 
   g.userData.ll=ll; g.userData.rl=rl; g.userData.la=la; g.userData.ra=ra;
+  g.userData.shirtMat=shirt; g.userData.pantsMat=pants;
+  g.userData.hatMesh=null; g.userData.glassMesh=null; g.userData.wingMesh=null;
   scene.add(g);
   return g;
 })();
+
+// ── Cosmetic Shop ─────────────────────────────────────────────────
+const COSMETICS = {
+  // Hats
+  cap:      {name:'Cool Cap 🧢',    cat:'hat',   cost:100, col:0x2244AA},
+  cowboy:   {name:'Cowboy Hat 🤠',  cat:'hat',   cost:300, col:0xCC8833},
+  crown:    {name:'Crown 👑',        cat:'hat',   cost:1000,col:0xFFD700},
+  party:    {name:'Party Hat 🎉',   cat:'hat',   cost:150, col:0xFF44CC},
+  // Sunglasses
+  shades:   {name:'Cool Shades 😎', cat:'glass', cost:200, col:0x111111},
+  heart:    {name:'Heart Glasses 💗',cat:'glass', cost:400, col:0xFF4488},
+  gold_g:   {name:'Gold Frames ✨', cat:'glass', cost:600, col:0xFFD700},
+  // Wings
+  angel:    {name:'Angel Wings 🪽',  cat:'wings', cost:500, col:0xEEEEFF},
+  demon:    {name:'Demon Wings 😈',  cat:'wings', cost:800, col:0xCC2222},
+  fairy:    {name:'Fairy Wings 🧚',  cat:'wings', cost:1200,col:0xAA44FF},
+  // Shirts
+  red_s:    {name:'Red Shirt',      cat:'shirt', cost:80,  col:0xCC2222},
+  green_s:  {name:'Green Shirt',    cat:'shirt', cost:80,  col:0x22CC44},
+  yellow_s: {name:'Yellow Shirt',   cat:'shirt', cost:120, col:0xFFDD00},
+  gold_s:   {name:'Gold Shirt ✨',  cat:'shirt', cost:600, col:0xFFCC00},
+  // Pants
+  black_p:  {name:'Black Pants',    cat:'pants', cost:80,  col:0x222222},
+  red_p:    {name:'Red Pants',      cat:'pants', cost:80,  col:0xCC2222},
+  green_p:  {name:'Green Pants',    cat:'pants', cost:100, col:0x22CC44},
+  gold_p:   {name:'Gold Pants ✨',  cat:'pants', cost:600, col:0xFFCC00},
+};
+
+const cosOwned    = new Set();
+const cosEquipped = {hat:null, glass:null, wings:null, shirt:null, pants:null};
+let cosShopOpen   = false;
+let cosCategory   = 'hat';
+
+function mkHatMesh(type, col) {
+  const g=new THREE.Group(), m=new THREE.MeshLambertMaterial({color:col});
+  if (type==='cap') {
+    const brim=new THREE.Mesh(new THREE.CylinderGeometry(0.36,0.36,0.07,8),m);
+    const top =new THREE.Mesh(new THREE.BoxGeometry(0.42,0.26,0.42),m); top.position.y=0.17;
+    const bill=new THREE.Mesh(new THREE.BoxGeometry(0.44,0.07,0.2),m); bill.position.set(0,0.01,0.31);
+    g.add(brim,top,bill);
+  } else if (type==='cowboy') {
+    const brim=new THREE.Mesh(new THREE.CylinderGeometry(0.58,0.58,0.07,12),m);
+    const top =new THREE.Mesh(new THREE.CylinderGeometry(0.24,0.27,0.38,8),m); top.position.y=0.22;
+    g.add(brim,top);
+  } else if (type==='crown') {
+    const base=new THREE.Mesh(new THREE.CylinderGeometry(0.36,0.36,0.2,12,1,true),m); base.position.y=0.1;
+    g.add(base);
+    for(let i=0;i<5;i++){
+      const a=(i/5)*Math.PI*2;
+      const sp=new THREE.Mesh(new THREE.ConeGeometry(0.07,0.3,4),m);
+      sp.position.set(Math.cos(a)*0.3,0.35,Math.sin(a)*0.3); g.add(sp);
+    }
+  } else if (type==='party') {
+    const cone=new THREE.Mesh(new THREE.ConeGeometry(0.28,0.52,8),m); cone.position.y=0.28;
+    const stripe=new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.01,0.52,8,1,true),
+      new THREE.MeshLambertMaterial({color:0xffffff,side:THREE.DoubleSide,opacity:0.5,transparent:true}));
+    stripe.position.y=0.28; g.add(cone,stripe);
+  }
+  g.position.y=2.07;
+  return g;
+}
+
+function mkGlassMesh(type, col) {
+  const g=new THREE.Group(), m=new THREE.MeshLambertMaterial({color:col});
+  if (type==='shades') {
+    const lL=new THREE.Mesh(new THREE.BoxGeometry(0.18,0.1,0.05),m); lL.position.set(-0.13,0,0.24);
+    const lR=lL.clone(); lR.position.x=0.13;
+    const br=new THREE.Mesh(new THREE.BoxGeometry(0.08,0.03,0.04),m); br.position.set(0,0,0.24);
+    g.add(lL,lR,br);
+  } else if (type==='heart') {
+    const lL=new THREE.Mesh(new THREE.SphereGeometry(0.08,8,8),m); lL.position.set(-0.14,0,0.24);
+    const lR=lL.clone(); lR.position.x=0.14;
+    g.add(lL,lR);
+  } else if (type==='gold_g') {
+    const lL=new THREE.Mesh(new THREE.TorusGeometry(0.08,0.015,6,12),m); lL.rotation.y=Math.PI/2; lL.position.set(-0.14,0,0.24);
+    const lR=lL.clone(); lR.position.x=0.14;
+    const br=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.015,0.015),m); br.position.set(0,0,0.24);
+    g.add(lL,lR,br);
+  }
+  g.position.y=1.68;
+  return g;
+}
+
+function mkWingMesh(type, col) {
+  const g=new THREE.Group(), m=new THREE.MeshLambertMaterial({color:col,side:THREE.DoubleSide,transparent:true,opacity:0.88});
+  const mk=(sx,sy,rx,ry,rz,px,py)=>{
+    const w=new THREE.Mesh(new THREE.PlaneGeometry(sx,sy),m);
+    w.rotation.set(rx,ry,rz); w.position.set(px,py,-0.2); return w;
+  };
+  if (type==='angel') {
+    g.add(mk(1.1,1.3,-0.3, 0.35, 0.4,-0.6,1.0));
+    g.add(mk(1.1,1.3,-0.3,-0.35,-0.4, 0.6,1.0));
+  } else if (type==='demon') {
+    g.add(mk(1.0,1.2, 0.2, 0.5, 0.6,-0.55,0.9));
+    g.add(mk(1.0,1.2, 0.2,-0.5,-0.6, 0.55,0.9));
+  } else { // fairy
+    g.add(mk(0.85,1.0,-0.2, 0.45, 0.5,-0.5,0.8));
+    g.add(mk(0.85,1.0,-0.2,-0.45,-0.5, 0.5,0.8));
+    g.add(mk(0.6,0.8,  0.1, 0.3, 0.3,-0.45,0.1));
+    g.add(mk(0.6,0.8,  0.1,-0.3,-0.3, 0.45,0.1));
+  }
+  return g;
+}
+
+function equipCosmetic(id) {
+  if (!cosOwned.has(id)) return;
+  const item=COSMETICS[id], cat=item.cat;
+  // Remove old item in same category
+  if (cosEquipped[cat]) {
+    const old = playerMesh.userData[cat==='glass'?'glassMesh':cat==='hat'?'hatMesh':'wingMesh'];
+    if (old) playerMesh.remove(old);
+    playerMesh.userData[cat==='glass'?'glassMesh':cat==='hat'?'hatMesh':'wingMesh']=null;
+  }
+  cosEquipped[cat]=id;
+  if (cat==='shirt') {
+    playerMesh.userData.shirtMat.color.set(item.col);
+  } else if (cat==='pants') {
+    playerMesh.userData.pantsMat.color.set(item.col);
+  } else if (cat==='hat') {
+    const mesh=mkHatMesh(id, item.col);
+    playerMesh.add(mesh); playerMesh.userData.hatMesh=mesh;
+  } else if (cat==='glass') {
+    const mesh=mkGlassMesh(id, item.col);
+    playerMesh.add(mesh); playerMesh.userData.glassMesh=mesh;
+  } else if (cat==='wings') {
+    const mesh=mkWingMesh(id, item.col);
+    playerMesh.add(mesh); playerMesh.userData.wingMesh=mesh;
+  }
+  buildCosShop();
+}
+
+function buyCos(id) {
+  const item=COSMETICS[id];
+  if (cosOwned.has(id)||coins<item.cost) return;
+  coins-=item.cost;
+  cosOwned.add(id);
+  updateHUD();
+  equipCosmetic(id);
+}
+window.buyCos=buyCos; window.equipCos=equipCosmetic;
+window.setCosTab=function(cat){
+  cosCategory=cat;
+  document.querySelectorAll('.cos-tab').forEach(t=>t.classList.toggle('active', t.getAttribute('onclick').includes("'"+cat+"'")));
+  buildCosShop();
+};
+
+function buildCosShop() {
+  const grid=document.getElementById('cos-grid');
+  if(!grid) return;
+  const coinsEl=document.getElementById('cos-coins-display');
+  if(coinsEl) coinsEl.textContent='💰 '+coins.toLocaleString()+' coins';
+  const ICONS={hat:'🎩',cowboy:'🤠',crown:'👑',party:'🎉',cap:'🧢',
+    shades:'😎',heart:'💗',gold_g:'✨',angel:'🪽',demon:'😈',fairy:'🧚',
+    red_s:'👕',green_s:'👕',yellow_s:'👕',gold_s:'✨',
+    black_p:'👖',red_p:'👖',green_p:'👖',gold_p:'✨'};
+  let html='';
+  for(const[id,item] of Object.entries(COSMETICS)){
+    if(item.cat!==cosCategory) continue;
+    const owned=cosOwned.has(id), equipped=(cosEquipped[item.cat]===id);
+    const canAfford=coins>=item.cost;
+    const colorSwatch=`#${item.col.toString(16).padStart(6,'0')}`;
+    const icon=ICONS[id]||'🎁';
+    let btnHtml='';
+    if(equipped) btnHtml=`<button class="cos-buy-btn unequip" onclick="equipCos('${id}')">✓ Equipped</button>`;
+    else if(owned) btnHtml=`<button class="cos-buy-btn equip" onclick="equipCos('${id}')">Equip</button>`;
+    else btnHtml=`<button class="cos-buy-btn" onclick="buyCos('${id}')" ${canAfford?'':'disabled'}>${canAfford?'Buy':'Need 💰'}</button>`;
+    html+=`<div class="cos-item ${equipped?'equipped':owned?'owned':''}">
+      <div class="cos-icon" style="background:${colorSwatch};border-radius:8px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;">${icon}</div>
+      <div class="cos-name">${item.name}</div>
+      <div class="cos-price ${equipped?'equipped':owned?'owned':''}">💰 ${item.cost.toLocaleString()}</div>
+      ${btnHtml}
+    </div>`;
+  }
+  grid.innerHTML=html;
+}
+
+window.toggleCosShop=function(){
+  cosShopOpen=!cosShopOpen;
+  const panel=document.getElementById('cos-panel');
+  if(cosShopOpen){ buildCosShop(); panel.classList.add('open'); }
+  else{ panel.classList.remove('open'); }
+};
 
 // ── Bot AI helpers ────────────────────────────────────────────────
 function getBotGround(bx, bz) {
@@ -742,6 +926,8 @@ canvas.addEventListener('touchend', e=>{
 function updateHUD() {
   document.getElementById('coins-hud').textContent=`💰 ${coinCount}`;
   document.getElementById('cp-hud').textContent=`CP: ${cpCount}/9`;
+  const coinsEl=document.getElementById('cos-coins-display');
+  if(coinsEl) coinsEl.textContent='💰 '+coins.toLocaleString()+' coins';
 }
 function flashRed() {
   const f=document.getElementById('flash'); f.style.opacity='1';
