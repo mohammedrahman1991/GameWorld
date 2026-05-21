@@ -567,6 +567,43 @@ const playerMesh = (function(){
   return g;
 })();
 
+// ── Bots ──────────────────────────────────────────────────────────
+const BOT_COLS=[
+  0xFF4444,0xFF8844,0xFFDD00,0x44FF44,0x44FFFF,0x4488FF,0xFF44FF,0xFFAA44,
+  0xAAFF44,0x44FFAA,0xFF4488,0x88FF44,0xFF6644,0x44AAFF,0xFFAA88,0x88AAFF,
+  0xFF88AA,0xAAFF88,0xFF4466,0x66FF44,0xCC44FF,0xFF44CC,0x44CCFF,0xFFCC44,
+  0x44FFCC,0xCC88FF,0xFF8844,0x44FF88,0x8844FF,0xFF4422
+];
+
+function mkBotMesh(col) {
+  const g=new THREE.Group();
+  const bm=new THREE.MeshLambertMaterial({color:col});
+  const dm=new THREE.MeshLambertMaterial({color:new THREE.Color(col).multiplyScalar(0.55)});
+  const sk=new THREE.MeshLambertMaterial({color:0xFFCC99});
+  // Legs
+  const lg=new THREE.BoxGeometry(0.22,0.52,0.22);
+  const ll=new THREE.Mesh(lg,dm); ll.position.set(-0.14,0.46,0);
+  const rl=new THREE.Mesh(lg,dm); rl.position.set(0.14,0.46,0);
+  g.add(ll,rl);
+  // Body
+  const body=new THREE.Mesh(new THREE.BoxGeometry(0.55,0.72,0.34),bm); body.position.y=0.97; g.add(body);
+  // Head
+  const head=new THREE.Mesh(new THREE.BoxGeometry(0.44,0.44,0.44),sk); head.position.y=1.6; g.add(head);
+  g.userData.ll=ll; g.userData.rl=rl;
+  scene.add(g);
+  return g;
+}
+
+const bots=[];
+for(let i=0;i<30;i++){
+  const spd=4+Math.random()*6;           // speeds 4–10
+  const ox=(Math.random()-0.5)*6;        // x spread -3 to +3
+  const oz=-(Math.random()*60);          // stagger start 0 to -60
+  const mesh=mkBotMesh(BOT_COLS[i%BOT_COLS.length]);
+  mesh.position.set(ox,0,oz);
+  bots.push({mesh, spd, x:ox, z:oz, legT:Math.random()*Math.PI*2});
+}
+
 // Sprint trail particles
 const trailParts = [];
 function spawnTrail() {
@@ -962,6 +999,18 @@ function animate() {
     playerMesh.userData.rl.rotation.x*=0.8;
     playerMesh.userData.la.rotation.x*=0.8;
     playerMesh.userData.ra.rotation.x*=0.8;
+  }
+
+  // ── Bots update ───────────────────────────────────────────────────
+  for (const b of bots) {
+    b.z -= b.spd * dt;
+    if (b.z < -1600) { b.z = -(Math.random()*80); } // loop back to start
+    b.legT += dt * b.spd * 1.6;
+    b.mesh.position.set(b.x, 0, b.z);
+    b.mesh.userData.ll.rotation.x = Math.sin(b.legT)*0.55;
+    b.mesh.userData.rl.rotation.x = -Math.sin(b.legT)*0.55;
+    // Face forward
+    b.mesh.rotation.y = Math.PI;
   }
 
   // ── Ball pit physics ──────────────────────────────────────────────
