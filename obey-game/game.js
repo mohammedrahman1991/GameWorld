@@ -886,12 +886,12 @@ function animate() {
   }
 
   // Section name tracking
-  let si=0; for(let i=SECTIONS.length-1;i>=0;i--){if(player.z<=SECTIONS[i].zMin){si=i;break;}}
-  if (si!==curSecIdx) {
-    curSecIdx=si;
-    const nm=SECTIONS[Math.max(0,si)]?.name||'';
+  let sIdx=0; for(let i=SECTIONS.length-1;i>=0;i--){if(player.z<=SECTIONS[i].zMin){sIdx=i;break;}}
+  if (sIdx!==curSecIdx) {
+    curSecIdx=sIdx;
+    const nm=SECTIONS[Math.max(0,sIdx)]?.name||'';
     document.getElementById('section-hud').textContent=nm;
-    if (si>0) showSecAnnounce(nm);
+    if (sIdx>0) showSecAnnounce(nm);
   }
 
   // Floating coin collection
