@@ -135,7 +135,7 @@ const coinMeshes  = [];
 const bouncePads  = [];
 const pitBalls    = [];
 let soccerBall    = null;
-const sbv         = {x:2.2, y:0, z:1.8}; // soccer ball velocity
+const sbv         = {x:4.5, y:0, z:3.5}; // soccer ball velocity (fast)
 
 // ── Platform builder ──────────────────────────────────────────────
 function P(x,cy,z,w,h,d,col,deadly=false,mov=null) {
@@ -1245,6 +1245,17 @@ function animate() {
       b.vx+=pdx*f*10; b.vy+=Math.abs(pdy)*f*10+4; b.vz+=pdz*f*10;
       b.x+=pdx*f; b.y+=pdy*f; b.z+=pdz*f;
     }
+    // Finished bots push pit balls too
+    for (const bot of bots) {
+      if (!bot.finished) continue;
+      const bdx=b.x-bot.x, bdy=b.y-(bot.y+0.9), bdz=b.z-bot.z;
+      const bd=Math.sqrt(bdx*bdx+bdy*bdy+bdz*bdz);
+      if (bd < minD && bd > 0.01) {
+        const f=(minD-bd)/bd;
+        b.vx+=bdx*f*8; b.vy+=Math.abs(bdy)*f*8+3; b.vz+=bdz*f*8;
+        b.x+=bdx*f; b.y+=bdy*f; b.z+=bdz*f;
+      }
+    }
   }
 
   // ── Soccer ball physics ───────────────────────────────────────────
@@ -1254,13 +1265,23 @@ function animate() {
     soccerBall.position.y += sbv.y*dt;
     soccerBall.position.z += sbv.z*dt;
     const sx=soccerBall.position.x, sz=soccerBall.position.z;
-    if (soccerBall.position.y < 0.55) { soccerBall.position.y=0.55; sbv.y=Math.abs(sbv.y)*0.7; }
-    if (sx < SOC_X-12) { soccerBall.position.x=SOC_X-12; sbv.x= Math.abs(sbv.x)*0.8; }
-    if (sx > SOC_X+12) { soccerBall.position.x=SOC_X+12; sbv.x=-Math.abs(sbv.x)*0.8; }
-    if (sz < SOC_Z-8)  { soccerBall.position.z=SOC_Z-8;  sbv.z= Math.abs(sbv.z)*0.8; }
-    if (sz > SOC_Z+8)  { soccerBall.position.z=SOC_Z+8;  sbv.z=-Math.abs(sbv.z)*0.8; }
-    soccerBall.rotation.x += sbv.z*dt*1.5;
-    soccerBall.rotation.z -= sbv.x*dt*1.5;
+    if (soccerBall.position.y < 0.55) { soccerBall.position.y=0.55; sbv.y=Math.abs(sbv.y)*0.75; }
+    if (sx < SOC_X-12) { soccerBall.position.x=SOC_X-12; sbv.x= Math.abs(sbv.x)*0.9; }
+    if (sx > SOC_X+12) { soccerBall.position.x=SOC_X+12; sbv.x=-Math.abs(sbv.x)*0.9; }
+    if (sz < SOC_Z-8)  { soccerBall.position.z=SOC_Z-8;  sbv.z= Math.abs(sbv.z)*0.9; }
+    if (sz > SOC_Z+8)  { soccerBall.position.z=SOC_Z+8;  sbv.z=-Math.abs(sbv.z)*0.9; }
+    soccerBall.rotation.x += sbv.z*dt*2;
+    soccerBall.rotation.z -= sbv.x*dt*2;
+    // Finished bots kick soccer ball
+    for (const bot of bots) {
+      if (!bot.finished) continue;
+      const sdx=soccerBall.position.x-bot.x, sdz=soccerBall.position.z-bot.z;
+      const sd=Math.sqrt(sdx*sdx+sdz*sdz);
+      if (sd < 1.3 && sd > 0.01) {
+        const f=(1.3-sd)/sd;
+        sbv.x+=sdx*f*18; sbv.z+=sdz*f*18; sbv.y+=4;
+      }
+    }
   }
 
   // Camera: orbit behind player using mouse yaw
