@@ -379,15 +379,12 @@ for(let i=0;i<8;i++){
 }
 CP(0, 2,-1170, 6);
 
-// ── SECTION 7: DARK DUNGEON (z=-1185 to z=-1330) ─────────────────
-// Very dark, narrow, lasers + lava combo
-T(0,  0,-1200,  10,1,20,0x443322);  // dungeon floor entry
-P(0,-2,-1260,100,1,160,0xFF4400,true); // lava floor
-P(-8, 4,-1260, 1,10,160,0x332211);  // dungeon walls
-P( 8, 4,-1260, 1,10,160,0x332211);
-// Dungeon ceiling
-P(0, 9,-1260,18,1,160,0x221100);
-// Torch lights on walls
+// ── SECTION 7: DARK DUNGEON — easy, wide floor, slow lasers ──────
+T(0,  0,-1260, 14, 1, 160, 0x443322);  // wide solid floor the whole way
+P(-8, 4,-1260,  1,10,160, 0x332211);   // keep walls for atmosphere
+P( 8, 4,-1260,  1,10,160, 0x332211);
+P(0,  9,-1260, 18, 1,160, 0x221100);   // ceiling
+// Torch lights
 for(let i=0;i<6;i++){
   const torch=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.8,0.3),
     new THREE.MeshLambertMaterial({color:0x884400}));
@@ -396,21 +393,11 @@ for(let i=0;i<6;i++){
     new THREE.MeshLambertMaterial({color:0xFF6600,emissive:new THREE.Color(0xFF4400).multiplyScalar(0.9)}));
   flame.position.set(i%2===0?-7.5:7.5, 4.7, -1210-i*20); scene.add(flame);
 }
-// Platforms over lava in dungeon
-T(0, 2,-1215, 5,0.8, 7,0x664422);
-T(4, 2,-1231, 4,0.8, 6,0x664422,false,{axis:'x',range:2.5,spd:1.3});
-T(-3,2,-1247, 4,0.8, 6,0x775533,false,{axis:'x',range:2.5,spd:-1.5});
-T(2, 2,-1263, 4,0.8, 6,0x664422,false,{axis:'x',range:3,  spd:1.8});
-T(-2,3,-1279, 3,0.8, 6,0x775533,false,{axis:'y',range:2,  spd:1.2});
-T(0, 2,-1295, 5,0.8, 7,0x664422);
-T(0, 2,-1311, 7,0.8,10,0x775533);
-// Dungeon lasers (fast)
-L(0,3.5,-1225, 2.8, 5, 0);
-L(0,3.5,-1250,-3.2, 5, Math.PI/2);
-L(0,3.5,-1275, 2.5, 5, Math.PI);
-L(0,3.5,-1300,-3.0, 5, Math.PI*1.5);
-CO(0,3.8,-1215); CO(4,3.8,-1231); CO(0,4.8,-1279); CO(0,3.8,-1311);
-CP(0, 2,-1320, 7);
+// Two slow lasers only — easy to walk past
+L(0, 2.5,-1240, 0.45, 3.5, 0);
+L(0, 2.5,-1290,-0.45, 3.5, Math.PI/2);
+CO(0,1.8,-1220); CO(0,1.8,-1250); CO(0,1.8,-1280); CO(0,1.8,-1310);
+CP(0, 0,-1320, 7);
 
 // ── SECTION 8: RAINBOW ROAD (z=-1335 to z=-1475) ──────────────────
 // Crazy colorful fast-moving platforms over void
