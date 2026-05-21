@@ -402,25 +402,18 @@ CP(0, 0,-1320, 7);
 // Crazy colorful fast-moving platforms over void
 P(0,-20,-1405,120,1,160,0x110022,true); // deep void
 T(0, 0,-1340,  10,1,16,0xFF4466);  // rainbow entry
-// Rainbow platforms (alternating colors)
-const rainCols=[0xFF4444,0xFF8844,0xFFDD00,0x44CC44,0x44AAFF,0x8844FF,0xFF44CC];
-let rainZ=-1360, rainY=0;
-for(let i=0;i<14;i++){
-  const col=rainCols[i%rainCols.length];
-  const w=3+Math.random()*2, gap=3.5+Math.random()*2;
-  const mov=i%2===0
-    ? {axis:'x',range:2.5+Math.random()*2,spd:1.5+Math.random()*1.5}
-    : {axis:'y',range:1.2,spd:1.2+Math.random()};
-  T((Math.random()-0.5)*4, rainY, rainZ, w, 0.6, 6+Math.random()*4, col, false, mov);
-  CO((Math.random()-0.5)*3, rainY+2.2, rainZ);
-  rainZ -= gap+w*0.5;
-  rainY += (Math.random()-0.4)*1.5;
-  rainY = Math.max(-1, Math.min(4, rainY));
-}
+// Rainbow platforms — wide, centred, all same height, tiny gaps
+T(0, 0,-1362, 14, 0.8, 18, 0xFF4444);  CO(0,1.8,-1362);
+T(0, 0,-1383, 14, 0.8, 18, 0xFF8844);  CO(0,1.8,-1383);
+T(0, 0,-1404, 14, 0.8, 18, 0xFFDD00);  CO(0,1.8,-1404);
+T(0, 0,-1425, 14, 0.8, 18, 0x44CC44);  CO(0,1.8,-1425);
+T(0, 0,-1446, 14, 0.8, 18, 0x44AAFF);  CO(0,1.8,-1446);
+T(0, 0,-1467, 14, 0.8, 18, 0x8844FF);  CO(0,1.8,-1467);
+T(0, 0,-1488, 14, 0.8, 18, 0xFF44CC);  CO(0,1.8,-1488);
 // Final rainbow landing
-T(0, 0,-1463, 12, 1, 16, 0xFF44CC);
-CO(3,1.8,-1455); CO(-3,1.8,-1463); CO(0,1.8,-1468);
-CP(0, 0,-1473, 8);
+T(0, 0,-1508, 16, 1, 20, 0xFF4444);
+CO(3,1.8,-1502); CO(-3,1.8,-1512);
+CP(0, 0,-1518, 8);
 
 // ── FINAL RUSH to END ─────────────────────────────────────────────
 T(0, 0,-1490, 14, 1, 30, 0x44BB55);
