@@ -285,18 +285,17 @@ P(0, -1.5, -425, 80, 1, 140, 0xFF4400, true);
 const lavaGlow = new THREE.Mesh(new THREE.PlaneGeometry(80,140),
   new THREE.MeshLambertMaterial({color:0xFF6600,emissive:new THREE.Color(0xFF4400).multiplyScalar(0.6)}));
 lavaGlow.rotation.x=-Math.PI/2; lavaGlow.position.set(0,-0.99,-425); scene.add(lavaGlow);
-// Platforms over lava
-T(0,  2,-360,  8, 0.8, 12, 0xAA6633);
-T(5,  2,-380,  5, 0.8,  8, 0xBB7744);
-T(-4, 3,-396,  5, 0.8,  8, 0xBB7744);
-CO(5,3.8,-380); CO(-4,4.8,-396);
-T(2,  2,-412,  4, 0.8,  7, 0xAA6633, false, {axis:'x',range:3,spd:1.2});
-T(-3, 3,-428,  5, 0.8,  7, 0xAA6633, false, {axis:'y',range:1.5,spd:0.9});
-T(0,  2,-444,  5, 0.8,  8, 0xBB7744);
-CO(0,3.8,-444);
-T(3,  2,-458,  4, 0.8,  6, 0xAA6633, false, {axis:'x',range:3.5,spd:1.4});
-T(0,  2,-474,  8, 0.8, 12, 0xAA6633);
-CP(0, 2,-484, 2);
+// Platforms over lava — wide, close together, slow movers
+T(0,  2,-362, 14, 0.8, 16, 0xAA6633);                                        // big entry
+T(0,  2,-386, 12, 0.8, 12, 0xBB7744);                                        // wide
+T(0,  2,-406, 11, 0.8, 12, 0xAA6633);                                        // wide
+CO(4,3.8,-386); CO(-4,3.8,-406);
+T(0,  2,-426, 10, 0.8, 12, 0xBB7744, false, {axis:'x',range:1.5,spd:0.5});  // slow drift
+T(0,  2,-446, 11, 0.8, 12, 0xAA6633);                                        // wide safe
+CO(0,3.8,-446);
+T(0,  2,-466, 10, 0.8, 12, 0xBB7744, false, {axis:'y',range:0.7,spd:0.45}); // barely bobs
+T(0,  2,-484, 14, 0.8, 14, 0xAA6633);                                        // big landing
+CP(0, 2,-492, 2);
 
 // SECTION 3 — LASER HALL (z=-500 to z=-640)
 // Hall floor + walls
