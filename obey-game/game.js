@@ -626,6 +626,7 @@ if(sBtn){
   sBtn.addEventListener('pointerup',()=>touch.sprint=false);
 }
 let jumpConsumed=false;
+let jumpsLeft=2;
 
 // ── UI helpers ────────────────────────────────────────────────────
 function livesStr() { return '❤️'.repeat(Math.max(0,lives)); }
@@ -696,7 +697,7 @@ function doRespawn() {
   if (lives<=0) { doGameOver(); return; }
   player.x=spawnPos.x; player.y=spawnPos.y; player.z=spawnPos.z;
   player.vx=0; player.vy=0; player.vz=0;
-  isDead=false;
+  jumpsLeft=2; isDead=false;
 }
 
 // ── Collision (AABB) ──────────────────────────────────────────────
@@ -726,6 +727,7 @@ function resolveCollisions() {
         // Standing on top
         player.y=pt; if(player.vy<0) player.vy=0;
         player.onGround=true;
+        jumpsLeft=2;
         if (plat.deadly) respawn();
       } else {
         // Ceiling
@@ -822,8 +824,12 @@ function animate() {
 
   // Jump
   const jumpHeld=keys['Space']||touch.jump;
-  if (jumpHeld && !jumpConsumed && player.onGround) {
-    player.vy=JUMP_VEL; player.onGround=false; jumpConsumed=true; sfxJump();
+  if (jumpHeld && !jumpConsumed && jumpsLeft>0) {
+    const isDouble = !player.onGround;
+    player.vy=isDouble ? JUMP_VEL*0.88 : JUMP_VEL;
+    player.onGround=false; jumpConsumed=true; jumpsLeft--;
+    if (isDouble) { sfx(550,0.1,'square',0.1); sfx(770,0.12,'sine',0.08); }
+    else sfxJump();
   }
   if (!jumpHeld) jumpConsumed=false;
 
