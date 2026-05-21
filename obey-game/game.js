@@ -101,7 +101,6 @@ const player = {x:0, y:1, z:-10, vx:0, vy:0, vz:0, onGround:false};
 let spawnPos = {x:0, y:1, z:-10};
 let cpCount   = 0;
 let coinCount = 0;
-let lives     = 3;
 let isDead    = false;
 let deadTimer = 0;
 let chestOpened = false;
@@ -629,11 +628,9 @@ let jumpConsumed=false;
 let jumpsLeft=2;
 
 // ── UI helpers ────────────────────────────────────────────────────
-function livesStr() { return '❤️'.repeat(Math.max(0,lives)); }
 function updateHUD() {
   document.getElementById('coins-hud').textContent=`💰 ${coinCount}`;
   document.getElementById('cp-hud').textContent=`CP: ${cpCount}/9`;
-  document.getElementById('lives-hud').textContent=livesStr()||'💔 GAME OVER';
   const secs=Math.floor(elapsed), m=String(Math.floor(secs/60)).padStart(2,'0'), s=String(secs%60).padStart(2,'0');
   document.getElementById('timer-hud').textContent=`⏱ ${m}:${s}`;
 }
@@ -667,7 +664,7 @@ window.stayAtEnd = function() { document.getElementById('win-modal').classList.r
 window.restartGame = function() {
   document.getElementById('win-modal').classList.remove('open');
   document.getElementById('over-modal').classList.remove('open');
-  gameWon=false; gameOver=false; chestOpened=false; coinCount=0; cpCount=0; lives=3;
+  gameWon=false; gameOver=false; chestOpened=false; coinCount=0; cpCount=0;
   elapsed=0; startTime=null; curSecIdx=-1;
   if(chestLidMesh) chestLidMesh.rotation.x=0;
   cpList.forEach(c=>c.collected=false);
@@ -681,20 +678,12 @@ window.restartGame = function() {
 
 // ── Respawn ───────────────────────────────────────────────────────
 function respawn() {
-  if (isDead || gameOver) return;
+  if (isDead) return;
   isDead=true; deadTimer=0.9;
-  lives=Math.max(0, lives-1);
   sfxDie(); flashRed();
   player.vx=0; player.vy=0; player.vz=0;
-  updateHUD();
-  if (lives<=0) { deadTimer=1.5; }
-}
-function doGameOver() {
-  gameOver=true; isDead=false;
-  openGameOver();
 }
 function doRespawn() {
-  if (lives<=0) { doGameOver(); return; }
   player.x=spawnPos.x; player.y=spawnPos.y; player.z=spawnPos.z;
   player.vx=0; player.vy=0; player.vz=0;
   jumpsLeft=2; isDead=false;
