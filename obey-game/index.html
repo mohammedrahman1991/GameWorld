@@ -95,6 +95,41 @@
       display:flex;align-items:center;justify-content:center;
       font:bold 12px monospace;color:#FF8800;cursor:pointer;z-index:10;
       user-select:none;touch-action:none;}
+
+    /* Mode select */
+    #mode-modal{position:fixed;inset:0;background:rgba(0,0,0,0.92);
+      display:flex;align-items:center;justify-content:center;z-index:200;}
+    #mode-box{background:linear-gradient(135deg,#0d0d2e,#1a0a3e);
+      border:3px solid #FFD700;border-radius:24px;padding:44px 40px;
+      text-align:center;width:min(420px,90vw);}
+    #mode-box h1{color:#FFD700;font-size:2.6rem;margin-bottom:6px;letter-spacing:4px;}
+    #mode-box p{color:#aaa;font:14px monospace;margin-bottom:32px;}
+    .mode-btn{display:block;width:100%;margin:12px 0;padding:18px;
+      font:900 20px monospace;border:none;border-radius:14px;
+      cursor:pointer;letter-spacing:2px;transition:transform 0.1s,opacity 0.2s;}
+    .mode-btn:hover{opacity:0.88;transform:scale(1.03);}
+    #btn-1p{background:linear-gradient(135deg,#CC2222,#FF4444);color:#fff;}
+    #btn-2p{background:linear-gradient(135deg,#1144CC,#3366FF);color:#fff;}
+    .mode-btn .sub{display:block;font:11px monospace;letter-spacing:1px;
+      opacity:0.75;margin-top:4px;}
+
+    /* 2-player split */
+    #splitline{position:fixed;top:0;left:50%;width:3px;height:100vh;
+      background:rgba(255,255,255,0.3);pointer-events:none;z-index:6;display:none;}
+    #p1-badge{position:fixed;top:14px;left:50%;margin-left:-88px;
+      background:rgba(180,30,30,0.9);color:#fff;font:bold 13px monospace;
+      padding:5px 12px;border-radius:8px;border:2px solid #FF4444;
+      pointer-events:none;display:none;}
+    #p2-badge{position:fixed;top:14px;left:50%;margin-left:10px;
+      background:rgba(20,80,200,0.9);color:#fff;font:bold 13px monospace;
+      padding:5px 12px;border-radius:8px;border:2px solid #4488FF;
+      pointer-events:none;display:none;}
+    #p2-coins{position:fixed;top:56px;right:18px;background:rgba(0,0,0,0.7);
+      color:#FFD700;font:bold 16px monospace;padding:6px 13px;border-radius:14px;
+      border:2px solid #4488FF;display:none;}
+    #ctrl-hint{position:fixed;bottom:4px;left:50%;transform:translateX(-50%);
+      color:rgba(255,255,255,0.55);font:10px monospace;text-align:center;
+      pointer-events:none;display:none;}
   </style>
 </head>
 <body>
@@ -141,6 +176,29 @@
   </div>
   <div id="b-jump">JUMP</div>
   <div id="b-sprint">RUN</div>
+
+  <!-- Mode select -->
+  <div id="mode-modal">
+    <div id="mode-box">
+      <h1>OBEY</h1>
+      <p>Choose your game mode</p>
+      <button class="mode-btn" id="btn-1p" onclick="startGame(1)">
+        🎮 1 PLAYER
+        <span class="sub">WASD + Space to jump</span>
+      </button>
+      <button class="mode-btn" id="btn-2p" onclick="startGame(2)">
+        👥 2 PLAYERS
+        <span class="sub">P1: WASD+Space &nbsp;|&nbsp; P2: Arrows+Enter</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 2P overlays (hidden until 2P mode) -->
+  <div id="splitline"></div>
+  <div id="p1-badge">🔴 P1</div>
+  <div id="p2-badge">🔵 P2</div>
+  <div id="p2-coins">💰 0</div>
+  <div id="ctrl-hint">P1: WASD + Space to jump &nbsp;|&nbsp; P2: Arrow keys + Enter to jump</div>
 
   <script src="game.js"></script>
 </body>

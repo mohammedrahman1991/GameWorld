@@ -21,11 +21,13 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-const camera = new THREE.PerspectiveCamera(65, window.innerWidth/window.innerHeight, 0.1, 400);
+const camera  = new THREE.PerspectiveCamera(65, window.innerWidth/window.innerHeight, 0.1, 400);
+const camera2 = new THREE.PerspectiveCamera(65, window.innerWidth/window.innerHeight, 0.1, 400);
 window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
-  camera.aspect = window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
+  const a1 = gameMode===2 ? (window.innerWidth*0.5)/window.innerHeight : window.innerWidth/window.innerHeight;
+  camera.aspect = a1; camera.updateProjectionMatrix();
+  camera2.aspect = (window.innerWidth*0.5)/window.innerHeight; camera2.updateProjectionMatrix();
 });
 
 // Lights
@@ -111,6 +113,19 @@ let startTime = null;
 let elapsed   = 0;
 let curSecIdx = -1;
 const touch  = {up:false,down:false,left:false,right:false,jump:false,sprint:false};
+
+// ── Game mode (set by mode select screen) ─────────────────────────
+let gameMode = 0; // 0=waiting, 1=1P, 2=2P
+
+// ── Player 2 state ────────────────────────────────────────────────
+const player2 = {x:3, y:1, z:-10, vx:0, vy:0, vz:0, onGround:false};
+let spawnPos2  = {x:3, y:1, z:-10};
+let isDead2    = false, deadTimer2 = 0;
+let jumpsLeft2 = 2, jumpConsumed2 = false;
+let camYaw2    = 0;
+let legT2      = 0;
+let coinCount2 = 0, cpCount2 = 0;
+let curSecIdx2 = -1;
 
 // Section definitions (by min Z threshold descending)
 const SECTIONS=[
@@ -567,6 +582,32 @@ const playerMesh = (function(){
   return g;
 })();
 
+// Player 2 mesh — blue shirt, green pants, blonde hair
+const playerMesh2 = (function(){
+  const g=new THREE.Group();
+  const skin =new THREE.MeshLambertMaterial({color:0xFFCC99});
+  const shirt=new THREE.MeshLambertMaterial({color:0x1144CC}); // blue
+  const pants=new THREE.MeshLambertMaterial({color:0x226622}); // green
+  const boot =new THREE.MeshLambertMaterial({color:0x553311});
+  const lb=new THREE.Mesh(new THREE.BoxGeometry(0.26,0.22,0.34),boot); lb.position.set(-0.16,0.11,0.04); g.add(lb);
+  const rb=lb.clone(); rb.position.x=0.16; g.add(rb);
+  const ll=new THREE.Mesh(new THREE.BoxGeometry(0.24,0.55,0.24),pants); ll.position.set(-0.16,0.49,0); g.add(ll);
+  const rl=ll.clone(); rl.position.x=0.16; g.add(rl);
+  const body=new THREE.Mesh(new THREE.BoxGeometry(0.6,0.75,0.36),shirt); body.position.y=0.98; g.add(body);
+  const la=new THREE.Mesh(new THREE.BoxGeometry(0.2,0.5,0.2),shirt); la.position.set(-0.42,0.92,0); g.add(la);
+  const ra=la.clone(); ra.position.x=0.42; g.add(ra);
+  const head=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.5,0.5),skin); head.position.y=1.63; g.add(head);
+  const eye=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,0.05),new THREE.MeshLambertMaterial({color:0x111111}));
+  eye.position.set(-0.12,1.68,0.26); g.add(eye);
+  const eye2=eye.clone(); eye2.position.x=0.12; g.add(eye2);
+  const hair=new THREE.Mesh(new THREE.BoxGeometry(0.52,0.18,0.52),new THREE.MeshLambertMaterial({color:0xFFCC00}));
+  hair.position.y=1.97; g.add(hair);
+  g.userData.ll=ll; g.userData.rl=rl; g.userData.la=la; g.userData.ra=ra;
+  g.visible=false; // hidden until 2P mode
+  scene.add(g);
+  return g;
+})();
+
 // ── Bot AI helpers ────────────────────────────────────────────────
 function getBotGround(bx, bz) {
   let best = -999;
@@ -716,7 +757,8 @@ window.addEventListener('mouseup',   ()=>{ mouseDragging=false; });
 window.addEventListener('mousemove', e=>{
   if (!mouseDragging) return;
   const dx=e.clientX-lastMX; lastMX=e.clientX;
-  camYaw += dx*0.005;
+  if (gameMode===2 && e.clientX > window.innerWidth/2) camYaw2 += dx*0.005;
+  else camYaw += dx*0.005;
 });
 // Touch drag (right side) for mobile camera rotate
 let camTouchId=null, camTouchLastX=0;
@@ -742,6 +784,10 @@ canvas.addEventListener('touchend', e=>{
 function updateHUD() {
   document.getElementById('coins-hud').textContent=`💰 ${coinCount}`;
   document.getElementById('cp-hud').textContent=`CP: ${cpCount}/9`;
+  if (gameMode===2) {
+    const el=document.getElementById('p2-coins');
+    if (el) el.textContent=`💰 ${coinCount2}`;
+  }
 }
 function flashRed() {
   const f=document.getElementById('flash'); f.style.opacity='1';
@@ -776,12 +822,16 @@ window.restartGame = function() {
   gameWon=false; gameOver=false; chestOpened=false; coinCount=0; cpCount=0;
   elapsed=0; startTime=null; curSecIdx=-1;
   if(chestLidMesh) chestLidMesh.rotation.x=0;
-  cpList.forEach(c=>c.collected=false);
-  coinMeshes.forEach(c=>{c.collected=false; c.mesh.visible=true;});
+  cpList.forEach(c=>{c.collected=false; c.collectedP2=false;});
+  coinMeshes.forEach(c=>{c.collected=false; c.collectedP2=false; c.mesh.visible=true;});
   player.x=0; player.y=1; player.z=-10;
   player.vx=0; player.vy=0; player.vz=0;
-  spawnPos={x:0,y:1,z:-10};
-  isDead=false;
+  spawnPos={x:0,y:1,z:-10}; isDead=false;
+  // Reset P2
+  coinCount2=0; cpCount2=0; curSecIdx2=-1;
+  player2.x=3; player2.y=1; player2.z=-10;
+  player2.vx=0; player2.vy=0; player2.vz=0;
+  spawnPos2={x:3,y:1,z:-10}; isDead2=false;
   updateHUD();
 };
 
@@ -797,8 +847,37 @@ function doRespawn() {
   player.vx=0; player.vy=0; player.vz=0;
   jumpsLeft=2; isDead=false;
 }
+function respawn2() {
+  if (isDead2) return;
+  isDead2=true; deadTimer2=0.9;
+  player2.vx=0; player2.vy=0; player2.vz=0;
+}
+function doRespawn2() {
+  player2.x=spawnPos2.x; player2.y=spawnPos2.y; player2.z=spawnPos2.z;
+  player2.vx=0; player2.vy=0; player2.vz=0;
+  jumpsLeft2=2; isDead2=false;
+}
 
 // ── Collision (AABB) ──────────────────────────────────────────────
+function resolveCollisions2() {
+  player2.onGround=false;
+  for (const plat of platforms) {
+    const {w,h,d}=plat;
+    const px=plat.mesh.position.x, py=plat.mesh.position.y, pz=plat.mesh.position.z;
+    const pl=px-w/2, pr=px+w/2, pb=py-h/2, pt=py+h/2, pf=pz-d/2, pk=pz+d/2;
+    const pl2=player2.x-PW, pr2=player2.x+PW;
+    const pb2=player2.y,    pt2=player2.y+PH;
+    const pf2=player2.z-PW, pk2=player2.z+PW;
+    if (pr2<=pl||pl2>=pr||pk2<=pf||pf2>=pk||pt2<=pb||pb2>=pt) continue;
+    const ovT=pt-pb2, ovB=pt2-pb, ovL=pr2-pl, ovR=pr-pl2, ovF=pk2-pf, ovK=pk-pf2;
+    const minY=Math.min(ovT,ovB), minX=Math.min(ovL,ovR), minZ=Math.min(ovF,ovK);
+    if (minY<=minX && minY<=minZ) {
+      if (ovT<ovB) { player2.y=pt; if(player2.vy<0) player2.vy=0; player2.onGround=true; jumpsLeft2=2; if(plat.deadly) respawn2(); }
+      else { player2.y=pb-PH; if(player2.vy>0) player2.vy=0; }
+    } else if (minX<=minZ) { if(ovL<ovR) player2.x=pl-PW; else player2.x=pr+PW; player2.vx=0; }
+    else { if(ovF<ovK) player2.z=pf-PW; else player2.z=pk+PW; player2.vz=0; }
+  }
+}
 function resolveCollisions() {
   player.onGround=false;
   for (const plat of platforms) {
@@ -882,67 +961,59 @@ function getSkyIdx(z) {
 }
 let lastSkyIdx=-1;
 
+// ── Mode start ────────────────────────────────────────────────────
+window.startGame = function(mode) {
+  gameMode = mode;
+  document.getElementById('mode-modal').style.display='none';
+  if (mode===2) {
+    playerMesh2.visible=true;
+    ['splitline','p1-badge','p2-badge','p2-coins','ctrl-hint'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.style.display='block';
+    });
+  }
+  startTime=Date.now();
+  try { startMusic(); } catch(e) {}
+};
+
 // ── Main loop ─────────────────────────────────────────────────────
 const clock = new THREE.Clock();
 let legT=0;
 let musicStarted=false;
 
+// ── Split-screen render helper ────────────────────────────────────
+function doRender() {
+  if (gameMode===2) {
+    const W=renderer.domElement.clientWidth, H=renderer.domElement.clientHeight, hw=Math.floor(W/2);
+    const asp=hw/H;
+    camera.aspect=asp;  camera.updateProjectionMatrix();
+    camera2.aspect=asp; camera2.updateProjectionMatrix();
+    renderer.setScissorTest(true);
+    renderer.setViewport(0,0,hw,H);  renderer.setScissor(0,0,hw,H);  renderer.render(scene,camera);
+    renderer.setViewport(hw,0,hw,H); renderer.setScissor(hw,0,hw,H); renderer.render(scene,camera2);
+    renderer.setScissorTest(false);
+  } else {
+    renderer.render(scene,camera);
+  }
+}
+
 function animate() {
   requestAnimationFrame(animate);
   const dt=Math.min(clock.getDelta(), 0.05);
 
-  // Start music on first user interaction (Chrome blocks AudioContext before gesture)
-  if (!musicStarted && (Object.values(keys).some(Boolean)||Object.values(touch).some(Boolean))) {
-    musicStarted=true; try{startMusic();}catch(e){}
-  }
+  // Waiting for mode selection
+  if (gameMode===0) { renderer.render(scene,camera); return; }
 
   // Game over — freeze
-  if (gameOver) { renderer.render(scene,camera); return; }
+  if (gameOver) { doRender(); return; }
 
   // Timer
-  if (!startTime) startTime=Date.now();
   if (!gameWon && !gameOver) { elapsed=(Date.now()-startTime)/1000; updateHUD(); }
 
-  // Dead countdown
-  if (isDead) {
-    deadTimer-=dt;
-    if (deadTimer<=0) doRespawn();
-    renderer.render(scene,camera);
-    return;
-  }
+  // Dead countdowns
+  if (isDead)  { deadTimer -=dt; if(deadTimer <=0) doRespawn();  }
+  if (isDead2) { deadTimer2-=dt; if(deadTimer2<=0) doRespawn2(); }
 
-  // ── Movement (camera-relative — mouse yaw controls facing direction) ──
-  const sprinting = keys['ShiftLeft']||keys['ShiftRight']||touch.sprint;
-  const spd = sprinting ? SPRINT_SPD : WALK_SPD;
-  // Forward/right vectors based on where camera is pointing
-  const fwdX=-Math.sin(camYaw), fwdZ=-Math.cos(camYaw);
-  const rgtX= Math.cos(camYaw), rgtZ=-Math.sin(camYaw);
-  let mvx=0, mvz=0;
-  if (keys['KeyW']||keys['ArrowUp']   ||touch.up)    { mvx+=fwdX; mvz+=fwdZ; }
-  if (keys['KeyS']||keys['ArrowDown'] ||touch.down)  { mvx-=fwdX; mvz-=fwdZ; }
-  if (keys['KeyA']||keys['ArrowLeft'] ||touch.left)  { mvx-=rgtX; mvz-=rgtZ; }
-  if (keys['KeyD']||keys['ArrowRight']||touch.right) { mvx+=rgtX; mvz+=rgtZ; }
-  const ml=Math.sqrt(mvx*mvx+mvz*mvz);
-  if (ml>0){mvx/=ml;mvz/=ml;}
-  player.vx=mvx*spd; player.vz=mvz*spd;
-
-  // Jump
-  const jumpHeld=keys['Space']||touch.jump;
-  if (jumpHeld && !jumpConsumed && jumpsLeft>0) {
-    const isDouble = !player.onGround;
-    player.vy=isDouble ? JUMP_VEL*0.88 : JUMP_VEL;
-    player.onGround=false; jumpConsumed=true; jumpsLeft--;
-    if (isDouble) { sfx(550,0.1,'square',0.1); sfx(770,0.12,'sine',0.08); }
-    else sfxJump();
-  }
-  if (!jumpHeld) jumpConsumed=false;
-
-  player.vy-=GRAVITY*dt;
-  player.x+=player.vx*dt;
-  player.y+=player.vy*dt;
-  player.z+=player.vz*dt;
-
-  // Update moving platforms
+  // Update moving platforms (shared)
   for (const plat of platforms) {
     if (!plat.mov) continue;
     plat.mov.t+=dt;
@@ -952,396 +1023,305 @@ function animate() {
     if (plat.mov.axis==='z') plat.mesh.position.z=plat.mov.bz+off;
   }
 
-  // Collision
-  resolveCollisions();
+  // Rotate lasers (shared)
+  for (const lz of laserPivots) lz.piv.rotation.y+=lz.spd*dt;
 
-  // Death: fell into void
-  if (player.y<-12) respawn();
+  // ── Player 1 ─────────────────────────────────────────────────────
+  if (!isDead) {
+    const sprinting=keys['ShiftLeft']||(gameMode===1&&keys['ShiftRight'])||touch.sprint;
+    const spd=sprinting?SPRINT_SPD:WALK_SPD;
+    const fwdX=-Math.sin(camYaw), fwdZ=-Math.cos(camYaw);
+    const rgtX= Math.cos(camYaw), rgtZ=-Math.sin(camYaw);
+    let mvx=0, mvz=0;
+    const useArrows = gameMode===1; // 1P mode: arrow keys also move P1
+    if (keys['KeyW']||(useArrows&&keys['ArrowUp'])   ||touch.up)    { mvx+=fwdX; mvz+=fwdZ; }
+    if (keys['KeyS']||(useArrows&&keys['ArrowDown']) ||touch.down)  { mvx-=fwdX; mvz-=fwdZ; }
+    if (keys['KeyA']||(useArrows&&keys['ArrowLeft']) ||touch.left)  { mvx-=rgtX; mvz-=rgtZ; }
+    if (keys['KeyD']||(useArrows&&keys['ArrowRight'])||touch.right) { mvx+=rgtX; mvz+=rgtZ; }
+    const ml=Math.sqrt(mvx*mvx+mvz*mvz); if(ml>0){mvx/=ml;mvz/=ml;}
+    player.vx=mvx*spd; player.vz=mvz*spd;
 
-  // Update lasers
-  for (const lz of laserPivots) {
-    lz.piv.rotation.y+=lz.spd*dt;
-    if (laserHits(lz)) respawn();
-  }
-
-  // Checkpoint collection
-  for (const cp of cpList) {
-    if (cp.collected) continue;
-    const dx=player.x-cp.x, dz=player.z-cp.z;
-    if (Math.sqrt(dx*dx+dz*dz)<3) {
-      cp.collected=true; cpCount++;
-      spawnPos={x:cp.x, y:cp.y+1, z:cp.z+8};
-      cp.coin.visible=false;
-      showCPPop(); sfxCheckpoint(); updateHUD();
+    const jumpHeld=keys['Space']||touch.jump;
+    if (jumpHeld&&!jumpConsumed&&jumpsLeft>0) {
+      const isDouble=!player.onGround;
+      player.vy=isDouble?JUMP_VEL*0.88:JUMP_VEL;
+      player.onGround=false; jumpConsumed=true; jumpsLeft--;
+      if(isDouble){sfx(550,0.1,'square',0.1);sfx(770,0.12,'sine',0.08);}else sfxJump();
     }
-  }
+    if (!jumpHeld) jumpConsumed=false;
 
-  // Bounce pad check
-  if (player.onGround) {
-    for (const bp of bouncePads) {
-      if (Math.abs(player.x-bp.x)<bp.w/2+PW && Math.abs(player.z-bp.z)<bp.d/2+PW) {
-        player.vy=JUMP_VEL*2.1; player.onGround=false;
-        sfx(660,0.15,'square',0.15); sfx(880,0.1,'sine',0.1);
-        break;
+    player.vy-=GRAVITY*dt; player.x+=player.vx*dt; player.y+=player.vy*dt; player.z+=player.vz*dt;
+    resolveCollisions();
+    if (player.y<-12) respawn();
+    for (const lz of laserPivots) if (laserHits(lz)) respawn();
+
+    for (const cp of cpList) {
+      if (cp.collected) continue;
+      const dx=player.x-cp.x, dz=player.z-cp.z;
+      if (Math.sqrt(dx*dx+dz*dz)<3) {
+        cp.collected=true; cpCount++; spawnPos={x:cp.x,y:cp.y+1,z:cp.z+8};
+        cp.coin.visible=false; showCPPop(); sfxCheckpoint(); updateHUD();
       }
     }
-  }
 
-  // Section name tracking
-  let sIdx=0; for(let i=SECTIONS.length-1;i>=0;i--){if(player.z<=SECTIONS[i].zMin){sIdx=i;break;}}
-  if (sIdx!==curSecIdx) {
-    curSecIdx=sIdx;
-    const nm=SECTIONS[Math.max(0,sIdx)]?.name||'';
-    document.getElementById('section-hud').textContent=nm;
-    if (sIdx>0) showSecAnnounce(nm);
-  }
-
-  // Floating coin collection
-  for (const co of coinMeshes) {
-    if (co.collected) continue;
-    const dx=player.x-co.x, dy=player.y+0.9-co.y, dz=player.z-co.z;
-    if (Math.sqrt(dx*dx+dy*dy+dz*dz)<1.4) {
-      co.collected=true; co.mesh.visible=false; coinCount++;
-      sfx(880,0.08,'sine',0.1); updateHUD();
-    }
-  }
-  // Spin coins
-  for (const co of coinMeshes) if (!co.collected) co.mesh.rotation.z+=dt*2;
-  // Spin checkpoint coins
-  for (const cp of cpList) if (!cp.collected) { cp.coin.rotation.y+=dt*2; cp.coin.position.y+=Math.sin(Date.now()/600)*0.003; }
-
-  // Chest interaction
-  if (!chestOpened && !gameWon) {
-    const dx=player.x-CHEST_X, dz=player.z-CHEST_Z;
-    if (Math.sqrt(dx*dx+dz*dz)<4) {
-      chestOpened=true; gameWon=true;
-      // Open lid
-      if (chestLidMesh) chestLidMesh.rotation.x=-Math.PI*0.7;
-      coinCount+=50;
-      updateHUD();
-      setTimeout(openWin, 600);
-    }
-  }
-
-  // Sprint trail
-  if (sprinting && (mvx||mvz) && Math.random()<0.35) spawnTrail();
-  for (let i=trailParts.length-1;i>=0;i--) {
-    const tp=trailParts[i];
-    tp.age+=dt; tp.mesh.material.opacity=1-tp.age/tp.life;
-    tp.mesh.position.y+=dt*0.5;
-    if (tp.age>=tp.life){scene.remove(tp.mesh);trailParts.splice(i,1);}
-  }
-
-  // Sky/fog transition
-  const si=getSkyIdx(player.z);
-  if (si!==lastSkyIdx) {
-    scene.background=new THREE.Color(SKIES[si].sky);
-    scene.fog.color=new THREE.Color(SKIES[si].fog);
-    lastSkyIdx=si;
-  }
-
-  // Sprint HUD
-  document.getElementById('sprint-hud').style.display=sprinting&&(mvx||mvz)?'block':'none';
-
-  // Hint near chest
-  if (!gameWon) {
-    const dx=player.x-CHEST_X, dz=player.z-CHEST_Z;
-    setHint(Math.sqrt(dx*dx+dz*dz)<8 ? 'Walk to the chest to claim your reward! 💰💎' : '');
-  }
-
-  // Player mesh
-  playerMesh.position.set(player.x, player.y, player.z);
-  if (mvx||mvz) playerMesh.rotation.y=Math.atan2(mvx,mvz);
-  const moving=mvx!==0||mvz!==0;
-  if (moving) {
-    legT+=dt*8;
-    playerMesh.userData.ll.rotation.x=Math.sin(legT)*0.55;
-    playerMesh.userData.rl.rotation.x=-Math.sin(legT)*0.55;
-    playerMesh.userData.la.rotation.x=-Math.sin(legT)*0.45;
-    playerMesh.userData.ra.rotation.x=Math.sin(legT)*0.45;
-    playerMesh.position.y+=Math.abs(Math.sin(legT))*0.04;
-  } else {
-    playerMesh.userData.ll.rotation.x*=0.8;
-    playerMesh.userData.rl.rotation.x*=0.8;
-    playerMesh.userData.la.rotation.x*=0.8;
-    playerMesh.userData.ra.rotation.x*=0.8;
-  }
-
-  // ── Bots update (smart: waypoints, physics, jump, die/respawn) ────
-  for (const b of bots) {
-    // Dead — count down then respawn
-    if (b.dead) {
-      b.deadTimer -= dt;
-      b.mesh.visible = Math.floor(b.deadTimer*6)%2===0; // blink
-      if (b.deadTimer <= 0) {
-        b.dead=false; b.mesh.visible=true; b.y=0; b.vy=0;
-        if (b.finished) {
-          // Respawn back on the island, keep playing there
-          b.x=(Math.random()-0.5)*50; b.z=-1570+(Math.random()-0.5)*40;
-          b.wanderTimer=0;
-        } else {
-          b.z=-(Math.random()*100); b.wpIdx=0; b.lane=(Math.random()-0.5)*8;
-        }
-      }
-      continue;
-    }
-
-    // Waypoint navigation
-    while (b.wpIdx < BOT_WPS.length-1 && b.z <= BOT_WPS[b.wpIdx].z) b.wpIdx++;
-    const nearWP = Math.abs(b.z - BOT_WPS[b.wpIdx].z) < 20;
-    const curSpd = nearWP ? b.spd*0.88 : b.spd;
-
-    // Lane keeping with wobble
-    b.wobble += dt*1.2;
-    const targetX = b.lane + Math.sin(b.wobble)*0.6;
-    b.x += (targetX - b.x) * Math.min(dt*3, 1);
-
-    // Move forward — pause in laser danger zone, normal otherwise
-    if (!b.finished) {
-      const laserPause = botLaserDanger(b.x, b.z - 1);
-      if (!laserPause) b.z -= curSpd * dt;
-    }
-
-    // ── Smart physics ────────────────────────────────────────
-    // Real ground detection from platform geometry
-    const gY = getBotGround(b.x, b.z);
-    const hasGround = gY > -100;
-    b.vy -= GRAVITY * dt;
-    b.y  += b.vy * dt;
-    if (hasGround && b.y <= gY) {
-      b.y=gY; b.vy=0; b.onGround=true;
-    } else if (!hasGround && b.y <= 0) {
-      b.y=0; b.vy=0; b.onGround=true;  // flat fallback
-    } else {
-      b.onGround=false;
-    }
-
-    // Bounce pad
-    if (b.onGround) {
+    if (player.onGround) {
       for (const bp of bouncePads) {
-        if (Math.abs(b.x-bp.x)<bp.w/2 && Math.abs(b.z-bp.z)<bp.d/2) {
-          b.vy=JUMP_VEL*2.0; b.onGround=false; break;
+        if (Math.abs(player.x-bp.x)<bp.w/2+PW&&Math.abs(player.z-bp.z)<bp.d/2+PW) {
+          player.vy=JUMP_VEL*2.1; player.onGround=false;
+          sfx(660,0.15,'square',0.15); sfx(880,0.1,'sine',0.1); break;
         }
       }
     }
 
-    // Lava/deadly check — die if standing on it
-    if (b.onGround && botOnDeadly(b.x, b.y, b.z)) {
-      b.dead=true; b.deadTimer=1.5+Math.random()*0.5; b.mesh.visible=false; continue;
+    let sIdx=0; for(let i=SECTIONS.length-1;i>=0;i--){if(player.z<=SECTIONS[i].zMin){sIdx=i;break;}}
+    if (sIdx!==curSecIdx) {
+      curSecIdx=sIdx;
+      const nm=SECTIONS[Math.max(0,sIdx)]?.name||'';
+      document.getElementById('section-hud').textContent=nm;
+      if (sIdx>0) showSecAnnounce(nm);
     }
 
-    // Gap detection — look 3 units ahead; jump if no ground
-    if (b.onGround && b.vy<=0) {
-      const aheadG = getBotGround(b.x, b.z-3);
-      if (aheadG < -50) { b.vy=JUMP_VEL*0.95; b.onGround=false; }
-    }
-
-    // Laser avoidance — pause and let laser sweep past before running through
-    const danger = botLaserDanger(b.x, b.z);
-    if (danger) {
-      // Side-dodge slightly while waiting
-      b.x += Math.sign(b.x||1) * b.spd * dt * 0.4;
-    }
-
-    // Lava steering — nudge x away from nearby deadly patches
-    for (const p of platforms) {
-      if (!p.deadly) continue;
-      const mx=p.mesh.position.x, mz=p.mesh.position.z;
-      if (Math.abs(b.z-mz)<p.d/2+1.5 && Math.abs(b.x-mx)<p.w/2+1.5) {
-        b.x += (b.x>mx ? 1 : -1) * b.spd * dt * 2;
+    for (const co of coinMeshes) {
+      if (co.collected) continue;
+      const dx=player.x-co.x, dy=player.y+0.9-co.y, dz=player.z-co.z;
+      if (Math.sqrt(dx*dx+dy*dy+dz*dz)<1.4) {
+        co.collected=true; co.mesh.visible=false; coinCount++;
+        sfx(880,0.08,'sine',0.1); updateHUD();
       }
     }
 
-    // Random jump (occasional, for flair)
-    b.jumpTimer -= dt;
-    if (b.jumpTimer<=0 && b.onGround) {
-      b.vy=JUMP_VEL*(0.6+Math.random()*0.4); b.onGround=false;
-      b.jumpTimer=3+Math.random()*6;
-    }
-
-    // Death check
-    const deathY = (b.z<-640&&b.z>-810)||(b.z<-1015&&b.z>-1175) ? -2 : -12;
-    if (b.y<deathY) {
-      b.dead=true; b.deadTimer=1.8+Math.random(); b.mesh.visible=false; continue;
-    }
-
-    // Clamp X to course width so bots can't pass through side walls
-    b.x = Math.max(-6, Math.min(6, b.x));
-
-    // Reached end platform — switch to play mode
-    if (!b.finished && b.z < -1545) {
-      b.finished = true;
-      b.wanderTimer = 0;
-    }
-
-    // ── Play on finish island based on role ───────────────────────
-    if (b.finished) {
-      b.wanderTimer -= dt;
-
-      if (b.role === 'soccer' && soccerBall) {
-        // Chase the soccer ball — always update target to ball position
-        const goalX = b.team==='A' ? SOC_X+11 : SOC_X-11;
-        // If far from ball, chase it; if close, kick toward goal
-        const ballDX = soccerBall.position.x - b.x;
-        const ballDZ = soccerBall.position.z - b.z;
-        const ballDist = Math.sqrt(ballDX*ballDX + ballDZ*ballDZ);
-        if (ballDist > 1.5) {
-          // Run toward ball
-          b.wanderTX = soccerBall.position.x + (Math.random()-0.5)*1.5;
-          b.wanderTZ = soccerBall.position.z + (Math.random()-0.5)*1.5;
-        } else {
-          // Kick toward goal
-          const toGoalX = goalX - b.x;
-          const toGoalZ = SOC_Z - b.z;
-          const toGoalD = Math.sqrt(toGoalX*toGoalX + toGoalZ*toGoalZ);
-          sbv.x += (toGoalX/toGoalD) * 14;
-          sbv.z += (toGoalZ/toGoalD) * 14;
-          sbv.y += 3;
-          // Move away after kicking
-          b.wanderTX = b.x - toGoalX*0.5;
-          b.wanderTZ = b.z - toGoalZ*0.5;
-        }
-        // Clamp to soccer field area
-        b.wanderTX = Math.max(SOC_X-12, Math.min(SOC_X+12, b.wanderTX));
-        b.wanderTZ = Math.max(SOC_Z-8, Math.min(SOC_Z+8, b.wanderTZ));
-
-      } else if (b.role === 'ballpit') {
-        // Play in ball pit — roam inside pit, scatter balls
-        if (b.wanderTimer <= 0) {
-          b.wanderTX = PIT_X + (Math.random()-0.5)*14;
-          b.wanderTZ = PIT_Z + (Math.random()-0.5)*14;
-          b.wanderTimer = 1 + Math.random()*2;
-        }
-        // Clamp to pit area
-        b.wanderTX = Math.max(PIT_X-8, Math.min(PIT_X+8, b.wanderTX));
-        b.wanderTZ = Math.max(PIT_Z-8, Math.min(PIT_Z+8, b.wanderTZ));
-
-      } else {
-        // General wanderer — roam the whole island
-        if (b.wanderTimer <= 0) {
-          b.wanderTX = (Math.random()-0.5)*44;
-          b.wanderTZ = -1590 + (Math.random()-0.5)*44;
-          b.wanderTimer = 2 + Math.random()*4;
-        }
-        b.wanderTX = Math.max(-44, Math.min(44, b.wanderTX));
-        b.wanderTZ = Math.max(-1630, Math.min(-1552, b.wanderTZ));
+    if (!chestOpened&&!gameWon) {
+      const dx=player.x-CHEST_X, dz=player.z-CHEST_Z;
+      if (Math.sqrt(dx*dx+dz*dz)<4) {
+        chestOpened=true; gameWon=true;
+        if(chestLidMesh) chestLidMesh.rotation.x=-Math.PI*0.7;
+        coinCount+=50; updateHUD(); setTimeout(openWin,600);
       }
+    }
 
-      const dxw = b.wanderTX - b.x;
-      const dzw = b.wanderTZ - b.z;
-      const distW = Math.sqrt(dxw*dxw + dzw*dzw);
-      const wandSpd = b.role==='soccer' ? Math.min(b.spd*0.7, 8) : Math.min(b.spd*0.5, 6);
-      if (distW > 0.4) {
-        b.x += (dxw/distW)*wandSpd*dt;
-        b.z += (dzw/distW)*wandSpd*dt;
-        b.mesh.rotation.y = Math.atan2(dxw, dzw) + Math.PI;
+    if (sprinting&&(mvx||mvz)&&Math.random()<0.35) spawnTrail();
+    document.getElementById('sprint-hud').style.display=sprinting&&(mvx||mvz)?'block':'none';
+    if (!gameWon) {
+      const dx=player.x-CHEST_X, dz=player.z-CHEST_Z;
+      setHint(Math.sqrt(dx*dx+dz*dz)<8?'Walk to the chest to claim your reward! 💰💎':'');
+    }
+
+    playerMesh.position.set(player.x,player.y,player.z);
+    if (mvx||mvz) playerMesh.rotation.y=Math.atan2(mvx,mvz);
+    if (mvx!==0||mvz!==0) {
+      legT+=dt*8;
+      playerMesh.userData.ll.rotation.x= Math.sin(legT)*0.55;
+      playerMesh.userData.rl.rotation.x=-Math.sin(legT)*0.55;
+      playerMesh.userData.la.rotation.x=-Math.sin(legT)*0.45;
+      playerMesh.userData.ra.rotation.x= Math.sin(legT)*0.45;
+      playerMesh.position.y+=Math.abs(Math.sin(legT))*0.04;
+    } else {
+      playerMesh.userData.ll.rotation.x*=0.8; playerMesh.userData.rl.rotation.x*=0.8;
+      playerMesh.userData.la.rotation.x*=0.8; playerMesh.userData.ra.rotation.x*=0.8;
+    }
+  } // end P1
+
+  // ── Player 2 (2P mode only) ───────────────────────────────────────
+  if (gameMode===2 && !isDead2) {
+    const spd2=keys['ShiftRight']?SPRINT_SPD:WALK_SPD;
+    const fwdX2=-Math.sin(camYaw2), fwdZ2=-Math.cos(camYaw2);
+    const rgtX2= Math.cos(camYaw2), rgtZ2=-Math.sin(camYaw2);
+    let mvx2=0, mvz2=0;
+    if (keys['ArrowUp'])    { mvx2+=fwdX2; mvz2+=fwdZ2; }
+    if (keys['ArrowDown'])  { mvx2-=fwdX2; mvz2-=fwdZ2; }
+    if (keys['ArrowLeft'])  { mvx2-=rgtX2; mvz2-=rgtZ2; }
+    if (keys['ArrowRight']) { mvx2+=rgtX2; mvz2+=rgtZ2; }
+    const ml2=Math.sqrt(mvx2*mvx2+mvz2*mvz2); if(ml2>0){mvx2/=ml2;mvz2/=ml2;}
+    player2.vx=mvx2*spd2; player2.vz=mvz2*spd2;
+
+    const jh2=keys['Enter']||keys['NumpadEnter'];
+    if (jh2&&!jumpConsumed2&&jumpsLeft2>0) {
+      player2.vy=player2.onGround?JUMP_VEL:JUMP_VEL*0.88;
+      player2.onGround=false; jumpConsumed2=true; jumpsLeft2--;
+    }
+    if (!jh2) jumpConsumed2=false;
+
+    player2.vy-=GRAVITY*dt; player2.x+=player2.vx*dt; player2.y+=player2.vy*dt; player2.z+=player2.vz*dt;
+    resolveCollisions2();
+    if (player2.y<-12) respawn2();
+    for (const lz of laserPivots) if (laserHitsPos(lz,player2.x,player2.y,player2.z)) respawn2();
+
+    if (player2.onGround) {
+      for (const bp of bouncePads) {
+        if (Math.abs(player2.x-bp.x)<bp.w/2+PW&&Math.abs(player2.z-bp.z)<bp.d/2+PW) {
+          player2.vy=JUMP_VEL*2.1; player2.onGround=false; break;
+        }
       }
-      b.x = Math.max(-44, Math.min(44, b.x));
-      b.z = Math.max(-1630, Math.min(-1552, b.z));
-      b.legT += dt * wandSpd * 1.6;
-      b.mesh.position.set(b.x, b.y, b.z);
-      b.mesh.userData.ll.rotation.x =  Math.sin(b.legT)*0.55;
-      b.mesh.userData.rl.rotation.x = -Math.sin(b.legT)*0.55;
-      b.mesh.userData.la.rotation.x = -Math.sin(b.legT)*0.5;
-      b.mesh.userData.ra.rotation.x =  Math.sin(b.legT)*0.5;
+    }
+
+    for (const cp of cpList) {
+      if (cp.collectedP2) continue;
+      const dx2=player2.x-cp.x, dz2=player2.z-cp.z;
+      if (Math.sqrt(dx2*dx2+dz2*dz2)<3) {
+        cp.collectedP2=true; cpCount2++; spawnPos2={x:cp.x,y:cp.y+1,z:cp.z+8};
+      }
+    }
+
+    for (const co of coinMeshes) {
+      if (co.collectedP2||co.collected) continue;
+      const dx2=player2.x-co.x, dy2=player2.y+0.9-co.y, dz2=player2.z-co.z;
+      if (Math.sqrt(dx2*dx2+dy2*dy2+dz2*dz2)<1.4) {
+        co.collectedP2=true; coinCount2++; sfx(990,0.08,'sine',0.1); updateHUD();
+      }
+    }
+
+    playerMesh2.position.set(player2.x,player2.y,player2.z);
+    if (mvx2||mvz2) playerMesh2.rotation.y=Math.atan2(mvx2,mvz2);
+    if (mvx2!==0||mvz2!==0) {
+      legT2+=dt*8;
+      playerMesh2.userData.ll.rotation.x= Math.sin(legT2)*0.55;
+      playerMesh2.userData.rl.rotation.x=-Math.sin(legT2)*0.55;
+      playerMesh2.userData.la.rotation.x=-Math.sin(legT2)*0.45;
+      playerMesh2.userData.ra.rotation.x= Math.sin(legT2)*0.45;
+      playerMesh2.position.y+=Math.abs(Math.sin(legT2))*0.04;
+    } else {
+      playerMesh2.userData.ll.rotation.x*=0.8; playerMesh2.userData.rl.rotation.x*=0.8;
+      playerMesh2.userData.la.rotation.x*=0.8; playerMesh2.userData.ra.rotation.x*=0.8;
+    }
+  } // end P2
+
+  // ── Bots (shared) ────────────────────────────────────────────────
+  for (const b of bots) {
+    if (b.dead) {
+      b.deadTimer-=dt; b.mesh.visible=Math.floor(b.deadTimer*6)%2===0;
+      if (b.deadTimer<=0) {
+        b.dead=false; b.mesh.visible=true; b.y=0; b.vy=0;
+        if (b.finished) { b.x=(Math.random()-0.5)*50; b.z=-1570+(Math.random()-0.5)*40; b.wanderTimer=0; }
+        else { b.z=-(Math.random()*100); b.wpIdx=0; b.lane=(Math.random()-0.5)*8; }
+      }
       continue;
     }
-
-    // Laser collision — bot dies if hit
-    for (const lz of laserPivots) {
-      if (laserHitsPos(lz, b.x, b.y, b.z)) {
-        b.dead=true; b.deadTimer=1.5+Math.random();
-        b.mesh.visible=false;
-        break;
+    while (b.wpIdx<BOT_WPS.length-1&&b.z<=BOT_WPS[b.wpIdx].z) b.wpIdx++;
+    const nearWP=Math.abs(b.z-BOT_WPS[b.wpIdx].z)<20;
+    const curSpd=nearWP?b.spd*0.88:b.spd;
+    b.wobble+=dt*1.2;
+    const targetX=b.lane+Math.sin(b.wobble)*0.6;
+    b.x+=(targetX-b.x)*Math.min(dt*3,1);
+    if (!b.finished) { const lp=botLaserDanger(b.x,b.z-1); if(!lp) b.z-=curSpd*dt; }
+    const gY=getBotGround(b.x,b.z); const hasGround=gY>-100;
+    b.vy-=GRAVITY*dt; b.y+=b.vy*dt;
+    if (hasGround&&b.y<=gY) {b.y=gY;b.vy=0;b.onGround=true;}
+    else if (!hasGround&&b.y<=0) {b.y=0;b.vy=0;b.onGround=true;}
+    else b.onGround=false;
+    if (b.onGround) for (const bp of bouncePads) { if(Math.abs(b.x-bp.x)<bp.w/2&&Math.abs(b.z-bp.z)<bp.d/2){b.vy=JUMP_VEL*2.0;b.onGround=false;break;} }
+    if (b.onGround&&botOnDeadly(b.x,b.y,b.z)) {b.dead=true;b.deadTimer=1.5+Math.random()*0.5;b.mesh.visible=false;continue;}
+    if (b.onGround&&b.vy<=0) { const ag=getBotGround(b.x,b.z-3); if(ag<-50){b.vy=JUMP_VEL*0.95;b.onGround=false;} }
+    const danger=botLaserDanger(b.x,b.z); if(danger) b.x+=Math.sign(b.x||1)*b.spd*dt*0.4;
+    for (const p of platforms) { if(!p.deadly)continue; const mx=p.mesh.position.x,mz=p.mesh.position.z; if(Math.abs(b.z-mz)<p.d/2+1.5&&Math.abs(b.x-mx)<p.w/2+1.5) b.x+=(b.x>mx?1:-1)*b.spd*dt*2; }
+    b.jumpTimer-=dt; if(b.jumpTimer<=0&&b.onGround){b.vy=JUMP_VEL*(0.6+Math.random()*0.4);b.onGround=false;b.jumpTimer=3+Math.random()*6;}
+    const deathY=(b.z<-640&&b.z>-810)||(b.z<-1015&&b.z>-1175)?-2:-12;
+    if (b.y<deathY){b.dead=true;b.deadTimer=1.8+Math.random();b.mesh.visible=false;continue;}
+    b.x=Math.max(-6,Math.min(6,b.x));
+    if (!b.finished&&b.z<-1545) {b.finished=true;b.wanderTimer=0;}
+    if (b.finished) {
+      b.wanderTimer-=dt;
+      if (b.role==='soccer'&&soccerBall) {
+        const goalX=b.team==='A'?SOC_X+11:SOC_X-11;
+        const bDX=soccerBall.position.x-b.x, bDZ=soccerBall.position.z-b.z;
+        const bDist=Math.sqrt(bDX*bDX+bDZ*bDZ);
+        if (bDist>1.5) {b.wanderTX=soccerBall.position.x+(Math.random()-0.5)*1.5;b.wanderTZ=soccerBall.position.z+(Math.random()-0.5)*1.5;}
+        else { const gX=goalX-b.x,gZ=SOC_Z-b.z,gD=Math.sqrt(gX*gX+gZ*gZ); sbv.x+=(gX/gD)*14;sbv.z+=(gZ/gD)*14;sbv.y+=3; b.wanderTX=b.x-gX*0.5;b.wanderTZ=b.z-gZ*0.5; }
+        b.wanderTX=Math.max(SOC_X-12,Math.min(SOC_X+12,b.wanderTX)); b.wanderTZ=Math.max(SOC_Z-8,Math.min(SOC_Z+8,b.wanderTZ));
+      } else if (b.role==='ballpit') {
+        if (b.wanderTimer<=0) {b.wanderTX=PIT_X+(Math.random()-0.5)*14;b.wanderTZ=PIT_Z+(Math.random()-0.5)*14;b.wanderTimer=1+Math.random()*2;}
+        b.wanderTX=Math.max(PIT_X-8,Math.min(PIT_X+8,b.wanderTX)); b.wanderTZ=Math.max(PIT_Z-8,Math.min(PIT_Z+8,b.wanderTZ));
+      } else {
+        if (b.wanderTimer<=0) {b.wanderTX=(Math.random()-0.5)*44;b.wanderTZ=-1590+(Math.random()-0.5)*44;b.wanderTimer=2+Math.random()*4;}
+        b.wanderTX=Math.max(-44,Math.min(44,b.wanderTX)); b.wanderTZ=Math.max(-1630,Math.min(-1552,b.wanderTZ));
       }
+      const dxw=b.wanderTX-b.x, dzw=b.wanderTZ-b.z, distW=Math.sqrt(dxw*dxw+dzw*dzw);
+      const wandSpd=b.role==='soccer'?Math.min(b.spd*0.7,8):Math.min(b.spd*0.5,6);
+      if (distW>0.4) {b.x+=(dxw/distW)*wandSpd*dt;b.z+=(dzw/distW)*wandSpd*dt;b.mesh.rotation.y=Math.atan2(dxw,dzw)+Math.PI;}
+      b.x=Math.max(-44,Math.min(44,b.x)); b.z=Math.max(-1630,Math.min(-1552,b.z));
+      b.legT+=dt*wandSpd*1.6; b.mesh.position.set(b.x,b.y,b.z);
+      b.mesh.userData.ll.rotation.x=Math.sin(b.legT)*0.55; b.mesh.userData.rl.rotation.x=-Math.sin(b.legT)*0.55;
+      b.mesh.userData.la.rotation.x=-Math.sin(b.legT)*0.5; b.mesh.userData.ra.rotation.x=Math.sin(b.legT)*0.5;
+      continue;
     }
+    for (const lz of laserPivots) { if(laserHitsPos(lz,b.x,b.y,b.z)){b.dead=true;b.deadTimer=1.5+Math.random();b.mesh.visible=false;break;} }
     if (b.dead) continue;
-
-    // Animation (still running)
-    b.legT += dt * curSpd * 1.6;
-    b.mesh.position.set(b.x, b.y, b.z);
-    b.mesh.rotation.y = Math.PI;
-    b.mesh.userData.ll.rotation.x =  Math.sin(b.legT)*0.55;
-    b.mesh.userData.rl.rotation.x = -Math.sin(b.legT)*0.55;
-    b.mesh.userData.la.rotation.x = -Math.sin(b.legT)*0.5;
-    b.mesh.userData.ra.rotation.x =  Math.sin(b.legT)*0.5;
+    b.legT+=dt*curSpd*1.6; b.mesh.position.set(b.x,b.y,b.z); b.mesh.rotation.y=Math.PI;
+    b.mesh.userData.ll.rotation.x=Math.sin(b.legT)*0.55; b.mesh.userData.rl.rotation.x=-Math.sin(b.legT)*0.55;
+    b.mesh.userData.la.rotation.x=-Math.sin(b.legT)*0.5; b.mesh.userData.ra.rotation.x=Math.sin(b.legT)*0.5;
   }
 
-  // ── Ball pit physics ──────────────────────────────────────────────
+  // ── Ball pit physics (shared) ─────────────────────────────────────
   const PIT_GRAV=18, PIT_DAMP=0.62;
   const PX1=PIT_X-9.5, PX2=PIT_X+9.5, PZ1=PIT_Z-9.5, PZ2=PIT_Z+9.5, PY0=-0.5, PY1=3.4;
   for (const b of pitBalls) {
-    b.vy -= PIT_GRAV*dt;
-    b.x += b.vx*dt; b.y += b.vy*dt; b.z += b.vz*dt;
-    if (b.y < PY0+b.r)  { b.y=PY0+b.r;  b.vy= Math.abs(b.vy)*PIT_DAMP; b.vx*=0.96; b.vz*=0.96; }
-    if (b.y > PY1-b.r)  { b.y=PY1-b.r;  b.vy=-Math.abs(b.vy)*PIT_DAMP; }
-    if (b.x < PX1+b.r)  { b.x=PX1+b.r;  b.vx= Math.abs(b.vx)*PIT_DAMP; }
-    if (b.x > PX2-b.r)  { b.x=PX2-b.r;  b.vx=-Math.abs(b.vx)*PIT_DAMP; }
-    if (b.z < PZ1+b.r)  { b.z=PZ1+b.r;  b.vz= Math.abs(b.vz)*PIT_DAMP; }
-    if (b.z > PZ2-b.r)  { b.z=PZ2-b.r;  b.vz=-Math.abs(b.vz)*PIT_DAMP; }
-    b.mesh.position.set(b.x, b.y, b.z);
-
-    // Player pushes ball when touching
-    const pdx=b.x-player.x, pdy=b.y-(player.y+0.9), pdz=b.z-player.z;
-    const pdist=Math.sqrt(pdx*pdx+pdy*pdy+pdz*pdz);
+    b.vy-=PIT_GRAV*dt; b.x+=b.vx*dt; b.y+=b.vy*dt; b.z+=b.vz*dt;
+    if(b.y<PY0+b.r){b.y=PY0+b.r;b.vy=Math.abs(b.vy)*PIT_DAMP;b.vx*=0.96;b.vz*=0.96;}
+    if(b.y>PY1-b.r){b.y=PY1-b.r;b.vy=-Math.abs(b.vy)*PIT_DAMP;}
+    if(b.x<PX1+b.r){b.x=PX1+b.r;b.vx=Math.abs(b.vx)*PIT_DAMP;}
+    if(b.x>PX2-b.r){b.x=PX2-b.r;b.vx=-Math.abs(b.vx)*PIT_DAMP;}
+    if(b.z<PZ1+b.r){b.z=PZ1+b.r;b.vz=Math.abs(b.vz)*PIT_DAMP;}
+    if(b.z>PZ2-b.r){b.z=PZ2-b.r;b.vz=-Math.abs(b.vz)*PIT_DAMP;}
+    b.mesh.position.set(b.x,b.y,b.z);
     const minD=0.5+b.r;
-    if (pdist < minD && pdist > 0.01) {
-      const f=(minD-pdist)/pdist;
-      b.vx+=pdx*f*10; b.vy+=Math.abs(pdy)*f*10+4; b.vz+=pdz*f*10;
-      b.x+=pdx*f; b.y+=pdy*f; b.z+=pdz*f;
+    for (const pp of [player, ...(gameMode===2?[player2]:[])]) {
+      const pdx=b.x-pp.x,pdy=b.y-(pp.y+0.9),pdz=b.z-pp.z,pd=Math.sqrt(pdx*pdx+pdy*pdy+pdz*pdz);
+      if(pd<minD&&pd>0.01){const f=(minD-pd)/pd;b.vx+=pdx*f*10;b.vy+=Math.abs(pdy)*f*10+4;b.vz+=pdz*f*10;b.x+=pdx*f;b.y+=pdy*f;b.z+=pdz*f;}
     }
-    // Finished bots push pit balls too
     for (const bot of bots) {
-      if (!bot.finished) continue;
-      const bdx=b.x-bot.x, bdy=b.y-(bot.y+0.9), bdz=b.z-bot.z;
-      const bd=Math.sqrt(bdx*bdx+bdy*bdy+bdz*bdz);
-      if (bd < minD && bd > 0.01) {
-        const f=(minD-bd)/bd;
-        b.vx+=bdx*f*8; b.vy+=Math.abs(bdy)*f*8+3; b.vz+=bdz*f*8;
-        b.x+=bdx*f; b.y+=bdy*f; b.z+=bdz*f;
-      }
+      if(!bot.finished)continue;
+      const bdx=b.x-bot.x,bdy=b.y-(bot.y+0.9),bdz=b.z-bot.z,bd=Math.sqrt(bdx*bdx+bdy*bdy+bdz*bdz);
+      if(bd<minD&&bd>0.01){const f=(minD-bd)/bd;b.vx+=bdx*f*8;b.vy+=Math.abs(bdy)*f*8+3;b.vz+=bdz*f*8;b.x+=bdx*f;b.y+=bdy*f;b.z+=bdz*f;}
     }
   }
 
-  // ── Soccer ball physics ───────────────────────────────────────────
+  // ── Soccer ball (shared) ──────────────────────────────────────────
   if (soccerBall) {
-    sbv.y -= 18*dt;
-    soccerBall.position.x += sbv.x*dt;
-    soccerBall.position.y += sbv.y*dt;
-    soccerBall.position.z += sbv.z*dt;
+    sbv.y-=18*dt; soccerBall.position.x+=sbv.x*dt; soccerBall.position.y+=sbv.y*dt; soccerBall.position.z+=sbv.z*dt;
     const sx=soccerBall.position.x, sz=soccerBall.position.z;
-    if (soccerBall.position.y < 0.55) { soccerBall.position.y=0.55; sbv.y=Math.abs(sbv.y)*0.75; }
-    if (sx < SOC_X-12) { soccerBall.position.x=SOC_X-12; sbv.x= Math.abs(sbv.x)*0.9; }
-    if (sx > SOC_X+12) { soccerBall.position.x=SOC_X+12; sbv.x=-Math.abs(sbv.x)*0.9; }
-    if (sz < SOC_Z-8)  { soccerBall.position.z=SOC_Z-8;  sbv.z= Math.abs(sbv.z)*0.9; }
-    if (sz > SOC_Z+8)  { soccerBall.position.z=SOC_Z+8;  sbv.z=-Math.abs(sbv.z)*0.9; }
-    soccerBall.rotation.x += sbv.z*dt*2;
-    soccerBall.rotation.z -= sbv.x*dt*2;
-    // Finished bots kick soccer ball
+    if(soccerBall.position.y<0.55){soccerBall.position.y=0.55;sbv.y=Math.abs(sbv.y)*0.75;}
+    if(sx<SOC_X-12){soccerBall.position.x=SOC_X-12;sbv.x=Math.abs(sbv.x)*0.9;}
+    if(sx>SOC_X+12){soccerBall.position.x=SOC_X+12;sbv.x=-Math.abs(sbv.x)*0.9;}
+    if(sz<SOC_Z-8) {soccerBall.position.z=SOC_Z-8; sbv.z=Math.abs(sbv.z)*0.9;}
+    if(sz>SOC_Z+8) {soccerBall.position.z=SOC_Z+8; sbv.z=-Math.abs(sbv.z)*0.9;}
+    soccerBall.rotation.x+=sbv.z*dt*2; soccerBall.rotation.z-=sbv.x*dt*2;
     for (const bot of bots) {
-      if (!bot.finished) continue;
-      const sdx=soccerBall.position.x-bot.x, sdz=soccerBall.position.z-bot.z;
-      const sd=Math.sqrt(sdx*sdx+sdz*sdz);
-      if (sd < 1.3 && sd > 0.01) {
-        const f=(1.3-sd)/sd;
-        sbv.x+=sdx*f*18; sbv.z+=sdz*f*18; sbv.y+=4;
-      }
+      if(!bot.finished)continue;
+      const sdx=soccerBall.position.x-bot.x,sdz=soccerBall.position.z-bot.z,sd=Math.sqrt(sdx*sdx+sdz*sdz);
+      if(sd<1.3&&sd>0.01){const f=(1.3-sd)/sd;sbv.x+=sdx*f*18;sbv.z+=sdz*f*18;sbv.y+=4;}
     }
   }
 
-  // Camera: orbit behind player using mouse yaw
-  const CAM_DIST=11, CAM_H=6;
-  const camX = player.x + Math.sin(camYaw)*CAM_DIST;
-  const camZ = player.z + Math.cos(camYaw)*CAM_DIST;
-  camera.position.lerp(new THREE.Vector3(camX, player.y+CAM_H, camZ), 0.1);
-  camera.lookAt(player.x, player.y+1, player.z);
+  // Coin & CP spins
+  for (const co of coinMeshes) if(!co.collected) co.mesh.rotation.z+=dt*2;
+  for (const cp of cpList) if(!cp.collected){cp.coin.rotation.y+=dt*2;cp.coin.position.y+=Math.sin(Date.now()/600)*0.003;}
 
-  renderer.render(scene, camera);
+  // Sprint trail P1
+  for (let i=trailParts.length-1;i>=0;i--) {
+    const tp=trailParts[i]; tp.age+=dt; tp.mesh.material.opacity=1-tp.age/tp.life; tp.mesh.position.y+=dt*0.5;
+    if(tp.age>=tp.life){scene.remove(tp.mesh);trailParts.splice(i,1);}
+  }
+
+  // Sky/fog (P1 zone)
+  const si=getSkyIdx(player.z);
+  if(si!==lastSkyIdx){scene.background=new THREE.Color(SKIES[si].sky);scene.fog.color=new THREE.Color(SKIES[si].fog);lastSkyIdx=si;}
+
+  // Cameras
+  const CAM_DIST=11, CAM_H=6;
+  camera.position.lerp(new THREE.Vector3(player.x+Math.sin(camYaw)*CAM_DIST, player.y+CAM_H, player.z+Math.cos(camYaw)*CAM_DIST), 0.1);
+  camera.lookAt(player.x, player.y+1, player.z);
+  if (gameMode===2) {
+    camera2.position.lerp(new THREE.Vector3(player2.x+Math.sin(camYaw2)*CAM_DIST, player2.y+CAM_H, player2.z+Math.cos(camYaw2)*CAM_DIST), 0.1);
+    camera2.lookAt(player2.x, player2.y+1, player2.z);
+  }
+
+  doRender();
 }
 
-// Set camera and render one frame immediately — no black flash
-camera.position.set(player.x, player.y+6, player.z+11);
-camera.lookAt(player.x, player.y+1, player.z);
+// Initial render (before mode is chosen — shows world behind mode modal)
+camera.position.set(0, 7, 11);
+camera.lookAt(0, 1, 0);
+camera2.position.set(3, 7, 11);
+camera2.lookAt(3, 1, 0);
 renderer.render(scene, camera);
 
 updateHUD();
