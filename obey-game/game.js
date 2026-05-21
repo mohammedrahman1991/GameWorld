@@ -701,8 +701,8 @@ function equipCosmetic(id) {
 
 function buyCos(id) {
   const item=COSMETICS[id];
-  if (cosOwned.has(id)||coins<item.cost) return;
-  coins-=item.cost;
+  if (cosOwned.has(id)||coinCount<item.cost) return;
+  coinCount-=item.cost;
   cosOwned.add(id);
   updateHUD();
   equipCosmetic(id);
@@ -718,7 +718,7 @@ function buildCosShop() {
   const grid=document.getElementById('cos-grid');
   if(!grid) return;
   const coinsEl=document.getElementById('cos-coins-display');
-  if(coinsEl) coinsEl.textContent='💰 '+coins.toLocaleString()+' coins';
+  if(coinsEl) coinsEl.textContent='💰 '+coinCount.toLocaleString()+' coins';
   const ICONS={hat:'🎩',cowboy:'🤠',crown:'👑',party:'🎉',cap:'🧢',
     shades:'😎',heart:'💗',gold_g:'✨',angel:'🪽',demon:'😈',fairy:'🧚',
     red_s:'👕',green_s:'👕',yellow_s:'👕',gold_s:'✨',
@@ -727,7 +727,7 @@ function buildCosShop() {
   for(const[id,item] of Object.entries(COSMETICS)){
     if(item.cat!==cosCategory) continue;
     const owned=cosOwned.has(id), equipped=(cosEquipped[item.cat]===id);
-    const canAfford=coins>=item.cost;
+    const canAfford=coinCount>=item.cost;
     const colorSwatch=`#${item.col.toString(16).padStart(6,'0')}`;
     const icon=ICONS[id]||'🎁';
     let btnHtml='';
@@ -927,7 +927,7 @@ function updateHUD() {
   document.getElementById('coins-hud').textContent=`💰 ${coinCount}`;
   document.getElementById('cp-hud').textContent=`CP: ${cpCount}/9`;
   const coinsEl=document.getElementById('cos-coins-display');
-  if(coinsEl) coinsEl.textContent='💰 '+coins.toLocaleString()+' coins';
+  if(coinsEl) coinsEl.textContent='💰 '+coinCount.toLocaleString()+' coins';
 }
 function flashRed() {
   const f=document.getElementById('flash'); f.style.opacity='1';
