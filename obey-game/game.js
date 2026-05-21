@@ -605,7 +605,7 @@ if(sBtn){
 }
 let jumpConsumed=false;
 let jumpsLeft=2;
-let camYaw=Math.PI; // camera starts behind player (facing -Z)
+let camYaw=0; // camera starts behind player
 
 // Mouse drag to rotate camera
 let mouseDragging=false, lastMX=0;
@@ -808,14 +808,17 @@ function animate() {
     return;
   }
 
-  // ── Movement ──
+  // ── Movement (camera-relative — mouse yaw controls facing direction) ──
   const sprinting = keys['ShiftLeft']||keys['ShiftRight']||touch.sprint;
   const spd = sprinting ? SPRINT_SPD : WALK_SPD;
-  let mvx=0,mvz=0;
-  if (keys['KeyW']||keys['ArrowUp']||touch.up)    mvz=-1;
-  if (keys['KeyS']||keys['ArrowDown']||touch.down)  mvz=1;
-  if (keys['KeyA']||keys['ArrowLeft']||touch.left)  mvx=-1;
-  if (keys['KeyD']||keys['ArrowRight']||touch.right) mvx=1;
+  // Forward/right vectors based on where camera is pointing
+  const fwdX=-Math.sin(camYaw), fwdZ=-Math.cos(camYaw);
+  const rgtX= Math.cos(camYaw), rgtZ=-Math.sin(camYaw);
+  let mvx=0, mvz=0;
+  if (keys['KeyW']||keys['ArrowUp']   ||touch.up)    { mvx+=fwdX; mvz+=fwdZ; }
+  if (keys['KeyS']||keys['ArrowDown'] ||touch.down)  { mvx-=fwdX; mvz-=fwdZ; }
+  if (keys['KeyA']||keys['ArrowLeft'] ||touch.left)  { mvx-=rgtX; mvz-=rgtZ; }
+  if (keys['KeyD']||keys['ArrowRight']||touch.right) { mvx+=rgtX; mvz+=rgtZ; }
   const ml=Math.sqrt(mvx*mvx+mvz*mvz);
   if (ml>0){mvx/=ml;mvz/=ml;}
   player.vx=mvx*spd; player.vz=mvz*spd;
