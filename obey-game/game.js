@@ -251,35 +251,31 @@ for (let i=0;i<18;i++) cloud((Math.random()-0.5)*300,25,-100-Math.random()*700);
 // ── THE COURSE ────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────
 
-// SECTION 0 — GREEN PLAINS — easy, wide platforms, tiny gaps
-T(0,   0, -30,  20, 1, 60, 0x66CC44);           // very wide start
-CO(3,1.8,-20); CO(-3,1.8,-40); CO(0,1.8,-55);
-// gap ~4 units
-T(0,   0, -82,  18, 1, 36, 0x55BB44);           // wide, easy jump
-CO(2,1.8,-75); CO(-2,1.8,-90);
-// gap ~4 units
-T(0,   0,-122,  16, 1, 30, 0x66CC44);
-CO(0,1.8,-118); CO(2,1.8,-130);
-// gentle single step up, then back flat — no big height changes
-T(0,   0.6,-158, 14, 1, 24, 0x77DD55);          // tiny step up
-T(0,   0,-186,  16, 1, 28, 0x66CC44);            // back to flat
-CO(0,1.8,-158); CO(0,1.8,-178);
-CP(0, 0, -200, 0);
+// SECTION 0 — GREEN PLAINS — nearly touching, no height changes
+T(0,  0, -30,  22, 1, 62, 0x66CC44);   // z=0 to -61
+CO(3,1.8,-20); CO(-3,1.8,-42); CO(0,1.8,-55);
+T(0,  0, -83,  22, 1, 42, 0x55BB44);   // gap 0 (touching), z=-62 to -104
+CO(2,1.8,-76); CO(-2,1.8,-92);
+T(0,  0,-124,  22, 1, 36, 0x66CC44);   // gap 2, z=-106 to -142
+CO(0,1.8,-120); CO(2,1.8,-135);
+T(0,  0,-162,  22, 1, 36, 0x77DD55);   // gap 2, z=-144 to -180
+CO(0,1.8,-158); CO(-2,1.8,-170);
+T(0,  0,-200,  22, 1, 36, 0x66CC44);   // gap 2, z=-182 to -218
+CO(0,1.8,-196); CO(3,1.8,-208);
+CP(0, 0,-224, 0);
 
-// SECTION 1 — FIRST GAPS — centred, wide, small consistent gaps
-T(0,   0,-216,  14, 1, 18, 0x55BB44);
-CO(0,1.8,-216);
-T(0,   0,-240,  12, 1, 16, 0x55BB44);           // gap ~6 units
+// SECTION 1 — FIRST GAPS — very small gaps, wide platforms
+T(0,  0,-240,  18, 1, 22, 0x55BB44);   // z=-229 to -251, gap ~3
 CO(0,1.8,-240);
-T(0,   0,-263,  12, 1, 14, 0x55BB44);           // gap ~7 units
-CO(0,1.8,-263);
-T(0,   0,-284,  12, 1, 14, 0x55BB44);           // gap ~7 units
-CO(0,1.8,-284);
-T(0,   0,-305,  12, 1, 14, 0x55BB44);           // gap ~7 units
-CO(0,1.8,-305);
-T(0,   0,-325,  14, 1, 18, 0x55BB44);           // wider landing
-CO(0,1.8,-322); CO(3,1.8,-328);
-CP(0,  0,-340, 1);
+T(0,  0,-260,  18, 1, 22, 0x55BB44);   // gap 1
+CO(0,1.8,-260);
+T(0,  0,-280,  18, 1, 22, 0x55BB44);   // gap 1
+CO(0,1.8,-280);
+T(0,  0,-300,  18, 1, 22, 0x55BB44);   // gap 1
+CO(0,1.8,-300);
+T(0,  0,-320,  18, 1, 22, 0x55BB44);   // gap 1
+CO(0,1.8,-317); CO(3,1.8,-325);
+CP(0,  0,-338, 1);
 
 // SECTION 2 — LAVA FIELDS (z=-355 to z=-490)
 // Lava floor
@@ -288,17 +284,20 @@ P(0, -1.5, -425, 80, 1, 140, 0xFF4400, true);
 const lavaGlow = new THREE.Mesh(new THREE.PlaneGeometry(80,140),
   new THREE.MeshLambertMaterial({color:0xFF6600,emissive:new THREE.Color(0xFF4400).multiplyScalar(0.6)}));
 lavaGlow.rotation.x=-Math.PI/2; lavaGlow.position.set(0,-0.99,-425); scene.add(lavaGlow);
-// Platforms over lava — wide, close together, slow movers
-T(0,  2,-362, 14, 0.8, 16, 0xAA6633);                                        // big entry
-T(0,  2,-386, 12, 0.8, 12, 0xBB7744);                                        // wide
-T(0,  2,-406, 11, 0.8, 12, 0xAA6633);                                        // wide
-CO(4,3.8,-386); CO(-4,3.8,-406);
-T(0,  2,-426, 10, 0.8, 12, 0xBB7744, false, {axis:'x',range:1.5,spd:0.5});  // slow drift
-T(0,  2,-446, 11, 0.8, 12, 0xAA6633);                                        // wide safe
-CO(0,3.8,-446);
-T(0,  2,-466, 10, 0.8, 12, 0xBB7744, false, {axis:'y',range:0.7,spd:0.45}); // barely bobs
-T(0,  2,-484, 14, 0.8, 14, 0xAA6633);                                        // big landing
-CP(0, 2,-492, 2);
+// Platforms over lava — ground level (y=0), super close together
+T(0,  0,-358, 16, 0.8, 18, 0xAA6633);  // entry, gap ~2 from section 1
+T(0,  0,-379, 16, 0.8, 20, 0xBB7744);  // gap 1
+CO(0,1.8,-370); CO(3,1.8,-382);
+T(0,  0,-401, 16, 0.8, 20, 0xAA6633);  // gap 0
+CO(0,1.8,-401);
+T(0,  0,-423, 14, 0.8, 20, 0xBB7744, false, {axis:'x',range:1,spd:0.35}); // barely drifts
+CO(0,1.8,-423);
+T(0,  0,-445, 16, 0.8, 20, 0xAA6633);  // gap 1
+CO(0,1.8,-445);
+T(0,  0,-467, 14, 0.8, 20, 0xBB7744, false, {axis:'y',range:0.4,spd:0.3}); // barely bobs
+T(0,  0,-488, 18, 0.8, 22, 0xAA6633);  // big landing
+CO(0,1.8,-467); CO(0,1.8,-482);
+CP(0, 0,-496, 2);
 
 // SECTION 3 — LASER HALL (z=-500 to z=-640)
 // Hall floor + walls
