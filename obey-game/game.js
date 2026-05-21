@@ -974,6 +974,16 @@ function animate() {
     if (b.z < PZ1+b.r)  { b.z=PZ1+b.r;  b.vz= Math.abs(b.vz)*PIT_DAMP; }
     if (b.z > PZ2-b.r)  { b.z=PZ2-b.r;  b.vz=-Math.abs(b.vz)*PIT_DAMP; }
     b.mesh.position.set(b.x, b.y, b.z);
+
+    // Player pushes ball when touching
+    const pdx=b.x-player.x, pdy=b.y-(player.y+0.9), pdz=b.z-player.z;
+    const pdist=Math.sqrt(pdx*pdx+pdy*pdy+pdz*pdz);
+    const minD=0.5+b.r;
+    if (pdist < minD && pdist > 0.01) {
+      const f=(minD-pdist)/pdist;
+      b.vx+=pdx*f*10; b.vy+=Math.abs(pdy)*f*10+4; b.vz+=pdz*f*10;
+      b.x+=pdx*f; b.y+=pdy*f; b.z+=pdz*f;
+    }
   }
 
   // ── Soccer ball physics ───────────────────────────────────────────
