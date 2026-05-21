@@ -660,7 +660,10 @@ for(let i=0;i<30;i++){
   const oz=-(Math.random()*120);       // stagger start
   const mesh=mkBotMesh(BOT_COLS[i%BOT_COLS.length]);
   mesh.position.set(lane,0,oz);
-  bots.push({mesh, spd, x:lane, z:oz, y:0, vy:0, lane,
+  // First 10 = soccer players, next 10 = ball pit players, last 10 = wanderers
+  const role = i<10 ? 'soccer' : i<20 ? 'ballpit' : 'wander';
+  const team = i<5 ? 'A' : 'B'; // soccer teams (attack opposite goals)
+  bots.push({mesh, spd, x:lane, z:oz, y:0, vy:0, lane, role, team,
     legT:Math.random()*Math.PI*2, wpIdx:0, wobble:Math.random()*Math.PI*2,
     onGround:true, dead:false, deadTimer:0, jumpTimer:2+Math.random()*4,
     finished:false, wanderTX:0, wanderTZ:-1590, wanderTimer:0});
@@ -1165,32 +1168,74 @@ function animate() {
     // Clamp X to course width so bots can't pass through side walls
     b.x = Math.max(-6, Math.min(6, b.x));
 
-    // Reached end platform — switch to wander mode
+    // Reached end platform — switch to play mode
     if (!b.finished && b.z < -1545) {
       b.finished = true;
-      b.wanderTX = (Math.random()-0.5)*44;
-      b.wanderTZ = -1590 + (Math.random()-0.5)*44;
       b.wanderTimer = 0;
     }
 
-    // Wander around the finish island forever (stay inside walls)
+    // ── Play on finish island based on role ───────────────────────
     if (b.finished) {
       b.wanderTimer -= dt;
-      if (b.wanderTimer <= 0) {
-        b.wanderTX = (Math.random()-0.5)*44; // x: -22 to +22, well inside side walls
-        b.wanderTZ = -1590 + (Math.random()-0.5)*44; // z inside back/front walls
-        b.wanderTimer = 2 + Math.random()*4;
+
+      if (b.role === 'soccer' && soccerBall) {
+        // Chase the soccer ball — always update target to ball position
+        const goalX = b.team==='A' ? SOC_X+11 : SOC_X-11;
+        // If far from ball, chase it; if close, kick toward goal
+        const ballDX = soccerBall.position.x - b.x;
+        const ballDZ = soccerBall.position.z - b.z;
+        const ballDist = Math.sqrt(ballDX*ballDX + ballDZ*ballDZ);
+        if (ballDist > 1.5) {
+          // Run toward ball
+          b.wanderTX = soccerBall.position.x + (Math.random()-0.5)*1.5;
+          b.wanderTZ = soccerBall.position.z + (Math.random()-0.5)*1.5;
+        } else {
+          // Kick toward goal
+          const toGoalX = goalX - b.x;
+          const toGoalZ = SOC_Z - b.z;
+          const toGoalD = Math.sqrt(toGoalX*toGoalX + toGoalZ*toGoalZ);
+          sbv.x += (toGoalX/toGoalD) * 14;
+          sbv.z += (toGoalZ/toGoalD) * 14;
+          sbv.y += 3;
+          // Move away after kicking
+          b.wanderTX = b.x - toGoalX*0.5;
+          b.wanderTZ = b.z - toGoalZ*0.5;
+        }
+        // Clamp to soccer field area
+        b.wanderTX = Math.max(SOC_X-12, Math.min(SOC_X+12, b.wanderTX));
+        b.wanderTZ = Math.max(SOC_Z-8, Math.min(SOC_Z+8, b.wanderTZ));
+
+      } else if (b.role === 'ballpit') {
+        // Play in ball pit — roam inside pit, scatter balls
+        if (b.wanderTimer <= 0) {
+          b.wanderTX = PIT_X + (Math.random()-0.5)*14;
+          b.wanderTZ = PIT_Z + (Math.random()-0.5)*14;
+          b.wanderTimer = 1 + Math.random()*2;
+        }
+        // Clamp to pit area
+        b.wanderTX = Math.max(PIT_X-8, Math.min(PIT_X+8, b.wanderTX));
+        b.wanderTZ = Math.max(PIT_Z-8, Math.min(PIT_Z+8, b.wanderTZ));
+
+      } else {
+        // General wanderer — roam the whole island
+        if (b.wanderTimer <= 0) {
+          b.wanderTX = (Math.random()-0.5)*44;
+          b.wanderTZ = -1590 + (Math.random()-0.5)*44;
+          b.wanderTimer = 2 + Math.random()*4;
+        }
+        b.wanderTX = Math.max(-44, Math.min(44, b.wanderTX));
+        b.wanderTZ = Math.max(-1630, Math.min(-1552, b.wanderTZ));
       }
+
       const dxw = b.wanderTX - b.x;
       const dzw = b.wanderTZ - b.z;
       const distW = Math.sqrt(dxw*dxw + dzw*dzw);
-      const wandSpd = Math.min(b.spd*0.5, 6);
-      if (distW > 0.5) {
+      const wandSpd = b.role==='soccer' ? Math.min(b.spd*0.7, 8) : Math.min(b.spd*0.5, 6);
+      if (distW > 0.4) {
         b.x += (dxw/distW)*wandSpd*dt;
         b.z += (dzw/distW)*wandSpd*dt;
         b.mesh.rotation.y = Math.atan2(dxw, dzw) + Math.PI;
       }
-      // Hard clamp to island interior
       b.x = Math.max(-44, Math.min(44, b.x));
       b.z = Math.max(-1630, Math.min(-1552, b.z));
       b.legT += dt * wandSpd * 1.6;
