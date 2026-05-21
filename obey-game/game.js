@@ -613,14 +613,25 @@ function mkBotMesh(col) {
   return g;
 }
 
+// Waypoints guide bots through the centre of each section
+const BOT_WPS=[
+  {z:0,x:0},{z:-100,x:0},{z:-220,x:0},{z:-340,x:0},{z:-430,x:0},
+  {z:-500,x:0},{z:-640,x:0},{z:-660,x:0},{z:-720,x:0},{z:-790,x:0},
+  {z:-870,x:0},{z:-950,x:0},{z:-1040,x:0},{z:-1120,x:0},{z:-1170,x:0},
+  {z:-1200,x:0},{z:-1265,x:0},{z:-1320,x:0},{z:-1355,x:0},{z:-1450,x:0},
+  {z:-1520,x:0},{z:-1590,x:0},
+];
+
 const bots=[];
 for(let i=0;i<30;i++){
-  const spd=10+Math.random()*8;          // speeds 10–18
-  const ox=(Math.random()-0.5)*6;        // x spread -3 to +3
-  const oz=-(Math.random()*60);          // stagger start 0 to -60
+  const spd=10+Math.random()*8;
+  const lane=(Math.random()-0.5)*8;    // each bot picks its own x lane -4 to +4
+  const oz=-(Math.random()*120);       // stagger start
   const mesh=mkBotMesh(BOT_COLS[i%BOT_COLS.length]);
-  mesh.position.set(ox,0,oz);
-  bots.push({mesh, spd, x:ox, z:oz, legT:Math.random()*Math.PI*2});
+  mesh.position.set(lane,0,oz);
+  bots.push({mesh, spd, x:lane, z:oz, y:0, vy:0, lane,
+    legT:Math.random()*Math.PI*2, wpIdx:0, wobble:Math.random()*Math.PI*2,
+    onGround:true, dead:false, deadTimer:0, jumpTimer:2+Math.random()*4});
 }
 
 // Sprint trail particles
@@ -1020,17 +1031,68 @@ function animate() {
     playerMesh.userData.ra.rotation.x*=0.8;
   }
 
-  // ── Bots update ───────────────────────────────────────────────────
+  // ── Bots update (smart: waypoints, physics, jump, die/respawn) ────
   for (const b of bots) {
-    b.z -= b.spd * dt;
-    if (b.z < -1600) { b.z = -(Math.random()*80); } // loop back to start
-    b.legT += dt * b.spd * 1.6;
-    b.mesh.position.set(b.x, 0, b.z);
+    // Dead — count down then respawn
+    if (b.dead) {
+      b.deadTimer -= dt;
+      b.mesh.visible = Math.floor(b.deadTimer*6)%2===0; // blink
+      if (b.deadTimer <= 0) {
+        b.dead=false; b.mesh.visible=true;
+        b.z=-(Math.random()*100); b.y=2; b.vy=0;
+        b.wpIdx=0; b.lane=(Math.random()-0.5)*8;
+      }
+      continue;
+    }
+
+    // Waypoint navigation
+    while (b.wpIdx < BOT_WPS.length-1 && b.z <= BOT_WPS[b.wpIdx].z) b.wpIdx++;
+    const nearWP = Math.abs(b.z - BOT_WPS[b.wpIdx].z) < 20;
+    const curSpd = nearWP ? b.spd*0.88 : b.spd;
+
+    // Lane keeping with wobble
+    b.wobble += dt*1.2;
+    const targetX = b.lane + Math.sin(b.wobble)*0.6;
+    b.x += (targetX - b.x) * Math.min(dt*3, 1);
+
+    // Move forward
+    b.z -= curSpd * dt;
+
+    // Gravity + ground
+    b.vy -= GRAVITY * dt;
+    b.y  += b.vy * dt;
+    if (b.y <= 0) { b.y=0; b.vy=0; b.onGround=true; }
+    else b.onGround=false;
+
+    // Auto-jump: random jumps while on ground
+    b.jumpTimer -= dt;
+    if (b.jumpTimer <= 0 && b.onGround) {
+      b.vy = JUMP_VEL * (0.7 + Math.random()*0.5);
+      b.onGround = false;
+      b.jumpTimer = 2 + Math.random()*5;
+    }
+
+    // Die if fell into void
+    if (b.y < -12) {
+      b.dead=true; b.deadTimer=1.8+Math.random();
+      b.mesh.visible=false;
+      continue;
+    }
+
+    // Loop back when finished
+    if (b.z < -1610) {
+      b.z=-(Math.random()*60); b.y=0; b.vy=0; b.wpIdx=0;
+      b.lane=(Math.random()-0.5)*8;
+    }
+
+    // Animation
+    b.legT += dt * curSpd * 1.6;
+    b.mesh.position.set(b.x, b.y, b.z);
+    b.mesh.rotation.y = Math.PI;
     b.mesh.userData.ll.rotation.x =  Math.sin(b.legT)*0.55;
     b.mesh.userData.rl.rotation.x = -Math.sin(b.legT)*0.55;
     b.mesh.userData.la.rotation.x = -Math.sin(b.legT)*0.5;
     b.mesh.userData.ra.rotation.x =  Math.sin(b.legT)*0.5;
-    b.mesh.rotation.y = Math.PI;
   }
 
   // ── Ball pit physics ──────────────────────────────────────────────
