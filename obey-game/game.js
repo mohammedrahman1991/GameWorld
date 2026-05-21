@@ -251,31 +251,34 @@ for (let i=0;i<18;i++) cloud((Math.random()-0.5)*300,25,-100-Math.random()*700);
 // ── THE COURSE ────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────
 
-// SECTION 0 — GREEN PLAINS (z=0 to z=-130)
-T(0,   0, -30,  18, 1, 60, 0x66CC44);           // wide start
-CO(3,1.8,-20); CO(-3,1.8,-30); CO(0,1.8,-50);
-T(0,   0, -95,  14, 1, 30, 0x55BB44);
-CO(2,1.8,-80); CO(-2,1.8,-95); CO(0,1.8,-108);
-T(2,   0,-120,  10, 1, 14, 0x55BB44);
-T(-2,  0,-137,   8, 1, 10, 0x55BB44);
-// Low ledge to step up
-T(0,  1.2,-152,  8, 1, 10, 0x77DD55);
-T(0,  2.4,-167,  7, 1, 10, 0x88EE66);
-T(0,  0,-182,    9, 1, 12, 0x66CC44);
-CP(0, 0, -192, 0);
+// SECTION 0 — GREEN PLAINS — easy, wide platforms, tiny gaps
+T(0,   0, -30,  20, 1, 60, 0x66CC44);           // very wide start
+CO(3,1.8,-20); CO(-3,1.8,-40); CO(0,1.8,-55);
+// gap ~4 units
+T(0,   0, -82,  18, 1, 36, 0x55BB44);           // wide, easy jump
+CO(2,1.8,-75); CO(-2,1.8,-90);
+// gap ~4 units
+T(0,   0,-122,  16, 1, 30, 0x66CC44);
+CO(0,1.8,-118); CO(2,1.8,-130);
+// gentle single step up, then back flat — no big height changes
+T(0,   0.6,-158, 14, 1, 24, 0x77DD55);          // tiny step up
+T(0,   0,-186,  16, 1, 28, 0x66CC44);            // back to flat
+CO(0,1.8,-158); CO(0,1.8,-178);
+CP(0, 0, -200, 0);
 
-// SECTION 1 — FIRST GAPS (z=-205 to z=-330)
-T(0,   0,-215,  8, 1, 16, 0x55BB44);
-T(4,   0,-238,  5, 1,  8, 0x55BB44);
-T(-3,  0,-255,  5, 1,  8, 0x55BB44);
-CO(4,1.8,-238); CO(-3,1.8,-255);
-T(2,   0,-272,  4, 1,  8, 0x55BB44);
-T(-1,  0,-289,  4, 1,  8, 0x55BB44);
-T(0,   0,-306,  7, 1, 12, 0x55BB44);
-CO(0,1.8,-306);
-// Jump pads (slightly raised to indicate trampoline/bounce)
-T(0, 0.3,-318,  5, 0.6, 5, 0x44AACC);
-T(0,   0,-332,  8, 1, 12, 0x55BB44);
+// SECTION 1 — FIRST GAPS — centred, wide, small consistent gaps
+T(0,   0,-216,  14, 1, 18, 0x55BB44);
+CO(0,1.8,-216);
+T(0,   0,-240,  12, 1, 16, 0x55BB44);           // gap ~6 units
+CO(0,1.8,-240);
+T(0,   0,-263,  12, 1, 14, 0x55BB44);           // gap ~7 units
+CO(0,1.8,-263);
+T(0,   0,-284,  12, 1, 14, 0x55BB44);           // gap ~7 units
+CO(0,1.8,-284);
+T(0,   0,-305,  12, 1, 14, 0x55BB44);           // gap ~7 units
+CO(0,1.8,-305);
+T(0,   0,-325,  14, 1, 18, 0x55BB44);           // wider landing
+CO(0,1.8,-322); CO(3,1.8,-328);
 CP(0,  0,-340, 1);
 
 // SECTION 2 — LAVA FIELDS (z=-355 to z=-490)
