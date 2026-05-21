@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+  <title>Farming Land</title>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:#000;overflow:hidden;font-family:'Segoe UI',monospace,sans-serif;}
+    #c{display:block;width:100vw;height:100vh;}
+
+    /* HUD */
+    #coins{position:fixed;top:14px;left:18px;background:rgba(0,0,0,0.72);color:#FFD700;
+      font:bold 20px monospace;padding:8px 16px;border-radius:20px;border:2px solid #FFD700;
+      pointer-events:none;z-index:10;}
+    #inv-display{position:fixed;top:14px;left:50%;transform:translateX(-50%);
+      background:rgba(0,0,0,0.72);color:#fff;font:bold 15px monospace;
+      padding:7px 16px;border-radius:18px;text-align:center;pointer-events:none;z-index:10;
+      white-space:nowrap;}
+    #shop-btn{position:fixed;top:14px;right:18px;background:#228833;color:#fff;
+      font:bold 16px monospace;border:2px solid #44BB55;border-radius:12px;
+      padding:9px 18px;cursor:pointer;z-index:10;}
+    #shop-btn:hover{background:#33AA44;}
+
+    /* Interact hint */
+    #hint{position:fixed;bottom:200px;left:50%;transform:translateX(-50%);
+      background:rgba(0,0,0,0.78);color:#FFD700;font:bold 16px monospace;
+      padding:10px 22px;border-radius:14px;border:2px solid #FFD700;
+      display:none;pointer-events:none;z-index:10;white-space:nowrap;}
+
+    /* Buy confirmation flash */
+    #buy-msg{position:fixed;top:70px;left:50%;transform:translateX(-50%);
+      background:rgba(0,180,80,0.9);color:#fff;font:bold 16px monospace;
+      padding:8px 20px;border-radius:12px;opacity:0;transition:opacity 0.4s;
+      pointer-events:none;z-index:20;}
+
+    /* Shop modal */
+    #shop-modal{position:fixed;inset:0;background:rgba(0,0,0,0.82);
+      display:none;align-items:center;justify-content:center;z-index:100;}
+    #shop-modal.open{display:flex;}
+    #shop-inner{background:linear-gradient(135deg,#1a3a1a,#0a1f0a);
+      border:3px solid #44BB55;border-radius:22px;padding:26px;
+      width:min(680px,94vw);max-height:88vh;overflow-y:auto;}
+    #shop-inner h2{color:#FFD700;font:bold 26px monospace;text-align:center;margin-bottom:18px;}
+    #seed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:13px;}
+    .seed-card{background:rgba(255,255,255,0.07);border:2px solid rgba(255,255,255,0.18);
+      border-radius:13px;padding:14px;text-align:center;font-family:monospace;}
+    .seed-card .emoji{font-size:34px;margin-bottom:7px;}
+    .seed-card .name{color:#fff;font-weight:700;font-size:13px;margin-bottom:5px;}
+    .seed-card .cost{color:#FFD700;font-size:12px;margin-bottom:3px;}
+    .seed-card .info{color:#88ff88;font-size:11px;margin-bottom:3px;}
+    .seed-card .reward{color:#ffaa44;font-size:11px;margin-bottom:8px;}
+    .seed-card .inv{color:#aaaaff;font-size:11px;margin-bottom:8px;}
+    .seed-card button{background:#228833;color:#fff;border:2px solid #44BB55;
+      border-radius:8px;padding:6px 12px;font:bold 12px monospace;cursor:pointer;width:100%;}
+    .seed-card button:hover:not(:disabled){background:#33AA44;}
+    .seed-card button:disabled{background:#333;border-color:#555;color:#666;cursor:default;}
+    .seed-card.legendary{border-color:#AA44FF;background:rgba(170,68,255,0.1);}
+    .seed-card.og{border-color:#FFD700;background:rgba(255,215,0,0.08);}
+    #shop-close{display:block;margin:18px auto 0;background:#aa2222;color:#fff;
+      border:2px solid #dd4444;border-radius:10px;padding:8px 24px;
+      font:bold 15px monospace;cursor:pointer;}
+    #shop-close:hover{background:#cc3333;}
+
+    /* Mobile d-pad */
+    #dpad{position:fixed;bottom:18px;left:18px;width:152px;height:152px;z-index:10;}
+    .dpad-btn{position:absolute;background:rgba(255,255,255,0.22);
+      border:2px solid rgba(255,255,255,0.45);border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:22px;cursor:pointer;user-select:none;touch-action:none;}
+    #btn-up   {width:48px;height:48px;top:0;  left:52px;}
+    #btn-down {width:48px;height:48px;top:104px;left:52px;}
+    #btn-left {width:48px;height:48px;top:52px;left:0;}
+    #btn-right{width:48px;height:48px;top:52px;left:104px;}
+    #btn-interact{position:fixed;bottom:18px;right:18px;width:82px;height:82px;
+      background:rgba(255,200,0,0.35);border:3px solid #FFD700;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font:bold 13px monospace;color:#FFD700;cursor:pointer;
+      z-index:10;user-select:none;touch-action:none;text-align:center;line-height:1.3;}
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+
+  <div id="coins">💰 50</div>
+  <div id="inv-display">No seeds — open Shop</div>
+  <button id="shop-btn" onclick="openShop()">🛒 SHOP</button>
+  <div id="hint"></div>
+  <div id="buy-msg"></div>
+
+  <!-- Shop -->
+  <div id="shop-modal">
+    <div id="shop-inner">
+      <h2>🌱 SEED SHOP</h2>
+      <div id="seed-grid"></div>
+      <button id="shop-close" onclick="closeShop()">✕ Close</button>
+    </div>
+  </div>
+
+  <!-- Mobile controls -->
+  <div id="dpad">
+    <div class="dpad-btn" id="btn-up">▲</div>
+    <div class="dpad-btn" id="btn-down">▼</div>
+    <div class="dpad-btn" id="btn-left">◀</div>
+    <div class="dpad-btn" id="btn-right">▶</div>
+  </div>
+  <div id="btn-interact">E<br>ACT</div>
+
+  <script src="game.js"></script>
+</body>
+</html>
