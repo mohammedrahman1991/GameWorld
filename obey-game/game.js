@@ -14,7 +14,8 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87CEEB);
 scene.fog = new THREE.Fog(0x87CEEB, 60, 220);
 
-const renderer = new THREE.WebGLRenderer({canvas:document.getElementById('c'), antialias:true});
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
@@ -604,6 +605,36 @@ if(sBtn){
 }
 let jumpConsumed=false;
 let jumpsLeft=2;
+let camYaw=Math.PI; // camera starts behind player (facing -Z)
+
+// Mouse drag to rotate camera
+let mouseDragging=false, lastMX=0;
+canvas.addEventListener('mousedown', e=>{ if(e.button===0||e.button===2){ mouseDragging=true; lastMX=e.clientX; } });
+window.addEventListener('mouseup',   ()=>{ mouseDragging=false; });
+window.addEventListener('mousemove', e=>{
+  if (!mouseDragging) return;
+  const dx=e.clientX-lastMX; lastMX=e.clientX;
+  camYaw += dx*0.005;
+});
+// Touch drag (right side) for mobile camera rotate
+let camTouchId=null, camTouchLastX=0;
+canvas.addEventListener('touchstart', e=>{
+  for (const t of e.changedTouches) {
+    const rx=(t.clientX/window.innerWidth);
+    if (rx>0.5 && !camTouchId) { camTouchId=t.identifier; camTouchLastX=t.clientX; }
+  }
+});
+canvas.addEventListener('touchmove', e=>{
+  for (const t of e.changedTouches) {
+    if (t.identifier===camTouchId) {
+      camYaw+=(t.clientX-camTouchLastX)*0.006;
+      camTouchLastX=t.clientX;
+    }
+  }
+}, {passive:true});
+canvas.addEventListener('touchend', e=>{
+  for (const t of e.changedTouches) if (t.identifier===camTouchId) camTouchId=null;
+});
 
 // ── UI helpers ────────────────────────────────────────────────────
 function updateHUD() {
@@ -961,17 +992,19 @@ function animate() {
     soccerBall.rotation.z -= sbv.x*dt*1.5;
   }
 
-  // Camera: follow from behind and above
-  const camTarget = new THREE.Vector3(player.x, player.y+6, player.z+10);
-  camera.position.lerp(camTarget, 0.1);
-  camera.lookAt(player.x, player.y+1, player.z-5);
+  // Camera: orbit behind player using mouse yaw
+  const CAM_DIST=11, CAM_H=6;
+  const camX = player.x + Math.sin(camYaw)*CAM_DIST;
+  const camZ = player.z + Math.cos(camYaw)*CAM_DIST;
+  camera.position.lerp(new THREE.Vector3(camX, player.y+CAM_H, camZ), 0.1);
+  camera.lookAt(player.x, player.y+1, player.z);
 
   renderer.render(scene, camera);
 }
 
 // Set camera and render one frame immediately — no black flash
-camera.position.set(player.x, player.y + 6, player.z + 10);
-camera.lookAt(player.x, player.y + 1, player.z - 5);
+camera.position.set(player.x, player.y+6, player.z+11);
+camera.lookAt(player.x, player.y+1, player.z);
 renderer.render(scene, camera);
 
 updateHUD();
