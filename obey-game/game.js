@@ -383,7 +383,6 @@ CP(0, 2,-1170, 6);
 T(0,  0,-1260, 14, 1, 160, 0x443322);  // wide solid floor the whole way
 P(-8, 4,-1260,  1,10,160, 0x332211);   // keep walls for atmosphere
 P( 8, 4,-1260,  1,10,160, 0x332211);
-P(0,  9,-1260, 18, 1,160, 0x221100);   // ceiling
 // Torch lights
 for(let i=0;i<6;i++){
   const torch=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.8,0.3),
