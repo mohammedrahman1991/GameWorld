@@ -324,7 +324,7 @@ document.addEventListener('keyup', e => { keys[e.code] = false; });
 // ── Mini-map ─────────────────────────────────────────────────────────
 const mm = document.getElementById('minimap');
 const mmCtx = mm.getContext('2d');
-const MMS = 160, MMSC = MMS / 300;
+const MMS = 100, MMSC = MMS / 300;
 function toMM(x, z) { return {sx:(x+150)*MMSC, sz:(z+150)*MMSC}; }
 
 function drawMiniMap() {
@@ -621,16 +621,13 @@ function animate() {
       }
     }
 
-    // Camera follows van or character
+    // Camera: fixed world-angle follow (doesn't spin with van)
     const tx = char.inVan ? van.x : char.x;
     const tz = char.inVan ? van.z : char.z;
-    const ta = char.inVan ? van.angle : char.angle;
-    const cd = char.inVan ? 16 : 9;
-    const ch = char.inVan ? 8  : 5;
-    const cx = tx + Math.sin(ta)*cd;
-    const cz = tz + Math.cos(ta)*cd;
-    camera.position.lerp(new THREE.Vector3(cx, ch, cz), 0.1);
-    camera.lookAt(tx, char.inVan ? 1.2 : 0.8, tz);
+    const camH   = char.inVan ? 18 : 10;
+    const camBack = char.inVan ? 22 : 13;
+    camera.position.lerp(new THREE.Vector3(tx, camH, tz + camBack), 0.08);
+    camera.lookAt(tx, 0, tz);
 
     drawMiniMap();
   }
