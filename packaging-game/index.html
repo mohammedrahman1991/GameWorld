@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
+  <title>Packaging Game</title>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:#000;overflow:hidden;font-family:monospace;}
+    canvas{display:block;width:100vw;height:100vh;}
+
+    /* Money HUD */
+    #money-hud{position:fixed;top:14px;left:18px;background:rgba(0,0,0,0.75);
+      color:#44FF88;font:bold 20px monospace;padding:8px 16px;border-radius:14px;
+      border:2px solid #44FF88;z-index:10;}
+
+    /* State label */
+    #state-label{position:fixed;top:14px;left:50%;transform:translateX(-50%);
+      background:rgba(0,0,0,0.7);color:#AAD4FF;font:bold 13px monospace;
+      padding:6px 16px;border-radius:10px;z-index:10;pointer-events:none;}
+
+    /* Phone */
+    #phone{position:fixed;bottom:20px;left:20px;width:190px;
+      background:#111;border-radius:22px;border:3px solid #333;
+      padding:12px 10px 14px;z-index:20;
+      box-shadow:0 0 18px rgba(80,80,255,0.35);display:none;}
+    #phone-notch{width:36px;height:7px;background:#222;border-radius:4px;
+      margin:0 auto 8px;}
+    #phone-screen{background:#000;border-radius:14px;padding:10px;min-height:130px;
+      color:#fff;font-size:11px;text-align:center;}
+    #phone-home{width:28px;height:28px;background:#222;border-radius:50%;
+      margin:8px auto 0;border:1px solid #444;}
+
+    /* Mini-map */
+    #minimap{position:fixed;top:14px;right:18px;border-radius:10px;
+      border:2px solid rgba(255,255,255,0.35);display:none;
+      box-shadow:0 0 12px rgba(0,0,0,0.5);}
+    #map-label{position:fixed;top:182px;right:18px;color:rgba(255,255,255,0.6);
+      font:bold 9px monospace;text-align:right;display:none;pointer-events:none;}
+
+    /* Pack button */
+    #pack-btn{position:fixed;bottom:20px;right:20px;
+      background:linear-gradient(135deg,#226622,#44AA44);color:#fff;
+      font:bold 15px monospace;padding:14px 22px;border:none;
+      border-radius:14px;cursor:pointer;z-index:20;display:none;
+      box-shadow:0 4px 14px rgba(0,200,0,0.4);}
+    #pack-btn:hover{opacity:0.85;}
+
+    /* Deliver button */
+    #deliver-btn{position:fixed;bottom:20px;right:20px;
+      background:linear-gradient(135deg,#884400,#FF8800);color:#fff;
+      font:bold 15px monospace;padding:14px 22px;border:none;
+      border-radius:14px;cursor:pointer;z-index:20;display:none;
+      box-shadow:0 4px 14px rgba(255,140,0,0.5);}
+
+    /* Controls hint */
+    #hint{position:fixed;bottom:6px;left:50%;transform:translateX(-50%);
+      color:rgba(255,255,255,0.55);font:10px monospace;
+      text-align:center;pointer-events:none;z-index:10;}
+
+    /* Distance indicator */
+    #dist-hud{position:fixed;bottom:48px;left:50%;transform:translateX(-50%);
+      background:rgba(0,0,0,0.65);color:#FFD700;font:bold 12px monospace;
+      padding:4px 14px;border-radius:8px;display:none;pointer-events:none;z-index:10;}
+
+    /* Order overlay */
+    #order-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);
+      display:flex;align-items:center;justify-content:center;z-index:90;}
+    #order-box{background:linear-gradient(135deg,#0d1a2e,#162030);
+      border:3px solid #4488FF;border-radius:22px;padding:38px 32px;
+      text-align:center;max-width:380px;width:90%;}
+    #order-box h2{color:#4488FF;font:900 20px monospace;margin-bottom:6px;}
+    .obtn{display:inline-block;margin-top:16px;padding:13px 28px;
+      font:bold 16px monospace;border:none;border-radius:12px;cursor:pointer;}
+    #btn-accept{background:linear-gradient(135deg,#226622,#44AA44);color:#fff;}
+    #btn-skip{background:rgba(255,255,255,0.08);color:#888;margin-left:8px;
+      font-size:12px;padding:10px 16px;}
+
+    /* Reward overlay */
+    #reward-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);
+      display:none;align-items:center;justify-content:center;z-index:90;}
+    #reward-box{background:linear-gradient(135deg,#0d2e0d,#162016);
+      border:3px solid #44FF88;border-radius:22px;padding:38px 32px;
+      text-align:center;max-width:380px;width:90%;}
+    #reward-box h2{color:#44FF88;font:900 22px monospace;margin-bottom:10px;}
+    #reward-box p{color:#fff;font:16px monospace;margin:8px 0;}
+    #btn-next{background:linear-gradient(135deg,#4488FF,#2255CC);color:#fff;}
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+
+  <div id="money-hud">💵 $0</div>
+  <div id="state-label">📦 PACKAGING</div>
+
+  <div id="phone">
+    <div id="phone-notch"></div>
+    <div id="phone-screen"><div id="phone-content"></div></div>
+    <div id="phone-home"></div>
+  </div>
+
+  <canvas id="minimap" width="160" height="160"></canvas>
+  <div id="map-label">🗺 GPS MAP</div>
+
+  <button id="pack-btn" onclick="doPack()">📦 Pack Item</button>
+  <button id="deliver-btn" onclick="doDeliver()">🎁 Deliver Package!</button>
+
+  <div id="hint">Accept an order to begin!</div>
+  <div id="dist-hud">📍 Destination: ???m</div>
+
+  <!-- Order overlay -->
+  <div id="order-overlay">
+    <div id="order-box">
+      <div id="order-face" style="font-size:3.5rem;margin-bottom:8px;">📦</div>
+      <h2 id="order-customer">New Order</h2>
+      <p id="order-item" style="color:#fff;font:15px monospace;margin:8px 0;">Item: ...</p>
+      <p id="order-pay" style="color:#44FF88;font:bold 18px monospace;">Pay: $??</p>
+      <p id="order-addr" style="color:#AAD4FF;font:11px monospace;margin-top:6px;">📍 ...</p>
+      <br>
+      <button class="obtn" id="btn-accept" onclick="acceptOrder()">✅ Accept</button>
+      <button class="obtn" id="btn-skip" onclick="skipOrder()">Skip</button>
+    </div>
+  </div>
+
+  <!-- Reward overlay -->
+  <div id="reward-overlay">
+    <div id="reward-box">
+      <div style="font-size:3rem;margin-bottom:8px;">✅</div>
+      <h2>DELIVERED!</h2>
+      <p id="reward-text">+$25</p>
+      <p id="total-text" style="color:#44FF88;font:bold 16px monospace;">Total: $0</p>
+      <br>
+      <button class="obtn" id="btn-next" onclick="nextOrder()">📋 Next Order</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
