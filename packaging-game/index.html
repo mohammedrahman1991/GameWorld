@@ -36,7 +36,7 @@
     #minimap{position:fixed;top:14px;right:18px;border-radius:10px;
       border:2px solid rgba(255,255,255,0.35);display:none;
       box-shadow:0 0 12px rgba(0,0,0,0.5);}
-    #map-label{position:fixed;top:82px;right:18px;color:rgba(255,255,255,0.6);
+    #map-label{position:fixed;top:118px;right:18px;color:rgba(255,255,255,0.6);
       font:bold 9px monospace;text-align:right;display:none;pointer-events:none;}
 
     /* Pack button */
@@ -108,8 +108,8 @@
     <div id="phone-home"></div>
   </div>
 
-  <canvas id="minimap" width="60" height="60"></canvas>
-  <div id="map-label">🗺</div>
+  <canvas id="minimap" width="96" height="96" style="width:96px;height:96px;"></canvas>
+  <div id="map-label" style="font-size:8px;">🗺</div>
 
   <button id="pack-btn" onclick="doPack()">📦 Pack Item</button>
   <button id="exit-van-btn" onclick="exitVan()">🚪 Get Out of Van</button>
