@@ -2,26 +2,27 @@
 ## Project Memory (auto-managed by Cortex)
 
 ### Last Session
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8332361685144393"
-     crossorigin="anonymous"></scrip. Yes, it's already there — line 7 of [index.html](index.html):
+The combo now works two ways:
+1. **Hold SLIDE + press JUMP** at same time → instant super jump (`ts=0`, always triggers)
+2. **Release SLIDE then press JUMP within 500ms** → still super jump
 
-```html
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8332361685144393" crossorigin="an. did u push code ?
-eps:
-- Ads settings confirmed (green checkmark)
-- Site connected
-- Payment info submit
+Now for p. its already set up. just push code. Your branch is up to date with 'origin/first-push'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (us
 
 ### Recent Decisions
-_No decisions recorded yet._
+- **going with a gate-style laser with a moving gap, terrain as an array of points with linear interpolation and gaps, simple bike physics with gravity and jumping, a camera that follows the bike horizont**: a gate-style laser with a moving gap, terrain as an array of points with linear  — )_ _(
 
 ### Current Context
 _No context available._
 
 ### Open Problems
-_No open problems._
+- Tool permission request failed: Error: Tool permission stream closed before response received
+- Exit code 2
 
-_Last updated: 2026-05-23T00:56:55.378Z | Tokens: 134/800_
+_Last updated: 2026-05-23T17:57:50.129Z | Tokens: 229/800_
 <!-- CORTEX:END -->
 
 
