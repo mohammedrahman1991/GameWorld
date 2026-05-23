@@ -542,18 +542,18 @@ function animate() {
   if (gameState === 'drive' || gameState === 'deliver') {
 
     if (char.inVan) {
-      // Van controls
-      const acc = (keys['KeyW']||keys['ArrowUp']) ? 1 : (keys['KeyS']||keys['ArrowDown']) ? -1 : 0;
-      const str = (keys['KeyA']||keys['ArrowLeft']) ? 1 : (keys['KeyD']||keys['ArrowRight']) ? -1 : 0;
-      const maxSpd = keys['ShiftLeft'] ? 30 : 18;
-
-      van.speed += acc * 20 * dt;                    // accelerate
-      if (acc === 0) van.speed -= van.speed * 3 * dt; // coast friction (only when no input)
-      van.speed = Math.max(-8, Math.min(maxSpd, van.speed));
-      van.angle -= str * 1.6 * dt;                   // turn at any speed
-
-      van.x += Math.sin(van.angle) * van.speed * dt;
-      van.z += Math.cos(van.angle) * van.speed * dt;
+      // Van controls — direct 4-direction movement (easy mode)
+      let mvx = (keys['KeyD']||keys['ArrowRight']) ? 1 : (keys['KeyA']||keys['ArrowLeft']) ? -1 : 0;
+      let mvz = (keys['KeyS']||keys['ArrowDown'])  ? 1 : (keys['KeyW']||keys['ArrowUp'])   ? -1 : 0;
+      const spd = keys['ShiftLeft'] ? 28 : 16;
+      const mlen = Math.sqrt(mvx*mvx + mvz*mvz);
+      if (mlen > 0) {
+        mvx /= mlen; mvz /= mlen;
+        van.x += mvx * spd * dt;
+        van.z += mvz * spd * dt;
+        // Van visually faces direction of travel
+        van.angle = Math.atan2(mvx, -mvz);
+      }
       van.x  = Math.max(-170, Math.min(170, van.x));
       van.z  = Math.max(-170, Math.min(170, van.z));
 
@@ -627,16 +627,13 @@ function animate() {
       }
     }
 
-    // Camera: smooth follow behind van / character
+    // Camera: fixed angle above-behind, follows position only
     const tx = char.inVan ? van.x : char.x;
     const tz = char.inVan ? van.z : char.z;
-    const ta = char.inVan ? van.angle : char.angle;
-    const camDist = char.inVan ? 20 : 10;
-    const camH    = char.inVan ? 13 : 6;
-    const camX = tx + Math.sin(ta) * camDist;
-    const camZ = tz + Math.cos(ta) * camDist;
-    camera.position.lerp(new THREE.Vector3(camX, camH, camZ), 0.07);
-    camera.lookAt(tx, char.inVan ? 1 : 0.8, tz);
+    const camH = char.inVan ? 22 : 10;
+    const camOff = char.inVan ? 18 : 10;
+    camera.position.lerp(new THREE.Vector3(tx, camH, tz + camOff), 0.08);
+    camera.lookAt(tx, 0, tz);
 
     drawMiniMap();
   }
