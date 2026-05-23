@@ -467,6 +467,10 @@ window.doPack = function() {
 
 function doExitVan() {
   if (!char.inVan || gameState !== 'drive') return;
+  if (getDestDist() >= 22) {
+    document.getElementById('state-label').textContent = '⚠️ Drive closer to the destination first!';
+    return;
+  }
   char.inVan = false; gameState = 'deliver';
   const sideAngle = van.angle + Math.PI/2;
   char.x = van.x + Math.sin(sideAngle)*3.2;
@@ -572,11 +576,21 @@ function animate() {
 
       // Near destination — show exit button
       const nearDest = dist < 22;
-      document.getElementById('exit-van-btn').style.display = (nearDest && gameState==='drive') ? 'block' : 'none';
-      if (gameState==='drive') {
-        document.getElementById('state-label').textContent = nearDest
-          ? '🅿️ ARRIVED — GET OUT OF VAN!'
-          : '🚐 DRIVE TO: ' + LOCATIONS[currentOrder.locIdx].name;
+      // Exit van button — always visible while driving
+      const exitBtn = document.getElementById('exit-van-btn');
+      if (gameState === 'drive') {
+        exitBtn.style.display = 'block';
+        if (nearDest) {
+          exitBtn.textContent = '🚪 Get Out of Van';
+          exitBtn.style.opacity = '1';
+          exitBtn.style.background = 'linear-gradient(135deg,#1144AA,#2266FF)';
+          document.getElementById('state-label').textContent = '🅿️ ARRIVED — GET OUT OF VAN!';
+        } else {
+          exitBtn.textContent = '🚪 Get Out of Van (drive closer)';
+          exitBtn.style.opacity = '0.45';
+          exitBtn.style.background = '#333';
+          document.getElementById('state-label').textContent = '🚐 DRIVE TO: ' + LOCATIONS[currentOrder.locIdx].name;
+        }
       }
 
       // Also allow E key to exit
