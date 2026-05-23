@@ -324,7 +324,7 @@ document.addEventListener('keyup', e => { keys[e.code] = false; });
 // ── Mini-map ─────────────────────────────────────────────────────────
 const mm = document.getElementById('minimap');
 const mmCtx = mm.getContext('2d');
-const MMS = 80, MMSC = MMS / 300;
+const MMS = 60, MMSC = MMS / 300;
 function toMM(x, z) { return {sx:(x+150)*MMSC, sz:(z+150)*MMSC}; }
 
 function drawMiniMap() {
