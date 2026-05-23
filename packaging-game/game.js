@@ -324,7 +324,7 @@ document.addEventListener('keyup', e => { keys[e.code] = false; });
 // ── Mini-map ─────────────────────────────────────────────────────────
 const mm = document.getElementById('minimap');
 const mmCtx = mm.getContext('2d');
-const MMS = 100, MMSC = MMS / 300;
+const MMS = 80, MMSC = MMS / 300;
 function toMM(x, z) { return {sx:(x+150)*MMSC, sz:(z+150)*MMSC}; }
 
 function drawMiniMap() {
@@ -523,16 +523,15 @@ function animate() {
   if (gameState === 'drive' || gameState === 'deliver') {
 
     if (char.inVan) {
-      // Van controls
-      const acc = (keys['KeyW']||keys['ArrowUp']) ? 1 : (keys['KeyS']||keys['ArrowDown']) ? -0.5 : 0;
+      // Van controls — simple and responsive
+      const acc = (keys['KeyW']||keys['ArrowUp']) ? 1 : (keys['KeyS']||keys['ArrowDown']) ? -1 : 0;
       const str = (keys['KeyA']||keys['ArrowLeft']) ? 1 : (keys['KeyD']||keys['ArrowRight']) ? -1 : 0;
-      const maxSpd = keys['ShiftLeft'] ? 42 : 26;
+      const maxSpd = keys['ShiftLeft'] ? 28 : 16;
 
-      van.speed += (acc * 24 - van.speed * (acc!==0?0.04:0.18)) * dt;
-      van.speed  = Math.max(-11, Math.min(maxSpd, van.speed));
-      if (Math.abs(van.speed) > 0.4) {
-        van.angle -= str * dt * 1.7 * (Math.abs(van.speed) / maxSpd);
-      }
+      van.speed += acc * 14 * dt;
+      van.speed *= 0.90;                              // natural braking friction
+      van.speed = Math.max(-6, Math.min(maxSpd, van.speed));
+      van.angle -= str * 1.6 * dt;                   // turns at any speed
 
       van.x += Math.sin(van.angle) * van.speed * dt;
       van.z += Math.cos(van.angle) * van.speed * dt;
@@ -621,13 +620,16 @@ function animate() {
       }
     }
 
-    // Camera: fixed world-angle follow (doesn't spin with van)
+    // Camera: smooth follow behind van / character
     const tx = char.inVan ? van.x : char.x;
     const tz = char.inVan ? van.z : char.z;
-    const camH   = char.inVan ? 18 : 10;
-    const camBack = char.inVan ? 22 : 13;
-    camera.position.lerp(new THREE.Vector3(tx, camH, tz + camBack), 0.08);
-    camera.lookAt(tx, 0, tz);
+    const ta = char.inVan ? van.angle : char.angle;
+    const camDist = char.inVan ? 20 : 10;
+    const camH    = char.inVan ? 13 : 6;
+    const camX = tx + Math.sin(ta) * camDist;
+    const camZ = tz + Math.cos(ta) * camDist;
+    camera.position.lerp(new THREE.Vector3(camX, camH, camZ), 0.07);
+    camera.lookAt(tx, char.inVan ? 1 : 0.8, tz);
 
     drawMiniMap();
   }
