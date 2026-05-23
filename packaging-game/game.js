@@ -418,6 +418,7 @@ function showOrderScreen() {
   document.getElementById('phone').style.display = 'none';
   document.getElementById('pack-btn').style.display = 'none';
   document.getElementById('deliver-btn').style.display = 'none';
+  document.getElementById('exit-van-btn').style.display = 'none';
   document.getElementById('dist-hud').style.display = 'none';
   document.getElementById('state-label').textContent = '📱 NEW ORDER';
   document.getElementById('hint').textContent = 'Accept an order to begin!';
@@ -463,6 +464,24 @@ window.doPack = function() {
     updateRoute(); updatePhone();
   }, 350);
 };
+
+function doExitVan() {
+  if (!char.inVan || gameState !== 'drive') return;
+  char.inVan = false; gameState = 'deliver';
+  const sideAngle = van.angle + Math.PI/2;
+  char.x = van.x + Math.sin(sideAngle)*3.2;
+  char.z = van.z + Math.cos(sideAngle)*3.2;
+  char.angle = van.angle; char.hasBox = true;
+  charGroup.visible = true;
+  charGroup.position.set(char.x, 0, char.z);
+  pkgGroup.position.set(char.x, 0.9, char.z);
+  document.getElementById('exit-van-btn').style.display = 'none';
+  document.getElementById('state-label').textContent = '🚶 WALK TO THE FRONT DOOR';
+  document.getElementById('hint').textContent = 'W/A/S/D to walk · press Deliver button at the door!';
+  document.getElementById('dist-hud').style.display = 'none';
+  updatePhone();
+}
+window.exitVan = doExitVan;
 
 window.doDeliver = function() {
   if (gameState !== 'deliver') return;
@@ -551,29 +570,17 @@ function animate() {
       const dist = Math.round(getDestDist());
       document.getElementById('dist-hud').textContent = '📍 Destination: ' + dist + 'm';
 
-      // Near destination?
+      // Near destination — show exit button
       const nearDest = dist < 22;
+      document.getElementById('exit-van-btn').style.display = (nearDest && gameState==='drive') ? 'block' : 'none';
       if (gameState==='drive') {
-        if (nearDest) document.getElementById('state-label').textContent = '🅿️ STOP — PRESS E TO EXIT VAN';
-        else document.getElementById('state-label').textContent = '🚐 DRIVE TO: ' + LOCATIONS[currentOrder.locIdx].name;
+        document.getElementById('state-label').textContent = nearDest
+          ? '🅿️ ARRIVED — GET OUT OF VAN!'
+          : '🚐 DRIVE TO: ' + LOCATIONS[currentOrder.locIdx].name;
       }
 
-      // Exit van (E key)
-      if (nearDest && keys['KeyE'] && gameState==='drive') {
-        char.inVan = false; gameState = 'deliver';
-        // Spawn character beside van
-        const sideAngle = van.angle + Math.PI/2;
-        char.x = van.x + Math.sin(sideAngle)*3.2;
-        char.z = van.z + Math.cos(sideAngle)*3.2;
-        char.angle = van.angle; char.hasBox = true;
-        charGroup.visible = true;
-        charGroup.position.set(char.x, 0, char.z);
-        pkgGroup.position.set(char.x, 0.9, char.z);
-        document.getElementById('state-label').textContent = '🚶 WALK TO THE FRONT DOOR';
-        document.getElementById('hint').textContent = 'W/A/S/D to walk · E at the door to deliver!';
-        document.getElementById('dist-hud').style.display = 'none';
-        updatePhone();
-      }
+      // Also allow E key to exit
+      if (nearDest && keys['KeyE'] && gameState==='drive') doExitVan();
 
       updateRoute();
 

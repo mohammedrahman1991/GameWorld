@@ -54,6 +54,14 @@
       border-radius:14px;cursor:pointer;z-index:20;display:none;
       box-shadow:0 4px 14px rgba(255,140,0,0.5);}
 
+    /* Exit van button */
+    #exit-van-btn{position:fixed;bottom:20px;right:20px;
+      background:linear-gradient(135deg,#1144AA,#2266FF);color:#fff;
+      font:bold 15px monospace;padding:14px 22px;border:none;
+      border-radius:14px;cursor:pointer;z-index:20;display:none;
+      box-shadow:0 4px 14px rgba(40,100,255,0.5);}
+    #exit-van-btn:hover{opacity:0.85;}
+
     /* Controls hint */
     #hint{position:fixed;bottom:6px;left:50%;transform:translateX(-50%);
       color:rgba(255,255,255,0.55);font:10px monospace;
@@ -104,6 +112,7 @@
   <div id="map-label">🗺 GPS</div>
 
   <button id="pack-btn" onclick="doPack()">📦 Pack Item</button>
+  <button id="exit-van-btn" onclick="exitVan()">🚪 Get Out of Van</button>
   <button id="deliver-btn" onclick="doDeliver()">🎁 Deliver Package!</button>
 
   <div id="hint">Accept an order to begin!</div>
