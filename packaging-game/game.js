@@ -542,15 +542,15 @@ function animate() {
   if (gameState === 'drive' || gameState === 'deliver') {
 
     if (char.inVan) {
-      // Van controls — simple and responsive
+      // Van controls
       const acc = (keys['KeyW']||keys['ArrowUp']) ? 1 : (keys['KeyS']||keys['ArrowDown']) ? -1 : 0;
       const str = (keys['KeyA']||keys['ArrowLeft']) ? 1 : (keys['KeyD']||keys['ArrowRight']) ? -1 : 0;
-      const maxSpd = keys['ShiftLeft'] ? 28 : 16;
+      const maxSpd = keys['ShiftLeft'] ? 30 : 18;
 
-      van.speed += acc * 14 * dt;
-      van.speed *= 0.90;                              // natural braking friction
-      van.speed = Math.max(-6, Math.min(maxSpd, van.speed));
-      van.angle -= str * 1.6 * dt;                   // turns at any speed
+      van.speed += acc * 20 * dt;                    // accelerate
+      if (acc === 0) van.speed -= van.speed * 3 * dt; // coast friction (only when no input)
+      van.speed = Math.max(-8, Math.min(maxSpd, van.speed));
+      van.angle -= str * 1.6 * dt;                   // turn at any speed
 
       van.x += Math.sin(van.angle) * van.speed * dt;
       van.z += Math.cos(van.angle) * van.speed * dt;
