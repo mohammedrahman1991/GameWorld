@@ -481,7 +481,7 @@ function doExitVan() {
   pkgGroup.position.set(char.x, 0.9, char.z);
   document.getElementById('exit-van-btn').style.display = 'none';
   document.getElementById('state-label').textContent = '🚶 WALK TO THE FRONT DOOR';
-  document.getElementById('hint').textContent = 'W/A/S/D to walk · press Deliver button at the door!';
+  document.getElementById('hint').textContent = 'W=up  S=down  A=left  D=right  ·  walk to the door and press Deliver!';
   document.getElementById('dist-hud').style.display = 'none';
   updatePhone();
 }
@@ -599,17 +599,18 @@ function animate() {
       updateRoute();
 
     } else {
-      // Character walking
-      const fwd = keys['KeyW'] || keys['ArrowUp'];
-      const bwd = keys['KeyS'] || keys['ArrowDown'];
-      const lft = keys['KeyA'] || keys['ArrowLeft'];
-      const rgt = keys['KeyD'] || keys['ArrowRight'];
-
-      if (lft) char.angle += 2.3 * dt;
-      if (rgt) char.angle -= 2.3 * dt;
-      const CSPD = 5.5;
-      if (fwd) { char.x += Math.sin(char.angle)*CSPD*dt; char.z += Math.cos(char.angle)*CSPD*dt; }
-      if (bwd) { char.x -= Math.sin(char.angle)*CSPD*dt; char.z -= Math.cos(char.angle)*CSPD*dt; }
+      // Character walking — same direct 4-direction as van (W=up S=down A=left D=right)
+      let cmvx = (keys['KeyD']||keys['ArrowRight']) ? 1 : (keys['KeyA']||keys['ArrowLeft']) ? -1 : 0;
+      let cmvz = (keys['KeyS']||keys['ArrowDown'])  ? 1 : (keys['KeyW']||keys['ArrowUp'])   ? -1 : 0;
+      const CSPD = 7;
+      const clen = Math.sqrt(cmvx*cmvx + cmvz*cmvz);
+      const moving = clen > 0;
+      if (moving) {
+        cmvx /= clen; cmvz /= clen;
+        char.x += cmvx * CSPD * dt;
+        char.z += cmvz * CSPD * dt;
+        char.angle = Math.atan2(cmvx, -cmvz);
+      }
       char.x = Math.max(-170, Math.min(170, char.x));
       char.z = Math.max(-170, Math.min(170, char.z));
 
@@ -617,7 +618,7 @@ function animate() {
       charGroup.rotation.y = char.angle;
 
       // Leg walk animation
-      if (fwd || bwd) {
+      if (moving) {
         char.walkT += dt*8;
         const legs = charGroup.userData.legs;
         legs[0].rotation.x =  Math.sin(char.walkT)*0.6;
