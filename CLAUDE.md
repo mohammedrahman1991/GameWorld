@@ -2,18 +2,18 @@
 ## Project Memory (auto-managed by Cortex)
 
 ### Last Session
-1 file changed, 29 insertions(+), 4 deletions(-)
-To https://github.com/mohammedrahman1991/GameWorld.git
-   e2c690e..7e22edf  first-push -> first-push. Pushed. Three fixes in this update:
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8332361685144393"
+     crossorigin="anonymous"></scrip. Yes, it's already there — line 7 of [index.html](index.html):
 
-**Black line gone** — The ground plane was at exactly `y=0`, same as the top of the house floor slab. Two surfaces sharing the same depth causes z-fighting (dark f. Make a MD file to make it organized and create game orderly and smooth
-
-Make a new game called castle man battles
-
-Make a game that everything is p
+```html
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8332361685144393" crossorigin="an. did u push code ?
+eps:
+- Ads settings confirmed (green checkmark)
+- Site connected
+- Payment info submit
 
 ### Recent Decisions
-- **going with improving the Hide and Seek game.**: improving the Hide and Seek game — )_ _(
+_No decisions recorded yet._
 
 ### Current Context
 _No context available._
@@ -21,7 +21,7 @@ _No context available._
 ### Open Problems
 _No open problems._
 
-_Last updated: 2026-05-21T17:24:04.283Z | Tokens: 174/800_
+_Last updated: 2026-05-23T00:56:55.378Z | Tokens: 134/800_
 <!-- CORTEX:END -->
 
 
