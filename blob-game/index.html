@@ -6,18 +6,17 @@
   <title>Blob Eating</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:#0d1117;overflow:hidden;font-family:monospace;}
-    canvas{display:block;cursor:none;}
+    body{background:#1a6633;overflow:hidden;font-family:monospace;touch-action:none;}
+    canvas{display:block;}
 
     /* Overlays */
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);display:flex;
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.82);display:flex;
       align-items:center;justify-content:center;z-index:50;}
-    .box{background:linear-gradient(135deg,#0d1117,#1a1a2e);border:2px solid #333;
+    .box{background:linear-gradient(135deg,#0d1117,#1a1a2e);border:2px solid #444;
       border-radius:20px;padding:36px 32px;text-align:center;max-width:480px;width:92%;}
 
-    /* Start */
-    #start-overlay .box h1{font-size:2.8rem;color:#FFD700;margin-bottom:6px;}
-    #start-overlay .box p{color:#aaa;font-size:13px;margin-bottom:28px;}
+    #start-overlay .box h1{font-size:2.6rem;color:#FFD700;margin-bottom:6px;}
+    #start-overlay .box p{color:#aaa;font-size:13px;margin-bottom:24px;}
     .mode-btns{display:flex;gap:14px;justify-content:center;}
     .mbtn{padding:16px 36px;font:bold 16px monospace;border:none;border-radius:14px;cursor:pointer;transition:transform .1s;}
     .mbtn:active{transform:scale(0.96);}
@@ -39,7 +38,7 @@
     .play-btn{display:inline-block;margin-top:22px;padding:15px 44px;
       background:linear-gradient(135deg,#cc8800,#FFD700);color:#111;
       font:bold 17px monospace;border:none;border-radius:14px;cursor:pointer;}
-    .play-btn:hover{background:linear-gradient(135deg,#FFD700,#ffe066);}
+    .play-btn:hover{opacity:0.9;}
 
     /* HUD */
     #hud{display:none;pointer-events:none;position:fixed;inset:0;z-index:10;}
@@ -53,16 +52,34 @@
     #btn-again{background:linear-gradient(135deg,#AA2222,#CC4444);color:#fff;}
     #btn-home{background:linear-gradient(135deg,#444,#666);color:#fff;}
 
-    /* Custom cursor */
-    #cursor{position:fixed;width:18px;height:18px;border:2px solid rgba(255,255,255,0.6);
-      border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);z-index:100;
-      box-shadow:0 0 8px rgba(255,255,255,0.3);}
+    /* D-pad */
+    #dpad{position:fixed;bottom:22px;left:18px;width:156px;height:156px;z-index:20;display:none;}
+    .db{position:absolute;background:rgba(255,255,255,0.22);border:2px solid rgba(255,255,255,0.5);
+      border-radius:10px;display:flex;align-items:center;justify-content:center;
+      font-size:22px;cursor:pointer;user-select:none;touch-action:none;width:50px;height:50px;
+      color:#fff;font-weight:bold;}
+    .db:active{background:rgba(255,255,255,0.45);}
+    #dp-left {left:0;top:53px;}
+    #dp-right{left:106px;top:53px;}
+    #dp-up   {left:53px;top:0;}
+    #dp-down {left:53px;top:106px;}
   </style>
 </head>
 <body>
   <canvas id="c"></canvas>
-  <div id="cursor"></div>
   <div id="hud"></div>
+
+  <!-- D-pad -->
+  <div id="dpad">
+    <div class="db" id="dp-up"
+      onpointerdown="dpadPress('up')" onpointerup="dpadRelease('up')" onpointerleave="dpadRelease('up')">▲</div>
+    <div class="db" id="dp-left"
+      onpointerdown="dpadPress('left')" onpointerup="dpadRelease('left')" onpointerleave="dpadRelease('left')">◀</div>
+    <div class="db" id="dp-right"
+      onpointerdown="dpadPress('right')" onpointerup="dpadRelease('right')" onpointerleave="dpadRelease('right')">▶</div>
+    <div class="db" id="dp-down"
+      onpointerdown="dpadPress('down')" onpointerup="dpadRelease('down')" onpointerleave="dpadRelease('down')">▼</div>
+  </div>
 
   <!-- Start -->
   <div class="overlay" id="start-overlay">
@@ -73,7 +90,7 @@
         <button class="mbtn" id="btn-1p" onclick="selectMode(1)">👤 1 PLAYER</button>
         <button class="mbtn" id="btn-2p" onclick="selectMode(2)">👥 2 PLAYER</button>
       </div>
-      <p style="color:#555;font-size:11px;margin-top:16px;">1P: Mouse &nbsp;|&nbsp; 2P: Mouse + Arrow Keys</p>
+      <p style="color:#555;font-size:11px;margin-top:14px;">Mouse / Touch / D-pad to move</p>
     </div>
   </div>
 
