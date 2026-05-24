@@ -105,23 +105,20 @@
     #screen-memorize { padding-top: 0; justify-content: flex-start; }
 
     .top-bar {
-      width: 100%;
-      max-width: 1160px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      width: 100%; max-width: 1160px;
+      display: flex; align-items: center; justify-content: space-between;
       padding: 12px 24px;
       background: rgba(255,255,255,0.04);
       border-bottom: 1px solid rgba(255,255,255,0.07);
       border-radius: 0 0 14px 14px;
-      margin-bottom: 18px;
+      margin-bottom: 14px;
     }
     .top-bar .tb-left { display: flex; flex-direction: column; }
     .tb-phase { font-size: 0.7rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
     .tb-level { font-size: 1rem; font-weight: 800; color: var(--gold); }
 
     /* SVG ring timer */
-    .ring-wrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 18px; }
+    .ring-wrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 14px; }
     .timer-ring { transform: rotate(-90deg); }
     .tr-bg  { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 7; }
     .tr-fg  { fill: none; stroke: var(--gold); stroke-width: 7; stroke-linecap: round;
@@ -133,71 +130,131 @@
     .ring-text.urgent { fill: var(--red); }
     .ring-sub { font-size: 0.78rem; color: var(--muted); margin-top: 4px; letter-spacing: .04em; }
 
-    /* Crate */
-    .crate-wrap { width: 100%; max-width: 1160px; }
-    .crate {
-      background: linear-gradient(160deg,#7a5618 0%,#5a3e10 45%,#3d2a0a 100%);
-      border: 4px solid #241700;
-      border-radius: 18px;
-      box-shadow: 0 0 0 2px #a07030, inset 0 2px 0 rgba(255,255,255,0.1), 0 24px 60px rgba(0,0,0,0.65);
-      overflow: hidden;
-      position: relative;
+    /* ── 3D Crate ──────────────────────────────────────────────────────────── */
+    .crate-scene {
+      perspective: 1100px;
+      perspective-origin: 50% -25%;
+      width: 100%; max-width: 1160px;
+      margin: 0 auto;
+      padding: 0 12px 50px;
+    }
+
+    .crate-tilt {
+      transform: rotateX(24deg);
+      transform-origin: center 65%;
+      transform-style: preserve-3d;
       animation: crate-open .5s cubic-bezier(.34,1.56,.64,1) both;
     }
-    @keyframes crate-open { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes crate-open { from { transform: rotateX(24deg) scale(0.88); opacity:0; } to { transform: rotateX(24deg) scale(1); opacity:1; } }
 
-    /* Wood plank lines */
-    .crate::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: repeating-linear-gradient(90deg, transparent, transparent 55px, rgba(0,0,0,0.1) 55px, rgba(0,0,0,0.1) 57px);
+    /* Back wall — visible above the crate opening when tilted */
+    .crate-back-wall {
+      height: 52px;
+      background: linear-gradient(180deg, #0e0800 0%, #2e1e06 50%, #4a3010 100%);
+      border-top: 5px solid #0a0500;
+      border-left: 7px solid #0e0800;
+      border-right: 7px solid #0e0800;
+      border-radius: 6px 6px 0 0;
+      box-shadow: 0 0 0 1.5px #7a5820, inset 0 -8px 18px rgba(0,0,0,0.6);
+      position: relative;
+    }
+    /* Bolt heads on back wall */
+    .crate-back-wall::before, .crate-back-wall::after {
+      content: '⬤'; position: absolute;
+      top: 50%; transform: translateY(-50%);
+      font-size: 7px; color: #c8a050; opacity: 0.8;
+    }
+    .crate-back-wall::before { left: 18px; }
+    .crate-back-wall::after  { right: 18px; }
+
+    /* Main crate body */
+    .crate-body {
+      background: linear-gradient(160deg, #9a6e1a 0%, #6a4810 45%, #3c280a 100%);
+      border-left:  7px solid #0e0800;
+      border-right: 7px solid #0e0800;
+      position: relative;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1.5px #a07830,              /* gold rim */
+        inset 50px 0 80px rgba(0,0,0,0.55),  /* left wall shadow */
+        inset -50px 0 80px rgba(0,0,0,0.55); /* right wall shadow */
+    }
+    /* Horizontal plank lines */
+    .crate-body::before {
+      content: ''; position: absolute; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 62px, rgba(0,0,0,0.18) 62px, rgba(0,0,0,0.18) 64px);
       pointer-events: none; z-index: 0;
     }
-    /* Corner bolts */
-    .crate::after {
-      content: '⬤ ⬤';
-      position: absolute; bottom: 10px; right: 16px;
-      font-size: 0.5rem; color: rgba(255,210,100,0.35);
-      letter-spacing: 6px; pointer-events: none;
+    /* Vertical grain */
+    .crate-body::after {
+      content: ''; position: absolute; inset: 0;
+      background: repeating-linear-gradient(90deg, transparent, transparent 130px, rgba(255,255,255,0.022) 130px, rgba(255,255,255,0.022) 132px);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* Front wall / lip */
+    .crate-front-wall {
+      height: 32px;
+      background: linear-gradient(180deg, #5a3e10 0%, #2a1800 60%, #0e0800 100%);
+      border-bottom: 5px solid #0a0500;
+      border-left: 7px solid #0e0800;
+      border-right: 7px solid #0e0800;
+      border-radius: 0 0 6px 6px;
+      box-shadow: 0 0 0 1.5px #7a5820, 0 14px 40px rgba(0,0,0,0.9);
     }
 
     .crate-head {
-      background: linear-gradient(90deg,#5a3e10,#8b6014,#5a3e10);
-      border-bottom: 3px solid #241700;
-      padding: 12px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: relative; z-index: 1;
+      background: linear-gradient(90deg, #3e2a0a, #7a5620, #3e2a0a);
+      border-bottom: 3px solid #0e0800;
+      padding: 10px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: relative; z-index: 5;
     }
-    .crate-head h2 { font-size: 0.9rem; color: #f5d28a; font-weight: 800; letter-spacing: .06em; text-shadow: 0 1px 4px rgba(0,0,0,.6); }
-    .crate-count { font-size: 0.78rem; color: #c9a858; background: rgba(0,0,0,.35); padding: 3px 12px; border-radius: 99px; }
+    .crate-head h2 { font-size: 0.88rem; color: #f5d28a; font-weight: 800; letter-spacing: .06em; text-shadow: 0 1px 4px rgba(0,0,0,.8); }
+    .crate-count   { font-size: 0.75rem; color: #c9a858; background: rgba(0,0,0,.4); padding: 3px 12px; border-radius: 99px; }
 
-    .items-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
-      gap: 10px;
-      padding: 16px;
-      position: relative; z-index: 1;
+    /* Floor — items scattered here */
+    .crate-floor {
+      position: relative;
+      z-index: 2;
+      overflow: hidden;
     }
-    .item-card {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.16);
-      border-radius: 12px;
-      padding: 14px 8px 10px;
+
+    /* Scattered item */
+    .item-float {
+      position: absolute;
       text-align: center;
-      backdrop-filter: blur(4px);
-      transition: transform .18s, background .18s;
-      animation: item-pop .35s cubic-bezier(.34,1.56,.64,1) both;
+      animation: item-pop .38s cubic-bezier(.34,1.56,.64,1) both;
     }
-    .item-card:hover { transform: scale(1.07); background: rgba(255,255,255,0.18); }
-    @keyframes item-pop { from { opacity:0; transform:scale(.5) rotate(-8deg); } to { opacity:1; transform:scale(1) rotate(0); } }
-    .ie {
-      display: flex; align-items: center; justify-content: center;
-      height: 72px; margin-bottom: 8px;
+    .item-float:hover {
+      transform: rotate(var(--rot,0deg)) scale(1.22) !important;
+      z-index: 9990 !important;
+      filter: brightness(1.1);
     }
-    .ie img, .ie span { display: block; }
-    .in { font-size: 0.68rem; color: #e5d5b0; font-weight: 600; line-height: 1.3; word-break: break-word; }
+    @keyframes item-pop { from{opacity:0;transform:rotate(var(--rot,0deg)) scale(.4)} to{opacity:1;transform:rotate(var(--rot,0deg)) scale(1)} }
+
+    .item-img-wrap {
+      display: block;
+      filter: drop-shadow(2px 7px 12px rgba(0,0,0,0.8));
+    }
+    .item-label-float {
+      display: block;
+      font-size: 0.56rem; color: #f0e0b0; font-weight: 700;
+      margin-top: 3px; letter-spacing: 0.02em;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.95), 0 0 8px rgba(0,0,0,0.8);
+      white-space: nowrap;
+    }
+
+    /* Wall shadow gradient overlay — gives depth illusion */
+    .floor-edge-shadow {
+      position: absolute; inset: 0;
+      z-index: 9999; pointer-events: none;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.82) 0, rgba(0,0,0,0.25) 110px, rgba(0,0,0,0.0) 210px),
+        linear-gradient(90deg,  rgba(0,0,0,0.6)  0, rgba(0,0,0,0.0) 90px),
+        linear-gradient(270deg, rgba(0,0,0,0.6)  0, rgba(0,0,0,0.0) 90px),
+        linear-gradient(0deg,   rgba(0,0,0,0.35) 0, rgba(0,0,0,0.0) 55px);
+    }
 
     /* ── Recall Screen ─────────────────────────────────────────────────────── */
     #screen-recall { padding-top: 0; justify-content: flex-start; }
@@ -557,13 +614,20 @@
     <span class="ring-sub">seconds remaining</span>
   </div>
 
-  <div class="crate-wrap">
-    <div class="crate" id="crate-box">
-      <div class="crate-head">
-        <h2>📦 BRAINCRATE — CONTENTS</h2>
-        <span class="crate-count" id="crate-count">10 items</span>
+  <!-- 3D Crate -->
+  <div class="crate-scene">
+    <div class="crate-tilt" id="crate-box">
+      <div class="crate-back-wall"></div>
+      <div class="crate-body">
+        <div class="crate-head">
+          <h2>📦 BRAINCRATE — CONTENTS</h2>
+          <span class="crate-count" id="crate-count">10 items</span>
+        </div>
+        <div class="crate-floor" id="items-grid">
+          <!-- items scattered by JS -->
+        </div>
       </div>
-      <div class="items-grid" id="items-grid"></div>
+      <div class="crate-front-wall"></div>
     </div>
   </div>
 </div>
