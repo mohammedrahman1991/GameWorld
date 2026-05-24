@@ -310,9 +310,9 @@ function initGame() {
 
   // Anchor camera directly behind player
   const p0=players[0];
-  camX=p0.x; camY=p0.y-CAM_BACK;
+  camX=p0.x; camY=p0.y-dynCamBack;
   // Anchor mouse to screen-center so blob doesn't drift
-  mouseX=W/2; mouseY=HORIZON+Math.round(CAM_H*FL/CAM_BACK);
+  mouseX=W/2; mouseY=HORIZON+Math.round(dynCamH*FL/dynCamBack);
   running=true;
   loop();
 }
