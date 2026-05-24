@@ -95,8 +95,11 @@ window.onload = () => {
   canvas.addEventListener('touchmove',  handleTouch, {passive:false});
 
   // Keyboard
-  window.addEventListener('keydown', e => { if (ARROW[e.code]!==undefined){ ARROW[e.code]=true; e.preventDefault(); } });
-  window.addEventListener('keyup',   e => { if (ARROW[e.code]!==undefined){ ARROW[e.code]=false; } });
+  window.addEventListener('keydown', e => {
+    if (ARROW[e.code]!==undefined){ ARROW[e.code]=true; e.preventDefault(); }
+    if ((e.key==='r'||e.key==='R'||e.code==='Enter') && !running) restartGame();
+  });
+  window.addEventListener('keyup', e => { if (ARROW[e.code]!==undefined){ ARROW[e.code]=false; } });
 
   drawPreview(0);
   drawPreview(1);
@@ -367,16 +370,16 @@ function update() {
     p.y=Math.max(r,Math.min(WORLD-r,p.y));
   }
 
-  // Bot AI (60/frame batch)
+  // Bot AI (28/frame batch — dumb bots update slowly)
   rebuildGrid();
-  const bs=(frame*60)%BOT_COUNT;
-  for(let i=0;i<60;i++){ const b=bots[(bs+i)%BOT_COUNT]; if(!b.dead) aiBot(b); }
+  const bs=(frame*28)%BOT_COUNT;
+  for(let i=0;i<28;i++){ const b=bots[(bs+i)%BOT_COUNT]; if(!b.dead) aiBot(b); }
 
   // Move bots
   for(const b of bots){
     if(b.dead) continue;
     const r  =numToR(b.num);
-    const spd=Math.max(55,170/Math.sqrt(r));
+    const spd=Math.max(42,135/Math.sqrt(r));
     const dx =b.targetX-b.x, dy=b.targetY-b.y;
     const d  =Math.sqrt(dx*dx+dy*dy)||1;
     if(d>6){ b.x+=(dx/d)*spd*DT; b.y+=(dy/d)*spd*DT; }
@@ -425,7 +428,8 @@ function update() {
 
 // ── Bot AI ────────────────────────────────────────────────────────────────────
 function aiBot(b) {
-  const r=numToR(b.num), lookR=Math.min(r*9+350,1600);
+  if(Math.random()<0.28) return; // bots are lazy — skip update 28% of the time
+  const r=numToR(b.num), lookR=Math.min(r*5+180,900); // shorter sight range
   const near=nearby(b.x,b.y,lookR);
   let bf=null,bfD=Infinity,bp=null,bpD=Infinity,th=null,thD=Infinity;
   for(const n of near){
@@ -437,12 +441,13 @@ function aiBot(b) {
     if(rn*EAT_RATIO<=r&&dd<bpD){bp=n;bpD=dd;}
     if(rn>=r*EAT_RATIO&&dd<thD){th=n;thD=dd;}
   }
-  if(th){ b.targetX=b.x+(b.x-th.x)*2.5; b.targetY=b.y+(b.y-th.y)*2.5; }
-  else if(bp){ b.targetX=bp.x; b.targetY=bp.y; }
-  else if(bf){ b.targetX=bf.x; b.targetY=bf.y; }
+  const jitter=()=>rnd(-80,80); // imprecise targeting
+  if(th){ b.targetX=b.x+(b.x-th.x)*1.8; b.targetY=b.y+(b.y-th.y)*1.8; } // flee less aggressively
+  else if(bp&&Math.random()>0.2){ b.targetX=bp.x+jitter(); b.targetY=bp.y+jitter(); } // miss sometimes
+  else if(bf){ b.targetX=bf.x+jitter()*0.5; b.targetY=bf.y+jitter()*0.5; }
   else{
     b.aiCountdown--;
-    if(b.aiCountdown<=0){ b.targetX=rnd(120,WORLD-120); b.targetY=rnd(120,WORLD-120); b.aiCountdown=Math.floor(rnd(60,180)); }
+    if(b.aiCountdown<=0){ b.targetX=rnd(120,WORLD-120); b.targetY=rnd(120,WORLD-120); b.aiCountdown=Math.floor(rnd(40,140)); }
   }
   b.targetX=Math.max(80,Math.min(WORLD-80,b.targetX));
   b.targetY=Math.max(80,Math.min(WORLD-80,b.targetY));
@@ -456,7 +461,7 @@ function gameOver(pidx) {
   document.getElementById('dpad').style.display='none';
   document.getElementById('over-score').textContent=fmt(players[pidx].num);
   document.getElementById('over-kills').textContent=kills[pidx];
-  document.getElementById('over-overlay').style.display='';
+  document.getElementById('over-overlay').style.display='flex';
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
@@ -623,13 +628,14 @@ function drawFood3D(f) {
 
 // ── Wobbly slime path ─────────────────────────────────────────────────────────
 function blobPath(sx, sy, srx, sry, phase) {
-  const N=16;
+  const N=20;
   ctx.beginPath();
   for(let i=0;i<=N;i++){
     const a=(i/N)*Math.PI*2;
-    const w=1+Math.sin(a*3+phase)*0.07
-              +Math.cos(a*2-phase*0.6)*0.045
-              +Math.sin(a*5+phase*1.2)*0.025;
+    const w=1+Math.sin(a*3+phase)*0.12
+              +Math.cos(a*2-phase*0.6)*0.08
+              +Math.sin(a*4+phase*1.4)*0.04
+              +Math.cos(a*6-phase*0.9)*0.025;
     const px=sx+Math.cos(a)*srx*w;
     const py=sy+Math.sin(a)*sry*w;
     if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
@@ -642,12 +648,26 @@ function drawDome(sx, sy, sr, ci, fi, isKing, name, num, showLabel, phase) {
   const col=COLORS[ci];
   if(sr<3) return;
   const p=phase||0;
-  const srx=sr*1.12, sry=sr*0.83; // wider than tall — slime squish
+  const srx=sr*1.52, sry=sr*0.60; // very wide and flat — proper slime puddle shape
 
-  // Ground oval shadow
-  ctx.save(); ctx.scale(1,0.2);
-  ctx.beginPath(); ctx.ellipse(sx,(sy+sry*0.9)/0.2,srx*0.82,srx*0.22,0,0,Math.PI*2);
-  ctx.fillStyle='rgba(0,0,0,0.28)'; ctx.fill(); ctx.restore();
+  // Ground oval shadow (wide flat)
+  ctx.save(); ctx.scale(1,0.18);
+  ctx.beginPath(); ctx.ellipse(sx,(sy+sry*0.95)/0.18,srx*0.9,srx*0.22,0,0,Math.PI*2);
+  ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.fill(); ctx.restore();
+
+  // Slime drip at bottom
+  if(sr>12){
+    const dripX=sx+Math.sin(p*0.4)*srx*0.18;
+    const dripW=srx*0.18, dripH=sry*0.55;
+    const dg=ctx.createLinearGradient(dripX,sy+sry*0.5,dripX,sy+sry+dripH);
+    dg.addColorStop(0,col.fill); dg.addColorStop(1,darken(col.fill,0.28));
+    ctx.beginPath();
+    ctx.moveTo(dripX-dripW,sy+sry*0.6);
+    ctx.lineTo(dripX+dripW,sy+sry*0.6);
+    ctx.quadraticCurveTo(dripX+dripW*0.7,sy+sry+dripH,dripX,sy+sry+dripH);
+    ctx.quadraticCurveTo(dripX-dripW*0.7,sy+sry+dripH,dripX-dripW,sy+sry*0.6);
+    ctx.closePath(); ctx.fillStyle=dg; ctx.fill();
+  }
 
   // Phong diffuse — directional light top-left
   const lx=sx-srx*0.36, ly=sy-sry*0.5;
