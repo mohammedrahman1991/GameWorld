@@ -65,15 +65,39 @@
       margin: 40px 0;
     }
 
+    nav { background: rgba(13,13,26,0.97); border-bottom: 1px solid rgba(255,255,255,0.08); position:sticky; top:0; z-index:100; }
+    .nav-inner { max-width:1200px; margin:0 auto; padding:0 20px; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-weight:900; font-size:1.1rem; background:linear-gradient(135deg,#a78bfa,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; text-decoration:none; }
+    .nav-links { display:flex; gap:20px; flex-wrap:wrap; }
+    .nav-links a { color:#94a3b8; text-decoration:none; font-size:0.88rem; transition:color .2s; }
+    .nav-links a:hover { color:#f1f5f9; }
+
     footer {
       text-align: center;
       margin-top: 60px;
       color: #475569;
       font-size: 0.8rem;
     }
+    footer a { color: #22d3ee; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">Wacky Brains</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="privacy-policy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="cookie-policy.html">Cookies</a>
+    </div>
+  </div>
+</nav>
+
 <div class="wrap">
 
   <a class="back" href="index.html">← Back to Wacky Brains</a>
@@ -135,7 +159,14 @@
 
   <hr />
 
-  <footer>&copy; 2026 Wacky Brains. All rights reserved.</footer>
+  <footer>
+    &copy; 2026 Wacky Brains &nbsp;·&nbsp;
+    <a href="index.html">Home</a> &nbsp;·&nbsp;
+    <a href="about.html">About</a> &nbsp;·&nbsp;
+    <a href="contact.html">Contact</a> &nbsp;·&nbsp;
+    <a href="terms.html">Terms &amp; Conditions</a> &nbsp;·&nbsp;
+    <a href="cookie-policy.html">Cookie Policy</a>
+  </footer>
 
 </div>
 </body>

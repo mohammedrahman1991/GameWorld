@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Learn about Wacky Brains — a free browser gaming platform with 25+ original HTML5 games. No downloads, no sign-ups, just play." />
+  <title>About Us – Wacky Brains</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d0d1a; --card: #13132a; --accent: #7c3aed;
+      --accent2: #06b6d4; --text: #f1f5f9; --muted: #94a3b8;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.75; }
+
+    /* Nav */
+    nav { background: rgba(13,13,26,0.97); border-bottom: 1px solid rgba(255,255,255,0.08); position: sticky; top:0; z-index:100; }
+    .nav-inner { max-width:1200px; margin:0 auto; padding:0 20px; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-weight:900; font-size:1.1rem; background:linear-gradient(135deg,#a78bfa,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; text-decoration:none; }
+    .nav-links { display:flex; gap:20px; flex-wrap:wrap; }
+    .nav-links a { color:var(--muted); text-decoration:none; font-size:0.88rem; transition:color .2s; }
+    .nav-links a:hover { color:var(--text); }
+
+    .wrap { max-width: 820px; margin: 0 auto; padding: 60px 20px 100px; }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 900;
+      background: linear-gradient(135deg, #a78bfa, #22d3ee, #fbbf24);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      margin-bottom: 10px;
+    }
+    .tagline { color: var(--muted); font-size: 1.05rem; margin-bottom: 48px; }
+
+    h2 { font-size: 1.25rem; font-weight: 700; color: #a78bfa; margin: 44px 0 12px; }
+    p { color: #cbd5e1; font-size: 0.97rem; margin-bottom: 16px; }
+    ul { padding-left: 22px; margin-bottom: 16px; }
+    li { color: #cbd5e1; font-size: 0.97rem; margin-bottom: 8px; }
+
+    .highlight-box {
+      background: var(--card);
+      border: 1px solid rgba(124,58,237,0.3);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .highlight-box p { margin: 0; font-size: 1.05rem; color: #e2e8f0; font-style: italic; }
+
+    .stats-row { display: flex; gap: 24px; flex-wrap: wrap; margin: 36px 0; }
+    .stat { background: var(--card); border-radius: 12px; padding: 20px 28px; flex: 1; min-width: 140px; text-align: center; border: 1px solid rgba(255,255,255,0.07); }
+    .stat-num { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg,#a78bfa,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .stat-label { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
+
+    .category-list { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0 28px; }
+    .cat-tag { background: rgba(124,58,237,0.2); border: 1px solid rgba(124,58,237,0.4); color: #a78bfa; padding: 6px 14px; border-radius: 99px; font-size: 0.82rem; font-weight: 600; }
+
+    hr { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 44px 0; }
+
+    footer { text-align: center; padding: 24px; color: var(--muted); font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.05); }
+    footer a { color: var(--accent2); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">Wacky Brains</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="privacy-policy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="cookie-policy.html">Cookies</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <h1>About Wacky Brains</h1>
+  <p class="tagline">A free browser gaming platform built for everyone — no downloads, no sign-ups, just play.</p>
+
+  <div class="highlight-box">
+    <p>"We believe great games should be free, instant, and fun for all ages. Wacky Brains is our answer to that — a growing collection of original, handcrafted browser games you can jump into in seconds."</p>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-num">25+</div><div class="stat-label">Original Games</div></div>
+    <div class="stat"><div class="stat-num">4</div><div class="stat-label">Game Categories</div></div>
+    <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Free to Play</div></div>
+    <div class="stat"><div class="stat-num">0</div><div class="stat-label">Sign-ups Needed</div></div>
+  </div>
+
+  <h2>What Is Wacky Brains?</h2>
+  <p>Wacky Brains is a free online gaming platform featuring a curated collection of original HTML5 browser games. Every game on this site was designed and built from scratch — you won't find cookie-cutter clones or generic asset-store templates here. From 3D racing and delivery simulations to 2-player archery battles and competitive blob-eating arenas, our library spans a wide range of genres and playstyles.</p>
+  <p>Our platform is built around one core idea: great games should be immediately accessible. No app store. No downloads. No credit card. Just open your browser, click a game, and start playing. We support desktop and mobile, so whether you're on a laptop at home or a phone during a break, Wacky Brains is always just a tap away.</p>
+  <p>We update our game library regularly, adding new titles and improving existing ones based on player feedback. Our team is passionate about game design and genuinely plays every game we ship — if something isn't fun, we fix it.</p>
+
+  <h2>Our Game Categories</h2>
+  <p>We organize our games into four main categories to help you find what you're in the mood for:</p>
+
+  <div class="category-list">
+    <span class="cat-tag">🎯 Action &amp; Combat</span>
+    <span class="cat-tag">🏎️ Sports &amp; Racing</span>
+    <span class="cat-tag">🌍 Adventure &amp; Simulation</span>
+    <span class="cat-tag">🧩 Puzzle &amp; Strategy</span>
+  </div>
+
+  <ul>
+    <li><strong>Action &amp; Combat</strong> — Fast-paced games where reflexes and timing matter. Includes archery duels, sniper battles, top-down shooters, blob-eating arenas, and wave-survival castle battles.</li>
+    <li><strong>Sports &amp; Racing</strong> — Competitive games inspired by real sports. Motorcycle racing, 1v1 football (soccer), parkour runs, basketball, bike riding, drone flying, and more.</li>
+    <li><strong>Adventure &amp; Simulation</strong> — Explore, build, and manage. Deliver packages through a 3D city, grow crops on a farm, navigate obstacle courses, play hide and seek in a 3D house, or pilot a drone.</li>
+    <li><strong>Puzzle &amp; Strategy</strong> — Games that make you think. Classic card games, word games, shooting puzzle games, reselling economics simulators, and marble challenges.</li>
+  </ul>
+
+  <h2>Why We Built This</h2>
+  <p>The idea behind Wacky Brains was simple: we wanted a place where people could play genuinely interesting games for free, without being bombarded by paywalls, dark patterns, or energy-bar mechanics designed to squeeze money out of players.</p>
+  <p>We started with a handful of experiments — a Batman-themed racing game, a drone simulator, a blob-eating arena — and kept building from there. Each game taught us something new about game design, browser performance, and what players actually enjoy. That learning loop is ongoing, and it's what makes Wacky Brains feel different from generic game portals.</p>
+  <p>We also pay close attention to 2-player experiences. Many of our games support two players on the same keyboard or screen — because gaming is better with a friend sitting next to you.</p>
+
+  <h2>Our Commitment to Players</h2>
+  <ul>
+    <li><strong>Always free</strong> — Every game on Wacky Brains is and always will be free to play.</li>
+    <li><strong>No accounts required</strong> — We don't require sign-ups or personal information to play.</li>
+    <li><strong>Kid-friendly options</strong> — Many of our games are appropriate for younger players. We do not collect data from children.</li>
+    <li><strong>Regular updates</strong> — We actively maintain and improve our games based on feedback.</li>
+    <li><strong>Honest advertising</strong> — We use minimal, clearly-labeled ads to keep the lights on. No deceptive or intrusive ad formats.</li>
+  </ul>
+
+  <h2>Technology</h2>
+  <p>Every game on Wacky Brains is built with web-native technologies: HTML5 Canvas, vanilla JavaScript, and CSS. We deliberately avoid heavy frameworks and third-party game engines — this keeps our games lightweight, fast to load, and compatible with a wide range of devices and browsers.</p>
+  <p>Our backend hosting is handled by Vercel, giving us fast global edge delivery so games load quickly wherever you are in the world.</p>
+
+  <h2>Contact &amp; Feedback</h2>
+  <p>We love hearing from players — whether it's a bug report, a game idea, or just a message saying you enjoyed something. Reach out through our <a href="contact.html" style="color:#22d3ee;">Contact page</a> and we'll get back to you.</p>
+
+  <hr />
+
+  <footer>
+    &copy; 2026 Wacky Brains &nbsp;·&nbsp;
+    <a href="index.html">Home</a> &nbsp;·&nbsp;
+    <a href="contact.html">Contact</a> &nbsp;·&nbsp;
+    <a href="privacy-policy.html">Privacy Policy</a> &nbsp;·&nbsp;
+    <a href="terms.html">Terms &amp; Conditions</a> &nbsp;·&nbsp;
+    <a href="cookie-policy.html">Cookie Policy</a>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wacky Brains – Play Games</title>
+  <title>Wacky Brains – Free Online Games | Play Instantly, No Download</title>
+  <meta name="description" content="Play 25+ free browser games instantly at Wacky Brains — action, sports, racing, puzzle, and adventure games. No downloads, no sign-ups required. 1 and 2 player games for all ages." />
+  <meta name="keywords" content="free online games, browser games, play online, 2 player games, action games, racing games, puzzle games, no download games" />
   <!-- Amazon affiliate ads — no AdSense -->
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -171,6 +173,29 @@
       margin: 40px 0 16px;
     }
 
+    /* Nav */
+    nav { background: rgba(13,13,26,0.97); border-bottom: 1px solid rgba(255,255,255,0.08); position: sticky; top: 0; z-index: 100; }
+    .nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; height: 56px; }
+    .nav-logo { font-weight: 900; font-size: 1.1rem; background: linear-gradient(135deg,#a78bfa,#22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+    .nav-links { display: flex; gap: 20px; flex-wrap: wrap; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.88rem; transition: color .2s; }
+    .nav-links a:hover { color: var(--text); }
+
+    /* About section */
+    .about-section {
+      background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(6,182,212,0.06));
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 20px;
+      padding: 36px 40px;
+      margin-bottom: 48px;
+    }
+    .about-section h2 { font-size: 1.35rem; font-weight: 800; color: var(--text); margin-bottom: 14px; }
+    .about-section p { color: #cbd5e1; font-size: 0.95rem; line-height: 1.75; margin-bottom: 12px; }
+    .about-section p:last-child { margin-bottom: 0; }
+    .cat-pills { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+    .cat-pill { background: rgba(124,58,237,0.18); border: 1px solid rgba(124,58,237,0.35); color: #c4b5fd;
+      padding: 5px 14px; border-radius: 99px; font-size: 0.8rem; font-weight: 600; }
+
     /* Footer */
     footer {
       text-align: center;
@@ -179,6 +204,8 @@
       font-size: 0.8rem;
       border-top: 1px solid rgba(255,255,255,0.05);
     }
+    footer a { color: var(--accent2); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
 
     /* ── Ad Interstitial ─────────────────────────────────────────────── */
     #ad-overlay {
@@ -272,6 +299,19 @@
 </head>
 <body>
 
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">Wacky Brains</a>
+    <div class="nav-links">
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="privacy-policy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="cookie-policy.html">Cookies</a>
+    </div>
+  </div>
+</nav>
+
 <header>
   <h1>Wacky Brains</h1>
   <p>A collection of games — pick one and start playing</p>
@@ -279,7 +319,21 @@
 
 <main>
 
-  <p class="section-label">Play Now</p>
+  <!-- About section -->
+  <div class="about-section">
+    <h2>🎮 What is Wacky Brains?</h2>
+    <p>Wacky Brains is a free online gaming platform with 25+ original browser games you can play instantly — no downloads, no sign-ups, no paywalls. Every game here was designed and built from scratch, spanning action battles, sports competitions, adventure simulations, and brain-teasing puzzles.</p>
+    <p>Whether you're looking for a quick solo challenge or a head-to-head match with a friend on the same keyboard, Wacky Brains has something for you. We support 1-player and 2-player modes across many of our titles, and our games are built to run smoothly on both desktop and mobile browsers using modern HTML5 Canvas technology.</p>
+    <p>New games are added regularly. Every title is maintained and updated based on player feedback. Our mission is simple: great games should be free and instantly accessible to everyone.</p>
+    <div class="cat-pills">
+      <span class="cat-pill">🎯 Action &amp; Combat</span>
+      <span class="cat-pill">🏎️ Sports &amp; Racing</span>
+      <span class="cat-pill">🌍 Adventure &amp; Simulation</span>
+      <span class="cat-pill">🧩 Puzzle &amp; Strategy</span>
+    </div>
+  </div>
+
+  <p class="section-label">⭐ Featured Games</p>
   <div class="grid">
 
     <div class="card">
@@ -344,25 +398,37 @@
 
   </div>
 
+  <!-- ACTION & COMBAT -->
+  <p class="section-label">🎯 Action &amp; Combat</p>
   <div class="grid">
 
     <div class="card">
-      <div class="card-thumb g7">🏀</div>
+      <div class="card-thumb g7">🏹</div>
       <div class="card-body">
-        <h2>One V One BBALL</h2>
-        <p>Basketball hoop challenge.</p>
+        <h2>Fight Arrows</h2>
+        <p>Archery duel — hold to charge your bow, release to fire. Hit a flying bird and your arrow redirects straight at the enemy. Snowy, desert &amp; jungle maps. First to 5 kills wins!</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="Noah's%20Game/public/index.html">Play</a>
+        <a class="play-btn play-btn-active" href="fight-arrows/index.html">Play</a>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-thumb g6">💰</div>
+      <div class="card-thumb g1">🏰</div>
       <div class="card-body">
-        <h2>Re-Sell Game</h2>
-        <p>Build your reselling business empire.</p>
+        <h2>Castle Man Battles</h2>
+        <p>Pixel PvP — destroy the enemy castle or survive zombie waves! Choose from swords, SMGs, shotguns &amp; rocket launchers. 1–2 players.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="Re%20sell%20game/dist/index.html">Play</a>
+        <a class="play-btn play-btn-active" href="castle-man-battles/index.html">Play</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-thumb g12">🎯</div>
+      <div class="card-body">
+        <h2>One v One Sniper</h2>
+        <p>1v1 sniper duel — scope in, time your shot, and outshoot your opponent before they get you. Twitchy aiming and one-shot kills.</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="one%20v%20one%20sniper/index.html">Play</a>
       </div>
     </div>
 
@@ -370,29 +436,19 @@
       <div class="card-thumb g7">🔫</div>
       <div class="card-body">
         <h2>Shootpoint</h2>
-        <p>Top-down battle royale shooter.</p>
+        <p>Top-down battle royale shooter — take out enemies, grab power-ups, and be the last one standing. Fast-paced and intense.</p>
         <span class="badge badge-live">Live</span>
         <a class="play-btn play-btn-active" href="Shootpoint/public/index.html">Play</a>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-thumb g8">📝</div>
+      <div class="card-thumb g2">🚀</div>
       <div class="card-body">
-        <h2>Spelling Game</h2>
-        <p>Learn spelling the fun way.</p>
+        <h2>Space Invasion</h2>
+        <p>Classic alien-blasting action — defend Earth from waves of extraterrestrial invaders. Move, shoot, and survive as long as you can.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="Spelling%20game/public/index.html">Play</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-thumb g9">🕺</div>
-      <div class="card-body">
-        <h2>Swing Man</h2>
-        <p>Swing through the city like a hero.</p>
-        <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="Swing%20Man/public/index.html">Play</a>
+        <a class="play-btn play-btn-active" href="space%20invasion/index.html">Play</a>
       </div>
     </div>
 
@@ -400,9 +456,217 @@
       <div class="card-thumb g10">🐔</div>
       <div class="card-body">
         <h2>CaPaw!</h2>
-        <p>Chicken fighting chaos.</p>
+        <p>Chaotic chicken fighting — choose your bird, battle opponents, and peck your way to victory in this wild animal brawler.</p>
         <span class="badge badge-live">Live</span>
         <a class="play-btn play-btn-active" href="CaPaw/index.html">Play</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-thumb g11">🐢</div>
+      <div class="card-body">
+        <h2>Turtles Team Up</h2>
+        <p>Cooperative turtle adventure — team up with a friend and fight your way through enemies together. Turtle power!</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="Turtles%20Team%20Up/index.html">Play</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-thumb g5">🫧</div>
+      <div class="card-body">
+        <h2>Blob Eating</h2>
+        <p>Agar.io-style blob battle! Eat food pellets &amp; devour other blobs to grow. 1,000 bots, 8 face skins, 12 colors. Biggest blob wears the 👑 crown!</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="blob-game/index.html">Play</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SPORTS & RACING -->
+  <p class="section-label">🏎️ Sports &amp; Racing</p>
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-thumb g2">🏍️</div>
+      <div class="card-body">
+        <h2>Moto Island</h2>
+        <p>Race 3 laps around a tropical island! Compete against 5 AI opponents or go head-to-head in 2-player splitscreen mode.</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="moto-island/index.html">Play</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-thumb g3">🏍️</div>
+      <div class="card-body">
+        <h2>Bike Rider</h2>
+        <p>Side-scrolling motorbike challenge! 5 maps from Easy to Extreme — jump gaps, dodge laser gates, race to the checkpoint. 1 or 2 players.</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="bike-rider/index.html">Play</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-thumb g4">⚽</div>
+      <div class="card-body">
+        <h2>1 v 1 Futbol</h2>
+        <p>Charge your kick, steal the ball, and score 5 goals to win this intense 2-player soccer showdown. Two legends, one pitch.</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="1v1-futbol/public/index.html">Play</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-thumb g7">🏀</div>
+      <div class="card-body">
+        <h2>One V One BBALL</h2>
+        <p>Basketball hoop challenge — time your jump shot perfectly to outscore your opponent. Simple controls, satisfying swishes.</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="Noah's%20Game/public/index.html">Play</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-thumb g4">🏃</div>
+      <div class="card-body">
+        <h2>Parkour 2.0</h2>
+        <p>Run, jump &amp; slide through 10 wild worlds — Snow Storm, Dark Cave, Dino Forest, Future Tech &amp; more! Slide → Jump = Super Jump ⚡</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="parkour-game/index.html">Play</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-thumb g9">🕺</div>
+      <div class="card-body">
+        <h2>Swing Man</h2>
+        <p>Swing through the city on a grappling hook — time your launches perfectly to build momentum and soar between buildings.</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="Swing%20Man/public/index.html">Play</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-thumb g4">🚛</div>
+      <div class="card-body">
+        <h2>Monster Truck</h2>
+        <p>Smash, crush, and plow through obstacles with a massive monster truck. Huge tires, huge air, huge fun.</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="Monster%20truck/index.html">Play</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-thumb g1">🦇</div>
+      <div class="card-body">
+        <h2>BuckMan</h2>
+        <p>A Batman-themed racing adventure — speed through the night city, dodge obstacles, and race to the finish.</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="BuckMan/index.html">Play</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-thumb g2">🚁</div>
+      <div class="card-body">
+        <h2>Drone Game Zayn</h2>
+        <p>Pilot a DJI-style drone through a 3D world. Master throttle, tilt, and yaw controls to navigate like a real drone pilot.</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="Drone%20Game%20Zayn/index.html">Play</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ADVENTURE & SIMULATION -->
+  <p class="section-label">🌍 Adventure &amp; Simulation</p>
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-thumb g14">📦</div>
+      <div class="card-body">
+        <h2>Packaging Game</h2>
+        <p>Accept orders on your phone, pack the box, drive your van through a 3D city with real traffic, then walk to deliver the package to the door.</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="packaging-game/index.html">Play</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-thumb g13">🌾</div>
+      <div class="card-body">
+        <h2>Farming Land</h2>
+        <p>3D farming world — plant seeds, tend your crops, and earn coins. Buy Carrot, Potato, Sunflower, Legendary &amp; OG seeds from the shop.</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="farming-land/index.html">Play</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-thumb g13">🙈</div>
+      <div class="card-body">
+        <h2>Hide &amp; Seek</h2>
+        <p>3D 3-floor house — find hiding spots and avoid the seeker. 1P vs 20 bots or 2P split-screen with 10 bots. Stealth and strategy.</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="Hide%20and%20Seek%20Game/index.html">Play</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-thumb g14">🏃</div>
+      <div class="card-body">
+        <h2>Obstacle Game</h2>
+        <p>3D obstacle course adventure! Dodge laser grids, survive lava, cross sky bridges &amp; reach the Grand Finish Island with a ball pit &amp; treasure chest.</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="obstacle-game/index.html">Play</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-thumb g3">🏠</div>
+      <div class="card-body">
+        <h2>Goofy House</h2>
+        <p>Explore a quirky interactive 3D house built with React Three Fiber. Open drawers, discover secrets, and enjoy the weirdness.</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="GoofyHouse/dist/index.html">Play</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-thumb g6">💰</div>
+      <div class="card-body">
+        <h2>Re-Sell Game</h2>
+        <p>Build your reselling empire — buy low, sell high, manage inventory, and grow from a garage seller to a business mogul.</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="Re%20sell%20game/dist/index.html">Play</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PUZZLE & STRATEGY -->
+  <p class="section-label">🧩 Puzzle &amp; Strategy</p>
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-thumb g9">🎨</div>
+      <div class="card-body">
+        <h2>Paint Ball</h2>
+        <p>Bubble-shooter puzzle — aim your cannon and pop groups of 3+ matching colors. 12 vibrant colors, ~100 balls, 50 challenging levels.</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="color-ball-launcher/index.html">Play</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-thumb g4">🃏</div>
+      <div class="card-body">
+        <h2>Blackjack</h2>
+        <p>2-player blackjack — hit, stand, and try to reach 21 without going bust. Compete against a friend or test your card instincts.</p>
+        <span class="badge badge-live">Live</span>
+        <a class="play-btn play-btn-active" href="BLACK%20JACK%20GAME/index.html">Play</a>
       </div>
     </div>
 
@@ -410,7 +674,7 @@
       <div class="card-thumb g5">❌</div>
       <div class="card-body">
         <h2>Tic Tac Toe</h2>
-        <p>Classic 2-player X vs O with score tracking.</p>
+        <p>Classic 2-player X vs O with score tracking — simple to learn, tricky to master. Best-of battles to see who's the real strategist.</p>
         <span class="badge badge-live">Live</span>
         <a class="play-btn play-btn-active" href="Tiktaktoe/index.html">Play</a>
       </div>
@@ -420,29 +684,19 @@
       <div class="card-thumb g3">🔵</div>
       <div class="card-body">
         <h2>Marble Ringer</h2>
-        <p>2-player marble shooting battle — knock them out of the ring.</p>
+        <p>2-player marble shooting battle — flick your marbles, knock opponents out of the ring, and be the last marble standing.</p>
         <span class="badge badge-live">Live</span>
         <a class="play-btn play-btn-active" href="MARBLES%20GAME/index.html">Play</a>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-thumb g4">🃏</div>
+      <div class="card-thumb g8">📝</div>
       <div class="card-body">
-        <h2>Blackjack</h2>
-        <p>2-player blackjack — beat the dealer to 21.</p>
+        <h2>Spelling Game</h2>
+        <p>Learn spelling the fun way — listen to words, type them correctly, and level up through increasingly tricky vocabulary challenges.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="BLACK%20JACK%20GAME/index.html">Play</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-thumb g2">🚀</div>
-      <div class="card-body">
-        <h2>Space Invasion</h2>
-        <p>Defend Earth — blast waves of alien invaders.</p>
-        <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="space%20invasion/index.html">Play</a>
+        <a class="play-btn play-btn-active" href="Spelling%20game/public/index.html">Play</a>
       </div>
     </div>
 
@@ -450,140 +704,9 @@
       <div class="card-thumb g7">🏹</div>
       <div class="card-body">
         <h2>Touch Arrow Fire</h2>
-        <p>Tap arrows to aim and fire your way to victory.</p>
+        <p>Tap directional arrows to aim and release to fire — quick reflexes and precise timing needed to take out all targets.</p>
         <span class="badge badge-live">Live</span>
         <a class="play-btn play-btn-active" href="Touch%20arrow%20fire%20game/index.html">Play</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-thumb g13">🙈</div>
-      <div class="card-body">
-        <h2>Hide &amp; Seek</h2>
-        <p>3D 3-floor house — hide from the seeker! 1P vs 20 bots or 2P split-screen + 10 bots.</p>
-        <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="Hide%20and%20Seek%20Game/index.html">Play</a>
-      </div>
-    </div>
-
-    <!-- Castle Man Battles -->
-    <div class="card">
-      <div class="card-thumb g1">🏰</div>
-      <div class="card-body">
-        <h2>Castle Man Battles</h2>
-        <p>Pixel PvP — destroy the enemy castle or survive zombie waves! Swords, SMGs, shotguns &amp; launchers. 1–2 players.</p>
-        <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="castle-man-battles/index.html">Play</a>
-      </div>
-    </div>
-
-    <!-- Paint Ball -->
-    <div class="card">
-      <div class="card-thumb g9">🎨</div>
-      <div class="card-body">
-        <h2>Paint Ball</h2>
-        <p>Shoot colorful balls and match them to pop! 12 vibrant colors, ~100 balls, 50 levels of bubble-blasting fun.</p>
-        <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="color-ball-launcher/index.html">Play</a>
-      </div>
-    </div>
-
-    <!-- Parkour 2.0 -->
-    <div class="card">
-      <div class="card-thumb g4">🏃</div>
-      <div class="card-body">
-        <h2>Parkour 2.0</h2>
-        <p>Run, jump &amp; slide through 10 wild worlds — Snow Storm, Dark Cave, Dino Forest, Future Tech, Apocalypse &amp; more! Dodge spikes, ride trucks, hit launch pads. Slide → Jump = Super Jump ⚡</p>
-        <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="parkour-game/index.html">Play</a>
-      </div>
-    </div>
-
-    <!-- Blob Eating -->
-    <div class="card">
-      <div class="card-thumb g5">🫧</div>
-      <div class="card-body">
-        <h2>Blob Eating</h2>
-        <p>Agar.io-style blob battle! Eat food &amp; devour other blobs to grow. 1,000 bots, 8 face skins, 12 colors, king crown for the biggest blob. 1 or 2 players!</p>
-        <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="blob-game/index.html">Play</a>
-      </div>
-    </div>
-
-    <!-- Bike Rider -->
-    <div class="card">
-      <div class="card-thumb g3">🏍️</div>
-      <div class="card-body">
-        <h2>Bike Rider</h2>
-        <p>Side-scrolling motorbike game! 5 maps from Easy to Extreme — jump gaps, dodge laser gates, hit checkpoints. 1 or 2 players!</p>
-        <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="bike-rider/index.html">Play</a>
-      </div>
-    </div>
-
-    <!-- Moto Island -->
-    <div class="card">
-      <div class="card-thumb g2">🏍️</div>
-      <div class="card-body">
-        <h2>Moto Island</h2>
-        <p>Race 3 laps around a tropical island! 1-player vs 5 bots or 2-player splitscreen. First to finish wins!</p>
-        <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="moto-island/index.html">Play</a>
-      </div>
-    </div>
-
-    <!-- 1 v 1 Futbol -->
-    <div class="card">
-      <div class="card-thumb g4">⚽</div>
-      <div class="card-body">
-        <h2>1 v 1 Futbol</h2>
-        <p>Messai vs Ronalda — charge your shot, steal the ball, score 5 goals to win. 2-player soccer showdown!</p>
-        <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="1v1-futbol/public/index.html">Play</a>
-      </div>
-    </div>
-
-    <!-- Obstacle Game -->
-    <div class="card">
-      <div class="card-thumb g14">🏃</div>
-      <div class="card-body">
-        <h2>Obstacle Game</h2>
-        <p>3D obstacle course! Dodge lasers, survive lava, cross sky bridges &amp; sprint to the Grand Finish Island with a ball pit, soccer field &amp; treasure chest!</p>
-        <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="obstacle-game/index.html">Play</a>
-      </div>
-    </div>
-
-    <!-- Packaging Game -->
-    <div class="card">
-      <div class="card-thumb g14">📦</div>
-      <div class="card-body">
-        <h2>Packaging Game</h2>
-        <p>Accept orders on your phone, pack the box, drive your van through a 3D city with traffic and buildings, then walk your character to deliver the package!</p>
-        <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="packaging-game/index.html">Play</a>
-      </div>
-    </div>
-
-    <!-- Farming Land -->
-    <div class="card">
-      <div class="card-thumb g13">🌾</div>
-      <div class="card-body">
-        <h2>Farming Land</h2>
-        <p>3D farming world! Plant seeds, grow crops, earn coins. Buy Carrot, Potato, Sunflower, Legendary &amp; OG seeds from the shop!</p>
-        <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="farming-land/index.html">Play</a>
-      </div>
-    </div>
-
-    <!-- Fight Arrows -->
-    <div class="card">
-      <div class="card-thumb g7">🏹</div>
-      <div class="card-body">
-        <h2>Fight Arrows</h2>
-        <p>Archery battle! Fire arrows at your opponent — hit a bird to redirect your shot straight at the enemy. Snowy, desert &amp; jungle maps. First to 5 kills wins!</p>
-        <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="fight-arrows/index.html">Play</a>
       </div>
     </div>
 
@@ -592,8 +715,14 @@
 </main>
 
 <footer>
-  &copy; 2026 Wacky Brains · All games built with ❤️ &nbsp;·&nbsp;
-  <a href="privacy-policy.html" style="color:#7c3aed;text-decoration:none;">Privacy Policy</a>
+  <div style="margin-bottom:10px;">
+    <a href="about.html">About</a> &nbsp;·&nbsp;
+    <a href="contact.html">Contact</a> &nbsp;·&nbsp;
+    <a href="privacy-policy.html">Privacy Policy</a> &nbsp;·&nbsp;
+    <a href="terms.html">Terms &amp; Conditions</a> &nbsp;·&nbsp;
+    <a href="cookie-policy.html">Cookie Policy</a>
+  </div>
+  &copy; 2026 Wacky Brains &nbsp;·&nbsp; All games built with ❤️ &nbsp;·&nbsp; Free to play, always.
 </footer>
 
 <!-- ── Affiliate Ad Overlay (powered by ads-config.js) ── -->

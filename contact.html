@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Contact Wacky Brains — send us game feedback, bug reports, or partnership inquiries." />
+  <title>Contact – Wacky Brains</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg:#0d0d1a; --card:#13132a; --accent:#7c3aed; --accent2:#06b6d4; --text:#f1f5f9; --muted:#94a3b8; }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.75; }
+
+    nav { background: rgba(13,13,26,0.97); border-bottom: 1px solid rgba(255,255,255,0.08); position:sticky; top:0; z-index:100; }
+    .nav-inner { max-width:1200px; margin:0 auto; padding:0 20px; display:flex; align-items:center; justify-content:space-between; height:56px; }
+    .nav-logo { font-weight:900; font-size:1.1rem; background:linear-gradient(135deg,#a78bfa,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; text-decoration:none; }
+    .nav-links { display:flex; gap:20px; flex-wrap:wrap; }
+    .nav-links a { color:var(--muted); text-decoration:none; font-size:0.88rem; transition:color .2s; }
+    .nav-links a:hover { color:var(--text); }
+
+    .wrap { max-width: 700px; margin: 0 auto; padding: 60px 20px 100px; }
+
+    h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; background: linear-gradient(135deg,#a78bfa,#22d3ee,#fbbf24); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom: 10px; }
+    .tagline { color: var(--muted); font-size: 1rem; margin-bottom: 48px; }
+    h2 { font-size: 1.15rem; font-weight: 700; color: #a78bfa; margin: 40px 0 12px; }
+    p { color: #cbd5e1; font-size: 0.95rem; margin-bottom: 14px; }
+
+    /* Contact cards */
+    .contact-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin: 28px 0 44px; }
+    .contact-card { background: var(--card); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 22px 20px; text-align: center; transition: border-color .2s, transform .2s; }
+    .contact-card:hover { border-color: rgba(124,58,237,0.5); transform: translateY(-3px); }
+    .contact-card .icon { font-size: 2rem; margin-bottom: 10px; }
+    .contact-card h3 { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .contact-card p { font-size: 0.82rem; color: var(--muted); margin: 0; }
+    .contact-card a { color: #22d3ee; text-decoration: none; font-size: 0.85rem; font-weight: 600; }
+    .contact-card a:hover { text-decoration: underline; }
+
+    /* Form */
+    .form-box { background: var(--card); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 36px 32px; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-size: 0.88rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+    input, textarea, select {
+      width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px; padding: 12px 14px; color: var(--text); font-family: inherit;
+      font-size: 0.95rem; transition: border-color .2s, box-shadow .2s; resize: vertical;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,58,237,0.2);
+    }
+    textarea { min-height: 130px; }
+    select option { background: #1a1a2e; }
+    .submit-btn {
+      display: block; width: 100%; padding: 14px; border: none; border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity .15s;
+      font-family: inherit;
+    }
+    .submit-btn:hover { opacity: 0.88; }
+
+    .note { background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.25); border-radius: 10px; padding: 14px 18px; margin-top: 20px; font-size: 0.85rem; color: #c4b5fd; }
+
+    hr { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 44px 0; }
+    footer { text-align:center; padding:24px; color:var(--muted); font-size:0.8rem; border-top:1px solid rgba(255,255,255,0.05); }
+    footer a { color:var(--accent2); text-decoration:none; }
+    footer a:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">Wacky Brains</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="privacy-policy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="cookie-policy.html">Cookies</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <h1>Contact Us</h1>
+  <p class="tagline">We read every message — whether it's a bug report, game idea, or just a hello.</p>
+
+  <div class="contact-cards">
+    <div class="contact-card">
+      <div class="icon">✉️</div>
+      <h3>Email</h3>
+      <p>For general inquiries:</p>
+      <a href="mailto:wackybrainscorporate@gmail.com">wackybrainscorporate@gmail.com</a>
+    </div>
+    <div class="contact-card">
+      <div class="icon">🐛</div>
+      <h3>Bug Reports</h3>
+      <p>Found a bug in a game?</p>
+      <a href="mailto:wackybrainscorporate@gmail.com?subject=Bug Report">Report a Bug</a>
+    </div>
+    <div class="contact-card">
+      <div class="icon">💡</div>
+      <h3>Game Ideas</h3>
+      <p>Got a game concept you'd love to see?</p>
+      <a href="mailto:wackybrainscorporate@gmail.com?subject=Game Idea">Share an Idea</a>
+    </div>
+    <div class="contact-card">
+      <div class="icon">🤝</div>
+      <h3>Partnerships</h3>
+      <p>Sponsorships &amp; collaborations:</p>
+      <a href="mailto:wackybrainscorporate@gmail.com?subject=Partnership">Get in Touch</a>
+    </div>
+  </div>
+
+  <h2>Send Us a Message</h2>
+  <p>Fill out the form below and we'll get back to you as soon as possible — usually within 1–3 business days.</p>
+
+  <div class="form-box">
+    <form action="mailto:wackybrainscorporate@gmail.com" method="POST" enctype="text/plain">
+      <div class="form-group">
+        <label for="name">Your Name</label>
+        <input type="text" id="name" name="name" placeholder="e.g. Alex Smith" required />
+      </div>
+      <div class="form-group">
+        <label for="email">Your Email</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required />
+      </div>
+      <div class="form-group">
+        <label for="subject">Topic</label>
+        <select id="subject" name="subject">
+          <option value="General Question">General Question</option>
+          <option value="Bug Report">Bug Report</option>
+          <option value="Game Idea / Request">Game Idea / Request</option>
+          <option value="Partnership / Sponsorship">Partnership / Sponsorship</option>
+          <option value="Content Removal Request">Content Removal Request</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="message">Message</label>
+        <textarea id="message" name="message" placeholder="Tell us what's on your mind..." required></textarea>
+      </div>
+      <button class="submit-btn" type="submit">Send Message →</button>
+    </form>
+    <div class="note">
+      📬 We typically respond within 1–3 business days. For urgent bug reports affecting gameplay, we aim to reply faster.
+    </div>
+  </div>
+
+  <h2>Frequently Asked Questions</h2>
+
+  <p><strong>Are the games really free?</strong><br />
+  Yes — every single game on Wacky Brains is 100% free to play, forever. No hidden subscriptions, no pay-to-win mechanics, no premium unlocks.</p>
+
+  <p><strong>Do I need to create an account?</strong><br />
+  No account is ever required. Just visit the site and click play. We don't store any personal information about your game sessions.</p>
+
+  <p><strong>Can I suggest a new game?</strong><br />
+  Absolutely! We love hearing game ideas from our community. Use the form above or email us directly with "Game Idea" in the subject line.</p>
+
+  <p><strong>I found a bug — how do I report it?</strong><br />
+  Use the contact form above and select "Bug Report" as the topic. Please include the game name, what happened, and what browser/device you were using. Screenshots help a lot!</p>
+
+  <p><strong>Can I embed your games on my site?</strong><br />
+  Please contact us first before embedding. We review embedding requests case by case to ensure a good experience for all players.</p>
+
+  <hr />
+
+  <footer>
+    &copy; 2026 Wacky Brains &nbsp;·&nbsp;
+    <a href="index.html">Home</a> &nbsp;·&nbsp;
+    <a href="about.html">About</a> &nbsp;·&nbsp;
+    <a href="privacy-policy.html">Privacy Policy</a> &nbsp;·&nbsp;
+    <a href="terms.html">Terms &amp; Conditions</a> &nbsp;·&nbsp;
+    <a href="cookie-policy.html">Cookie Policy</a>
+  </footer>
+
+</div>
+</body>
+</html>
