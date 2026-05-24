@@ -11,8 +11,8 @@ const CELL     = 350;
 
 // 3D camera
 const FL       = 480;   // focal length (controls field of view)
-const CAM_H    = 200;   // camera height above floor
-const CAM_BACK = 520;   // camera distance behind player
+let dynCamH    = 200;   // camera height (grows with player size)
+let dynCamBack = 520;   // camera distance behind player (grows with player size)
 const MAX_VIEW = 3400;  // max render distance
 const TILE_SZ  = 130;   // world units per floor tile
 
@@ -126,7 +126,7 @@ function project(wx, wy, wh) {
   const h  = wh || 0;
   return {
     sx:    W/2 + dx * s,
-    sy:    HORIZON + (CAM_H - h) * s,
+    sy:    HORIZON + (dynCamH - h) * s,
     scale: s,
     depth: dy,
   };
@@ -136,7 +136,7 @@ function project(wx, wy, wh) {
 function unproject(mx, my) {
   const screenDY = my - HORIZON;
   if (screenDY <= 2) return null;
-  const dy = CAM_H * FL / screenDY;
+  const dy = dynCamH * FL / screenDY;
   const dx = (mx - W/2) * dy / FL;
   return { x: camX + dx, y: camY + dy };
 }
@@ -211,7 +211,7 @@ function makeFood() {
 function makeBlob(x,y,num,ci,fi,name,isBot,pidx) {
   return {
     type:'blob', x, y, num, ci, fi, name, isBot, pidx,
-    dead:false, respawnT:0, targetX:x, targetY:y, aiCountdown:0,
+    dead:false, respawnT:0, targetX:x, targetY:y, aiCountdown:0, wobbleSeed:Math.random()*1000,
   };
 }
 
@@ -342,22 +342,20 @@ function update() {
   for(const p of players){
     if(p.dead) continue;
     const r  =numToR(p.num);
-    const spd=Math.max(40,230/Math.sqrt(r));
+    const spd=Math.max(55,170/Math.sqrt(r));
 
     if(p.pidx===0){
-      // D-pad or mouse/touch
       const dp=DPAD.up||DPAD.down||DPAD.left||DPAD.right;
-      if(dp && gameMode===1){
-        let dx=(DPAD.right?1:0)-(DPAD.left?1:0);
-        let dy=(DPAD.up?1:0)-(DPAD.down?1:0);
-        if(dx||dy){ const d=Math.sqrt(dx*dx+dy*dy); p.x+=(dx/d)*spd*DT; p.y+=(dy/d)*spd*DT; }
+      if(dp){
+        let ddx=(DPAD.right?1:0)-(DPAD.left?1:0);
+        let ddy=(DPAD.up?1:0)-(DPAD.down?1:0);
+        if(ddx||ddy){ const dl=Math.sqrt(ddx*ddx+ddy*ddy); p.x+=(ddx/dl)*spd*DT; p.y+=(ddy/dl)*spd*DT; }
       } else {
-        const floor=unproject(mouseX,mouseY);
-        if(floor){
-          const dx=floor.x-p.x, dy=floor.y-p.y;
-          const d=Math.sqrt(dx*dx+dy*dy)||1;
-          if(d>8){ p.x+=(dx/d)*spd*DT; p.y+=(dy/d)*spd*DT; }
-        }
+        // Screen-direction controls: mouse relative to player's screen position
+        const pScreenY=HORIZON+dynCamH*FL/dynCamBack;
+        const sdx=mouseX-W/2, sdy=-(mouseY-pScreenY);
+        const sd=Math.sqrt(sdx*sdx+sdy*sdy);
+        if(sd>20){ p.x+=(sdx/sd)*spd*DT; p.y+=(sdy/sd)*spd*DT; }
       }
     } else {
       // P2: arrow keys or d-pad
@@ -378,7 +376,7 @@ function update() {
   for(const b of bots){
     if(b.dead) continue;
     const r  =numToR(b.num);
-    const spd=Math.max(40,230/Math.sqrt(r));
+    const spd=Math.max(55,170/Math.sqrt(r));
     const dx =b.targetX-b.x, dy=b.targetY-b.y;
     const d  =Math.sqrt(dx*dx+dy*dy)||1;
     if(d>6){ b.x+=(dx/d)*spd*DT; b.y+=(dy/d)*spd*DT; }
@@ -413,10 +411,15 @@ function update() {
   // King
   if(frame%8===0){ let t=null,n=0; for(const e of[...bots,...players]) if(!e.dead&&e.num>n){t=e;n=e.num;} king=t; }
 
+  // Update dynamic camera based on player size
+  const r0=!players[0].dead?numToR(players[0].num):25;
+  dynCamH  =Math.max(200,r0*2.2);
+  dynCamBack=Math.max(520,r0*3.8);
+
   // Camera smoothly follows player
   if(!players[0].dead){
     camX+=(players[0].x-camX)*0.1;
-    camY+=((players[0].y-CAM_BACK)-camY)*0.1;
+    camY+=((players[0].y-dynCamBack)-camY)*0.1;
   }
 }
 
@@ -497,7 +500,7 @@ function render() {
       const sr=r*p.scale;
       if(sr<2) continue;
       if(p.sx<-sr*3||p.sx>W+sr*3) continue;
-      drawDome(p.sx,p.sy,sr,e.ci,e.fi,e===king,e.name,e.num,!e.isBot||e.pidx>=0);
+      drawDome(p.sx,p.sy,sr,e.ci,e.fi,e===king,e.name,e.num,!e.isBot||e.pidx>=0,frame*0.05+(e.wobbleSeed||0));
     }
   }
 
@@ -558,34 +561,34 @@ function drawFloor() {
     ctx.beginPath(); ctx.moveTo(sxN,syN); ctx.lineTo(W/2,HORIZON); ctx.stroke();
   }
 
-  // World border walls — glowing red fence at edges
-  drawWorldBorders();
+  // World border walls
+  drawWalls();
 }
 
-function drawWorldBorders() {
-  const borders=[
-    {wx:0,     isX:false}, {wx:WORLD, isX:false},
-    {wy:0,     isX:true},  {wy:WORLD, isX:true},
-  ];
-  ctx.strokeStyle='rgba(255,50,50,0.85)';
-  ctx.lineWidth=4;
-  // Left/right walls
-  for(const bz of [camY+5, camY+MAX_VIEW]){
-    const dy=bz-camY; if(dy<1) continue;
-    const sy=HORIZON+CAM_H*FL/dy;
-    if(sy<HORIZON||sy>H) continue;
+function drawWalls() {
+  const WH=420; // wall height in world units
+  function sc(wx,wy,wh){ const p=project(wx,wy,wh); return p?[p.sx,p.sy]:null; }
+  function wallFace(bl,br,tr,tl,topC,botC) {
+    if(!bl||!br||!tr||!tl) return;
+    const allY=[bl[1],br[1],tr[1],tl[1]];
+    const minY=Math.min(...allY), maxY=Math.max(...allY);
+    if(maxY<HORIZON) return;
+    const g=ctx.createLinearGradient(0,Math.max(HORIZON,minY),0,Math.min(H+200,maxY));
+    g.addColorStop(0,topC); g.addColorStop(1,botC);
+    ctx.beginPath();
+    ctx.moveTo(bl[0],bl[1]); ctx.lineTo(br[0],br[1]);
+    ctx.lineTo(tr[0],tr[1]); ctx.lineTo(tl[0],tl[1]);
+    ctx.closePath(); ctx.fillStyle=g; ctx.fill();
+    ctx.strokeStyle='rgba(255,80,80,0.8)'; ctx.lineWidth=3; ctx.stroke();
   }
-  // Simple: draw two vertical red lines at world edges projected
-  const leftP =project(0,    camY+200);
-  const rightP =project(WORLD,camY+200);
-  const leftFP =project(0,    camY+MAX_VIEW*0.8);
-  const rightFP=project(WORLD,camY+MAX_VIEW*0.8);
-  if(leftP&&leftFP){
-    ctx.beginPath(); ctx.moveTo(leftP.sx,leftP.sy); ctx.lineTo(leftFP.sx,HORIZON); ctx.stroke();
-  }
-  if(rightP&&rightFP){
-    ctx.beginPath(); ctx.moveTo(rightP.sx,rightP.sy); ctx.lineTo(rightFP.sx,HORIZON); ctx.stroke();
-  }
+  const ny=camY+3, fy=Math.min(WORLD,camY+MAX_VIEW);
+  // Far wall (y = WORLD)
+  if(WORLD-camY>0&&WORLD-camY<MAX_VIEW)
+    wallFace(sc(0,WORLD,0),sc(WORLD,WORLD,0),sc(WORLD,WORLD,WH),sc(0,WORLD,WH),'#DD5555','#881111');
+  // Left wall (x = 0)
+  wallFace(sc(0,ny,0),sc(0,fy,0),sc(0,fy,WH),sc(0,ny,WH),'#CC4444','#771111');
+  // Right wall (x = WORLD)
+  wallFace(sc(WORLD,ny,0),sc(WORLD,fy,0),sc(WORLD,fy,WH),sc(WORLD,ny,WH),'#CC4444','#771111');
 }
 
 // ── Food (3D glowing sphere) ─────────────────────────────────────────────────
@@ -618,80 +621,89 @@ function drawFood3D(f) {
   ctx.beginPath(); ctx.arc(p.sx,p.sy,sr,0,Math.PI*2); ctx.fillStyle=sg; ctx.fill();
 }
 
-// ── Dome (3D blob in perspective) ─────────────────────────────────────────────
-function drawDome(sx, sy, sr, ci, fi, isKing, name, num, showLabel) {
+// ── Wobbly slime path ─────────────────────────────────────────────────────────
+function blobPath(sx, sy, srx, sry, phase) {
+  const N=16;
+  ctx.beginPath();
+  for(let i=0;i<=N;i++){
+    const a=(i/N)*Math.PI*2;
+    const w=1+Math.sin(a*3+phase)*0.07
+              +Math.cos(a*2-phase*0.6)*0.045
+              +Math.sin(a*5+phase*1.2)*0.025;
+    const px=sx+Math.cos(a)*srx*w;
+    const py=sy+Math.sin(a)*sry*w;
+    if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.closePath();
+}
+
+// ── Dome (3D slime blob in perspective) ──────────────────────────────────────
+function drawDome(sx, sy, sr, ci, fi, isKing, name, num, showLabel, phase) {
   const col=COLORS[ci];
   if(sr<3) return;
+  const p=phase||0;
+  const srx=sr*1.12, sry=sr*0.83; // wider than tall — slime squish
 
   // Ground oval shadow
-  ctx.save(); ctx.scale(1,0.25);
-  ctx.beginPath(); ctx.ellipse(sx,(sy+sr*0.1)/0.25,sr*0.88,sr*0.3,0,0,Math.PI*2);
-  ctx.fillStyle='rgba(0,0,0,0.22)'; ctx.fill(); ctx.restore();
+  ctx.save(); ctx.scale(1,0.2);
+  ctx.beginPath(); ctx.ellipse(sx,(sy+sry*0.9)/0.2,srx*0.82,srx*0.22,0,0,Math.PI*2);
+  ctx.fillStyle='rgba(0,0,0,0.28)'; ctx.fill(); ctx.restore();
 
-  // ── Phong sphere ──────────────────────────────────────────────────────────
-  // Diffuse — directional light from top-left
-  const lx=sx-sr*0.36, ly=sy-sr*0.5;
-  const g=ctx.createRadialGradient(lx,ly,0,sx,sy-sr*0.1,sr*1.05);
-  g.addColorStop(0,   'rgba(255,255,255,0.88)');
-  g.addColorStop(0.16,lighten(col.fill,0.58));
-  g.addColorStop(0.44,col.fill);
-  g.addColorStop(0.76,darken(col.fill,0.46));
-  g.addColorStop(1,   darken(col.fill,0.72));
-  ctx.beginPath(); ctx.arc(sx,sy,sr,0,Math.PI*2);
-  ctx.fillStyle=g; ctx.fill();
+  // Phong diffuse — directional light top-left
+  const lx=sx-srx*0.36, ly=sy-sry*0.5;
+  const gr=ctx.createRadialGradient(lx,ly,0,sx,sy-sry*0.08,Math.max(srx,sry)*1.05);
+  gr.addColorStop(0,   'rgba(255,255,255,0.88)');
+  gr.addColorStop(0.16,lighten(col.fill,0.58));
+  gr.addColorStop(0.44,col.fill);
+  gr.addColorStop(0.76,darken(col.fill,0.46));
+  gr.addColorStop(1,   darken(col.fill,0.72));
+  blobPath(sx,sy,srx,sry,p); ctx.fillStyle=gr; ctx.fill();
 
-  // Dark rim on shadow side
+  // Dark rim
   ctx.lineWidth=Math.max(1.5,sr*0.04);
-  ctx.strokeStyle=darken(col.fill,0.55);
-  ctx.stroke();
+  ctx.strokeStyle=darken(col.fill,0.55); ctx.stroke();
 
-  // Specular — large soft bloom
-  const sg=ctx.createRadialGradient(sx-sr*0.32,sy-sr*0.44,0,sx-sr*0.32,sy-sr*0.44,sr*0.62);
+  // Specular bloom
+  const sg=ctx.createRadialGradient(sx-srx*0.32,sy-sry*0.44,0,sx-srx*0.32,sy-sry*0.44,Math.max(srx,sry)*0.62);
   sg.addColorStop(0,  'rgba(255,255,255,0.85)');
   sg.addColorStop(0.4,'rgba(255,255,255,0.3)');
   sg.addColorStop(1,  'rgba(255,255,255,0)');
-  ctx.beginPath(); ctx.arc(sx,sy,sr,0,Math.PI*2); ctx.fillStyle=sg; ctx.fill();
+  blobPath(sx,sy,srx,sry,p); ctx.fillStyle=sg; ctx.fill();
 
-  // Specular — sharp point highlight
-  if(sr>8){
-    ctx.beginPath(); ctx.arc(sx-sr*0.26,sy-sr*0.38,sr*0.14,0,Math.PI*2);
-    ctx.fillStyle='rgba(255,255,255,0.75)'; ctx.fill();
-  }
+  // Specular point
+  if(sr>8){ ctx.beginPath(); ctx.arc(sx-srx*0.26,sy-sry*0.38,sr*0.14,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,0.75)'; ctx.fill(); }
 
-  // Bounce light — subtle cool tint bottom-right
-  const bl=ctx.createRadialGradient(sx,sy,sr*0.68,sx,sy,sr);
-  bl.addColorStop(0,'rgba(100,200,255,0)');
-  bl.addColorStop(1,'rgba(100,200,255,0.2)');
-  ctx.beginPath(); ctx.arc(sx,sy,sr,0,Math.PI*2); ctx.fillStyle=bl; ctx.fill();
+  // Bounce light (cool tint bottom)
+  const bl=ctx.createRadialGradient(sx,sy,Math.max(srx,sry)*0.68,sx,sy,Math.max(srx,sry));
+  bl.addColorStop(0,'rgba(100,200,255,0)'); bl.addColorStop(1,'rgba(100,200,255,0.2)');
+  blobPath(sx,sy,srx,sry,p); ctx.fillStyle=bl; ctx.fill();
 
-  // Face (only when large enough to see)
+  // Face
   if(sr>22){
-    ctx.save();
-    ctx.beginPath(); ctx.arc(sx,sy,sr*0.98,0,Math.PI*2); ctx.clip();
-    drawFace(ctx,sx,sy-sr*0.06,sr*0.9,fi);
-    ctx.restore();
+    ctx.save(); blobPath(sx,sy,srx*0.97,sry*0.97,p); ctx.clip();
+    drawFace(ctx,sx,sy-sry*0.06,Math.min(srx,sry)*0.9,fi); ctx.restore();
   }
 
-  if(showLabel&&sr>14){
-    // Number
-    const fs=Math.min(sr*0.4,50);
-    ctx.font=`bold ${Math.max(9,fs)}px monospace`;
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillStyle='rgba(0,0,0,0.5)';
-    ctx.fillText(fmt(num),sx+1.5,sy+1.5);
-    ctx.fillStyle='#fff';
-    ctx.fillText(fmt(num),sx,sy);
+  // Power number above head (ALL blobs)
+  if(sr>9){
+    const powerText=fmt(num);
+    const fs=Math.max(9,Math.min(sr*0.34,38));
+    ctx.font=`bold ${fs}px monospace`;
+    ctx.textAlign='center'; ctx.textBaseline='bottom';
+    const ty=sy-sry-5;
+    ctx.fillStyle='rgba(0,0,0,0.65)'; ctx.fillText(powerText,sx+1.5,ty+1.5);
+    ctx.fillStyle='#FFD700'; ctx.fillText(powerText,sx,ty);
+  }
 
-    // Name above blob
-    if(sr>20){
-      const nfs=Math.min(sr*0.28,18);
-      ctx.font=`bold ${Math.max(9,nfs)}px monospace`;
-      ctx.textBaseline='bottom';
-      ctx.fillStyle='rgba(0,0,0,0.6)';
-      ctx.fillText(name,sx+1,sy-sr-1);
-      ctx.fillStyle='#fff';
-      ctx.fillText(name,sx,sy-sr-2);
-    }
+  // Name above power (player blobs only)
+  if(showLabel&&sr>16){
+    const nfs=Math.max(9,Math.min(sr*0.24,17));
+    const powerH=Math.max(9,Math.min(sr*0.34,38));
+    ctx.font=`bold ${nfs}px monospace`;
+    ctx.textBaseline='bottom';
+    const ty=sy-sry-5-powerH-2;
+    ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillText(name,sx+1,ty+1);
+    ctx.fillStyle='#fff'; ctx.fillText(name,sx,ty);
   }
 
   if(isKing) drawCrown(ctx,sx,sy,sr);
