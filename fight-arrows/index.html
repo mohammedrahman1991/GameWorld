@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
+  <title>Fight Arrows</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:#1a0a2e;overflow:hidden;font-family:monospace;touch-action:none;}
+    canvas{display:block;}
+
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);display:flex;
+      align-items:center;justify-content:center;z-index:50;}
+    .box{background:linear-gradient(135deg,#0d0d1a,#1a1a3e);border:2px solid #555;
+      border-radius:20px;padding:36px 32px;text-align:center;max-width:500px;width:92%;}
+
+    /* Start */
+    #start-overlay .box h1{font-size:3rem;color:#FFD700;margin-bottom:6px;
+      text-shadow:0 0 20px rgba(255,215,0,0.5);letter-spacing:3px;}
+    #start-overlay .box p{color:#aaa;font-size:13px;margin-bottom:28px;}
+    .mode-btns{display:flex;gap:16px;justify-content:center;}
+    .mbtn{padding:18px 40px;font:bold 16px monospace;border:none;border-radius:14px;
+      cursor:pointer;transition:transform .1s,opacity .1s;}
+    .mbtn:active{transform:scale(0.96);}
+    #btn-1p{background:linear-gradient(135deg,#226622,#44BB44);color:#fff;}
+    #btn-2p{background:linear-gradient(135deg,#224488,#4488CC);color:#fff;}
+
+    /* Map select */
+    #map-overlay .box h2{color:#FFD700;font-size:1.6rem;margin-bottom:6px;}
+    #map-overlay .box p{color:#aaa;font-size:12px;margin-bottom:22px;}
+    .map-cards{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+    .map-card{width:130px;border-radius:14px;border:3px solid #444;cursor:pointer;
+      overflow:hidden;transition:transform .15s,border-color .15s;}
+    .map-card:hover{transform:translateY(-4px);border-color:#FFD700;}
+    .map-card.selected{border-color:#FFD700;box-shadow:0 0 16px rgba(255,215,0,0.4);}
+    .map-thumb{height:80px;display:flex;align-items:center;justify-content:center;font-size:2.4rem;}
+    .map-name{padding:8px;font:bold 13px monospace;color:#fff;text-align:center;}
+    .map-snow .map-thumb{background:linear-gradient(180deg,#7ec8e3,#c9e8f5);}
+    .map-desert .map-thumb{background:linear-gradient(180deg,#f5a623,#f7d08a);}
+    .map-jungle .map-thumb{background:linear-gradient(180deg,#1a4a1a,#2d6e2d);}
+    .map-card .map-name{background:#1a1a2e;}
+    .play-btn{display:inline-block;margin-top:22px;padding:15px 50px;
+      background:linear-gradient(135deg,#cc8800,#FFD700);color:#111;
+      font:bold 17px monospace;border:none;border-radius:14px;cursor:pointer;}
+    .play-btn:hover{opacity:0.9;}
+
+    /* Game over */
+    #over-overlay{display:none;}
+    #over-overlay .box h1{font-size:2.2rem;margin-bottom:10px;}
+    #over-overlay .box .winner{font-size:1.2rem;color:#FFD700;margin:10px 0;}
+    .over-btns{display:flex;gap:12px;justify-content:center;margin-top:20px;}
+    .obtn{padding:12px 28px;font:bold 14px monospace;border:none;border-radius:12px;cursor:pointer;}
+    #btn-again{background:linear-gradient(135deg,#226622,#44BB44);color:#fff;}
+    #btn-home{background:linear-gradient(135deg,#444,#666);color:#fff;}
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+
+  <!-- Start -->
+  <div class="overlay" id="start-overlay">
+    <div class="box">
+      <h1>🏹 FIGHT ARROWS</h1>
+      <p>Fire arrows at your enemy. Hit a bird to redirect the shot!<br>First to 5 kills wins.</p>
+      <div class="mode-btns">
+        <button class="mbtn" id="btn-1p" onclick="selectMode(1)">👤 1 PLAYER</button>
+        <button class="mbtn" id="btn-2p" onclick="selectMode(2)">👥 2 PLAYER</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Map Select -->
+  <div class="overlay" id="map-overlay" style="display:none">
+    <div class="box">
+      <h2>🗺️ Choose a Map</h2>
+      <p>Pick your battlefield</p>
+      <div class="map-cards">
+        <div class="map-card map-snow selected" id="mc-snow" onclick="selectMap('snow')">
+          <div class="map-thumb">❄️</div>
+          <div class="map-name">Snowy</div>
+        </div>
+        <div class="map-card map-desert" id="mc-desert" onclick="selectMap('desert')">
+          <div class="map-thumb">🌵</div>
+          <div class="map-name">Desert</div>
+        </div>
+        <div class="map-card map-jungle" id="mc-jungle" onclick="selectMap('jungle')">
+          <div class="map-thumb">🌴</div>
+          <div class="map-name">Jungle</div>
+        </div>
+      </div>
+      <button class="play-btn" onclick="startGame()">▶ FIGHT!</button>
+    </div>
+  </div>
+
+  <!-- Game Over -->
+  <div class="overlay" id="over-overlay" style="display:none">
+    <div class="box">
+      <div style="font-size:3rem;margin-bottom:8px;" id="over-emoji">🏆</div>
+      <h1 id="over-title" style="color:#FFD700;">WINNER!</h1>
+      <p class="winner" id="over-winner"></p>
+      <p style="color:#aaa;font-size:13px;">First to 5 kills wins!</p>
+      <div class="over-btns">
+        <button class="obtn" id="btn-again" onclick="restartGame()">🔄 Play Again</button>
+        <button class="obtn" id="btn-home" onclick="goHome()">🏠 Home</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
