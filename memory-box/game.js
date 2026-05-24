@@ -1,41 +1,93 @@
 'use strict';
 
-// ── Item Pool ─────────────────────────────────────────────────────────────
+// ── Fluent Emoji 3D image helper ──────────────────────────────────────────
+const FLUENT = 'https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@latest/assets/';
+function f3(folder, file) {
+  const enc = s => s.replace(/ /g, '%20').replace(/'/g, '%27');
+  return `${FLUENT}${enc(folder)}/3D/${enc(file)}_3d.png`;
+}
+
+// ── Item Pool (70 items with 3D image URLs) ───────────────────────────────
 const ALL_ITEMS = [
   // Electronics & Power
-  {e:'🔋',n:'Battery'},    {e:'🔦',n:'Flashlight'},   {e:'💡',n:'Light Bulb'},
-  {e:'📱',n:'Phone'},      {e:'📻',n:'Radio'},          {e:'🔌',n:'Charger'},
-  {e:'⌚',n:'Watch'},      {e:'📷',n:'Camera'},
+  {e:'🔋',n:'Battery',           img:f3('Battery','battery')},
+  {e:'🔦',n:'Flashlight',        img:f3('Flashlight','flashlight')},
+  {e:'💡',n:'Light Bulb',        img:f3('Light Bulb','light_bulb')},
+  {e:'📱',n:'Phone',             img:f3('Mobile Phone','mobile_phone')},
+  {e:'📻',n:'Radio',             img:f3('Radio','radio')},
+  {e:'🔌',n:'Charger',           img:f3('Electric Plug','electric_plug')},
+  {e:'⌚',n:'Watch',             img:f3('Watch','watch')},
+  {e:'📷',n:'Camera',            img:f3('Camera','camera')},
   // Tools & Hardware
-  {e:'🔧',n:'Wrench'},     {e:'🔨',n:'Hammer'},         {e:'🪛',n:'Screwdriver'},
-  {e:'✂️',n:'Scissors'},   {e:'📏',n:'Ruler'},           {e:'🧲',n:'Magnet'},
-  {e:'🔩',n:'Bolt'},       {e:'🪜',n:'Ladder'},
+  {e:'🔧',n:'Wrench',            img:f3('Wrench','wrench')},
+  {e:'🔨',n:'Hammer',            img:f3('Hammer','hammer')},
+  {e:'🪛',n:'Screwdriver',       img:f3('Screwdriver','screwdriver')},
+  {e:'✂️',n:'Scissors',          img:f3('Scissors','scissors')},
+  {e:'📏',n:'Ruler',             img:f3('Straight Ruler','straight_ruler')},
+  {e:'🧲',n:'Magnet',            img:f3('Magnet','magnet')},
+  {e:'🔩',n:'Bolt',              img:f3('Nut and Bolt','nut_and_bolt')},
+  {e:'🪜',n:'Ladder',            img:f3('Ladder','ladder')},
   // Household Essentials
-  {e:'🧼',n:'Soap'},       {e:'🪥',n:'Toothbrush'},     {e:'🕯️',n:'Candle'},
-  {e:'🔑',n:'Key'},        {e:'🧹',n:'Broom'},           {e:'🧽',n:'Sponge'},
-  {e:'🪣',n:'Bucket'},     {e:'🧯',n:'Fire Extinguisher'},
+  {e:'🧼',n:'Soap',              img:f3('Soap','soap')},
+  {e:'🪥',n:'Toothbrush',        img:f3('Toothbrush','toothbrush')},
+  {e:'🕯️',n:'Candle',            img:f3('Candle','candle')},
+  {e:'🔑',n:'Key',               img:f3('Key','key')},
+  {e:'🧹',n:'Broom',             img:f3('Broom','broom')},
+  {e:'🧽',n:'Sponge',            img:f3('Sponge','sponge')},
+  {e:'🪣',n:'Bucket',            img:f3('Bucket','bucket')},
+  {e:'🧯',n:'Fire Extinguisher', img:f3('Fire Extinguisher','fire_extinguisher')},
   // Gas & Chemicals
-  {e:'⚗️',n:'Flask'},      {e:'🧪',n:'Test Tube'},      {e:'⛽',n:'Gas Canister'},
-  {e:'🫙',n:'Spray Can'},  {e:'🔥',n:'Lighter'},         {e:'🛢️',n:'Propane Bottle'},
+  {e:'⚗️',n:'Flask',             img:f3('Alembic','alembic')},
+  {e:'🧪',n:'Test Tube',         img:f3('Test Tube','test_tube')},
+  {e:'⛽',n:'Gas Canister',       img:f3('Fuel Pump','fuel_pump')},
+  {e:'🫙',n:'Spray Can',         img:f3('Jar','jar')},
+  {e:'🔥',n:'Lighter',           img:f3('Fire','fire')},
+  {e:'🛢️',n:'Propane Bottle',    img:f3('Oil Drum','oil_drum')},
   // Medical & Safety
-  {e:'🩹',n:'Bandage'},    {e:'💊',n:'Pill'},            {e:'🌡️',n:'Thermometer'},
-  {e:'🩺',n:'Stethoscope'},{e:'⛑️',n:'Hard Hat'},        {e:'🦺',n:'Safety Vest'},
-  {e:'💉',n:'Syringe'},
+  {e:'🩹',n:'Bandage',           img:f3('Adhesive Bandage','adhesive_bandage')},
+  {e:'💊',n:'Pill',              img:f3('Pill','pill')},
+  {e:'🌡️',n:'Thermometer',       img:f3('Thermometer','thermometer')},
+  {e:'🩺',n:'Stethoscope',       img:f3('Stethoscope','stethoscope')},
+  {e:'⛑️',n:'Hard Hat',          img:f3("Rescue Worker's Helmet","rescue_worker's_helmet")},
+  {e:'🦺',n:'Safety Vest',       img:f3('Safety Vest','safety_vest')},
+  {e:'💉',n:'Syringe',           img:f3('Syringe','syringe')},
   // Stationery & Office
-  {e:'✏️',n:'Pencil'},     {e:'🖊️',n:'Pen'},            {e:'📎',n:'Paper Clip'},
-  {e:'📌',n:'Thumbtack'},  {e:'📓',n:'Notebook'},        {e:'📁',n:'Folder'},
+  {e:'✏️',n:'Pencil',            img:f3('Pencil','pencil')},
+  {e:'🖊️',n:'Pen',               img:f3('Pen','pen')},
+  {e:'📎',n:'Paper Clip',        img:f3('Paperclip','paperclip')},
+  {e:'📌',n:'Thumbtack',         img:f3('Round Pushpin','round_pushpin')},
+  {e:'📓',n:'Notebook',          img:f3('Notebook','notebook')},
+  {e:'📁',n:'Folder',            img:f3('File Folder','file_folder')},
   // Survival & Food
-  {e:'🥫',n:'Canned Food'},{e:'🍫',n:'Chocolate Bar'},  {e:'🥜',n:'Peanuts'},
-  {e:'🧃',n:'Juice Box'},  {e:'💧',n:'Water Bottle'},    {e:'🍬',n:'Candy'},
-  {e:'🍪',n:'Cookies'},    {e:'🥨',n:'Crackers'},
+  {e:'🥫',n:'Canned Food',       img:f3('Canned Food','canned_food')},
+  {e:'🍫',n:'Chocolate Bar',     img:f3('Chocolate Bar','chocolate_bar')},
+  {e:'🥜',n:'Peanuts',           img:f3('Peanuts','peanuts')},
+  {e:'🧃',n:'Juice Box',         img:f3('Beverage Box','beverage_box')},
+  {e:'💧',n:'Water Bottle',      img:f3('Droplet','droplet')},
+  {e:'🍬',n:'Candy',             img:f3('Candy','candy')},
+  {e:'🍪',n:'Cookies',           img:f3('Cookie','cookie')},
+  {e:'🥨',n:'Crackers',          img:f3('Pretzel','pretzel')},
   // Gear & Clothing
-  {e:'🧤',n:'Gloves'},     {e:'🧣',n:'Scarf'},           {e:'🎒',n:'Backpack'},
-  {e:'🧢',n:'Cap'},        {e:'👢',n:'Boot'},             {e:'🧳',n:'Suitcase'},
+  {e:'🧤',n:'Gloves',            img:f3('Gloves','gloves')},
+  {e:'🧣',n:'Scarf',             img:f3('Scarf','scarf')},
+  {e:'🎒',n:'Backpack',          img:f3('Backpack','backpack')},
+  {e:'🧢',n:'Cap',               img:f3('Billed Cap','billed_cap')},
+  {e:'👢',n:'Boot',              img:f3("Woman's Boot","woman's_boot")},
+  {e:'🧳',n:'Suitcase',          img:f3('Luggage','luggage')},
   // Extra
-  {e:'🧰',n:'Toolbox'},    {e:'🔐',n:'Padlock'},         {e:'🪝',n:'Hook'},
-  {e:'🗜️',n:'Clamp'},      {e:'📡',n:'Antenna'},         {e:'🔭',n:'Telescope'},
-  {e:'🧊',n:'Ice Pack'},   {e:'🪢',n:'Rope'},            {e:'🧭',n:'Compass'},
-  {e:'🔬',n:'Microscope'}, {e:'📯',n:'Horn'},            {e:'🎯',n:'Dart'},
+  {e:'🧰',n:'Toolbox',           img:f3('Toolbox','toolbox')},
+  {e:'🔐',n:'Padlock',           img:f3('Locked with Key','locked_with_key')},
+  {e:'🪝',n:'Hook',              img:f3('Hook','hook')},
+  {e:'🗜️',n:'Clamp',             img:f3('Clamp','clamp')},
+  {e:'📡',n:'Antenna',           img:f3('Satellite Antenna','satellite_antenna')},
+  {e:'🔭',n:'Telescope',         img:f3('Telescope','telescope')},
+  {e:'🧊',n:'Ice Pack',          img:f3('Ice','ice')},
+  {e:'🪢',n:'Rope',              img:f3('Knot','knot')},
+  {e:'🧭',n:'Compass',           img:f3('Compass','compass')},
+  {e:'🔬',n:'Microscope',        img:f3('Microscope','microscope')},
+  {e:'📯',n:'Horn',              img:f3('Postal Horn','postal_horn')},
+  {e:'🎯',n:'Dart',              img:f3('Bullseye','bullseye')},
+  {e:'📐',n:'Set Square',        img:f3('Triangular Ruler','triangular_ruler')},
 ];
 
 const LEVELS = [
@@ -61,22 +113,11 @@ let recallRemaining= 90;
 let memTimerId     = null;
 let recallTimerId  = null;
 
-let players           = [];  // [{name}]
-let playerResults     = [];  // [{name, found:Set, score, accuracy, foundCount}]
+let players           = [];
+let playerResults     = [];
 let currentPlayerIdx  = 0;
-let selectedCount     = 1;
 
 // ── Helpers ───────────────────────────────────────────────────────────────
-function parseEmoji(el) {
-  if (typeof twemoji !== 'undefined') {
-    twemoji.parse(el, {
-      base: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/',
-      folder: '72x72',
-      ext: '.png',
-    });
-  }
-}
-
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(id);
@@ -93,6 +134,25 @@ function shuffle(arr) {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+// Build an <img> element for an item's 3D icon with emoji text fallback
+function makeIcon(item, size = 60) {
+  const wrap = document.createElement('span');
+  const img  = document.createElement('img');
+  img.src    = item.img;
+  img.alt    = item.n;
+  img.width  = size;
+  img.height = size;
+  img.style.cssText = `width:${size}px;height:${size}px;object-fit:contain;display:block;`;
+  img.onerror = function () {
+    // Fallback: show emoji text if 3D image fails
+    wrap.style.fontSize = size * 0.6 + 'px';
+    wrap.style.lineHeight = '1';
+    wrap.textContent = item.e;
+  };
+  wrap.appendChild(img);
+  return wrap;
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────
@@ -122,14 +182,12 @@ function startDiff(diff) {
 
 function showSetup(idx) {
   levelIdx = idx;
-  selectedCount = 1;
   highlightPcBtn(1);
   renderNameInputs(1);
   $('setup-overlay').classList.add('show');
 }
 
 function setPlayerCount(n) {
-  selectedCount = n;
   highlightPcBtn(n);
   renderNameInputs(n);
 }
@@ -184,19 +242,28 @@ function startLevel(idx) {
     const card = document.createElement('div');
     card.className = 'item-card';
     card.style.animationDelay = `${i * 0.03}s`;
-    card.innerHTML = `<span class="ie">${item.e}</span><span class="in">${item.n}</span>`;
+
+    const ie = document.createElement('span');
+    ie.className = 'ie';
+    ie.appendChild(makeIcon(item, 60));
+
+    const label = document.createElement('span');
+    label.className = 'in';
+    label.textContent = item.n;
+
+    card.appendChild(ie);
+    card.appendChild(label);
     grid.appendChild(card);
   });
 
-  const trFg     = $('tr-fg');
-  const memText  = $('mem-timer');
+  const trFg    = $('tr-fg');
+  const memText = $('mem-timer');
   trFg.classList.remove('urgent');
   memText.classList.remove('urgent');
   trFg.style.strokeDashoffset = '0';
   memRemaining = lv.time;
   memText.textContent = memRemaining;
 
-  parseEmoji(grid);
   showScreen('screen-memorize');
 
   clearInterval(memTimerId);
@@ -223,11 +290,7 @@ function boxClose() {
   ov.classList.add('show');
   setTimeout(() => {
     ov.classList.remove('show');
-    if (players.length > 1) {
-      showHandoff(0);
-    } else {
-      startRecallPhase();
-    }
+    players.length > 1 ? showHandoff(0) : startRecallPhase();
   }, 1800);
 }
 
@@ -259,7 +322,6 @@ function startRecallPhase() {
   $('recall-found').textContent = '0';
   $('recall-total').textContent = currentItems.length;
 
-  // Player indicator
   const indicator = $('player-indicator');
   if (players.length > 1) {
     indicator.style.display = 'flex';
@@ -268,7 +330,6 @@ function startRecallPhase() {
     indicator.style.display = 'none';
   }
 
-  // Reset time bar
   const timeBar = $('time-bar');
   timeBar.style.transition = 'none';
   timeBar.style.width = '100%';
@@ -304,16 +365,16 @@ function startRecallPhase() {
 
 // ── Recall Logic ──────────────────────────────────────────────────────────
 function matchItem(typed) {
-  const t = typed.toLowerCase().trim();
+  const t    = typed.toLowerCase().trim();
   if (t.length < 2) return null;
   const found = playerResults[currentPlayerIdx].found;
   const pool  = currentItems.filter(it => !found.has(it.n));
 
   for (const item of pool) {
     const name = item.n.toLowerCase();
-    if (name === t)                                   return item;
-    if (t.length >= 3 && name.startsWith(t))          return item;
-    if (t.length >= 4 && name.includes(t))            return item;
+    if (name === t)                                  return item;
+    if (t.length >= 3 && name.startsWith(t))         return item;
+    if (t.length >= 4 && name.includes(t))           return item;
     if (t.length >= 4 && name.split(' ')[0] === t)   return item;
   }
   return null;
@@ -349,14 +410,20 @@ function submitRecall() {
 }
 
 function addFoundChip(item) {
-  const log    = $('found-log');
-  const ph     = $('log-placeholder');
+  const log = $('found-log');
+  const ph  = $('log-placeholder');
   if (ph && log.contains(ph)) log.removeChild(ph);
+
   const chip = document.createElement('div');
   chip.className = 'found-chip';
-  chip.innerHTML = `<span class="ce">${item.e}</span>${item.n}`;
+
+  const iconWrap = makeIcon(item, 20);
+  iconWrap.style.cssText = 'display:inline-flex;align-items:center;flex-shrink:0;';
+  chip.appendChild(iconWrap);
+
+  const txt = document.createTextNode(item.n);
+  chip.appendChild(txt);
   log.appendChild(chip);
-  parseEmoji(chip);
 }
 
 function updateSuggestions() {
@@ -405,7 +472,7 @@ function finishPlayerRecall() {
 
 // ── Single-Player Results ─────────────────────────────────────────────────
 function showResults() {
-  const r = playerResults[0];
+  const r   = playerResults[0];
   const acc = r.accuracy;
 
   let stars = '';
@@ -426,7 +493,6 @@ function showResults() {
   $('sc-total').textContent  = currentItems.length;
   $('sc-acc').textContent    = acc + '%';
   $('sc-score').textContent  = r.score;
-
   $('btn-next').style.display = levelIdx < LEVELS.length - 1 ? '' : 'none';
 
   buildResultGrid($('res-grid'), r.found);
@@ -436,13 +502,20 @@ function showResults() {
 function buildResultGrid(container, foundSet) {
   container.innerHTML = '';
   currentItems.forEach((item, i) => {
-    const div = document.createElement('div');
-    div.className = `ri ${foundSet.has(item.n) ? 'found' : 'missed'}`;
+    const div   = document.createElement('div');
+    const found = foundSet.has(item.n);
+    div.className = `ri ${found ? 'found' : 'missed'}`;
     div.style.animationDelay = `${i * 0.025}s`;
-    div.innerHTML = `<span class="ri-emoji">${item.e}</span>${item.n}`;
+
+    const iconWrap = makeIcon(item, 38);
+    iconWrap.className = 'ri-emoji-wrap';
+    iconWrap.style.cssText = 'display:flex;align-items:center;justify-content:center;height:44px;margin-bottom:4px;';
+
+    const label = document.createTextNode(item.n);
+    div.appendChild(iconWrap);
+    div.appendChild(label);
     container.appendChild(div);
   });
-  parseEmoji(container);
 }
 
 // ── Multiplayer Leaderboard ───────────────────────────────────────────────
@@ -454,7 +527,7 @@ function showLeaderboard() {
   $('lb-level').textContent = `Level ${levelIdx+1} — ${LEVELS[levelIdx].label} · ${currentItems.length} items`;
 
   $('lb-rows').innerHTML = sorted.map((p, rank) => {
-    const pct     = Math.round((p.score / maxScore) * 100);
+    const pct    = Math.round((p.score / maxScore) * 100);
     const isFirst = rank === 0;
     const barClr  = isFirst
       ? 'linear-gradient(90deg,#f59e0b,#fbbf24)'
@@ -475,7 +548,6 @@ function showLeaderboard() {
       </div>`;
   }).join('');
 
-  // Per-player breakdowns
   const breakdown = $('lb-breakdown');
   breakdown.innerHTML = '';
   sorted.forEach(p => {
