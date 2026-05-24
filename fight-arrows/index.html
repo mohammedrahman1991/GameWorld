@@ -44,12 +44,18 @@
       font:bold 17px monospace;border:none;border-radius:14px;cursor:pointer;}
     .play-btn:hover{opacity:0.9;}
 
-    /* Game over */
-    #over-overlay{display:none;}
-    #over-overlay .box h1{font-size:2.2rem;margin-bottom:10px;}
-    #over-overlay .box .winner{font-size:1.2rem;color:#FFD700;margin:10px 0;}
-    .over-btns{display:flex;gap:12px;justify-content:center;margin-top:20px;}
-    .obtn{padding:12px 28px;font:bold 14px monospace;border:none;border-radius:12px;cursor:pointer;}
+    /* Game over / win screen */
+    #over-overlay{display:none;align-items:flex-end;}
+    #over-overlay .box{
+      margin-bottom:32px;padding:22px 28px;max-width:420px;
+      background:linear-gradient(135deg,rgba(10,10,30,0.92),rgba(20,20,50,0.92));
+      border:2px solid rgba(255,255,255,0.15);}
+    #over-overlay .box h1{font-size:2rem;margin-bottom:6px;}
+    #over-overlay .box .winner{font-size:1rem;color:#ccc;margin:6px 0;}
+    .over-btns{display:flex;gap:14px;justify-content:center;margin-top:16px;}
+    .obtn{padding:13px 32px;font:bold 15px monospace;border:none;border-radius:12px;cursor:pointer;
+      transition:transform .1s;}
+    .obtn:active{transform:scale(0.96);}
     #btn-again{background:linear-gradient(135deg,#226622,#44BB44);color:#fff;}
     #btn-home{background:linear-gradient(135deg,#444,#666);color:#fff;}
   </style>
@@ -92,15 +98,14 @@
     </div>
   </div>
 
-  <!-- Game Over -->
+  <!-- Win Screen -->
   <div class="overlay" id="over-overlay" style="display:none">
     <div class="box">
-      <div style="font-size:3rem;margin-bottom:8px;" id="over-emoji">🏆</div>
+      <div style="font-size:2.6rem;margin-bottom:6px;" id="over-emoji">🏆</div>
       <h1 id="over-title" style="color:#FFD700;">WINNER!</h1>
       <p class="winner" id="over-winner"></p>
-      <p style="color:#aaa;font-size:13px;">First to 5 kills wins!</p>
       <div class="over-btns">
-        <button class="obtn" id="btn-again" onclick="restartGame()">🔄 Play Again</button>
+        <button class="obtn" id="btn-again" onclick="restartGame()">🔄 Try Again</button>
         <button class="obtn" id="btn-home" onclick="goHome()">🏠 Home</button>
       </div>
     </div>
