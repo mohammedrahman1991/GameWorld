@@ -67,6 +67,16 @@ let currentPlayerIdx  = 0;
 let selectedCount     = 1;
 
 // ── Helpers ───────────────────────────────────────────────────────────────
+function parseEmoji(el) {
+  if (typeof twemoji !== 'undefined') {
+    twemoji.parse(el, {
+      base: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/',
+      folder: '72x72',
+      ext: '.png',
+    });
+  }
+}
+
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(id);
@@ -186,6 +196,7 @@ function startLevel(idx) {
   memRemaining = lv.time;
   memText.textContent = memRemaining;
 
+  parseEmoji(grid);
   showScreen('screen-memorize');
 
   clearInterval(memTimerId);
@@ -345,6 +356,7 @@ function addFoundChip(item) {
   chip.className = 'found-chip';
   chip.innerHTML = `<span class="ce">${item.e}</span>${item.n}`;
   log.appendChild(chip);
+  parseEmoji(chip);
 }
 
 function updateSuggestions() {
@@ -430,6 +442,7 @@ function buildResultGrid(container, foundSet) {
     div.innerHTML = `<span class="ri-emoji">${item.e}</span>${item.n}`;
     container.appendChild(div);
   });
+  parseEmoji(container);
 }
 
 // ── Multiplayer Leaderboard ───────────────────────────────────────────────
