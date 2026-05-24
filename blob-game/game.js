@@ -160,6 +160,15 @@ function lighten(hex, a) {
   return `rgb(${r},${g},${b})`;
 }
 
+function darken(hex, a) {
+  const v = parseInt(hex.replace('#',''),16);
+  let r=(v>>16)&255, g=(v>>8)&255, b=v&255;
+  r = Math.max(0, Math.round(r*(1-a)));
+  g = Math.max(0, Math.round(g*(1-a)));
+  b = Math.max(0, Math.round(b*(1-a)));
+  return `rgb(${r},${g},${b})`;
+}
+
 function rnd(lo, hi) { return lo + Math.random()*(hi-lo); }
 function d2(a, b)    { return (a.x-b.x)**2 + (a.y-b.y)**2; }
 
@@ -243,6 +252,8 @@ function initGame() {
 
   const p0 = players[0];
   camX = p0.x; camY = p0.y; camZoom = 1;
+  // anchor mouse to screen center so blob doesn't drift before first mouse move
+  mouseX = W/2; mouseY = H/2;
   running = true;
   loop();
 }
@@ -484,97 +495,162 @@ function render() {
 
 // ── Background ────────────────────────────────────────────────────────────────
 function drawBg() {
-  ctx.fillStyle = '#0d1117';
+  // Base floor
+  ctx.fillStyle = '#0c1018';
   ctx.fillRect(0, 0, WORLD, WORLD);
 
-  // Dot grid
-  ctx.fillStyle = 'rgba(255,255,255,0.035)';
-  const sp = 120;
-  const vp = {
-    x0: Math.max(0, Math.floor((camX - W/2/camZoom)/sp)*sp),
-    y0: Math.max(0, Math.floor((camY - H/2/camZoom)/sp)*sp),
-    x1: Math.min(WORLD, Math.ceil((camX + W/2/camZoom)/sp)*sp),
-    y1: Math.min(WORLD, Math.ceil((camY + H/2/camZoom)/sp)*sp),
-  };
-  for (let gx = vp.x0; gx <= vp.x1; gx += sp)
-    for (let gy = vp.y0; gy <= vp.y1; gy += sp) {
-      ctx.beginPath(); ctx.arc(gx, gy, 2.5, 0, Math.PI*2); ctx.fill();
-    }
+  // 3D floor grid — two tile sizes for depth illusion
+  const sp = 200;
+  const vx0 = Math.max(0, Math.floor((camX - W/2/camZoom)/sp - 1)*sp);
+  const vy0 = Math.max(0, Math.floor((camY - H/2/camZoom)/sp - 1)*sp);
+  const vx1 = Math.min(WORLD, Math.ceil((camX + W/2/camZoom)/sp + 1)*sp);
+  const vy1 = Math.min(WORLD, Math.ceil((camY + H/2/camZoom)/sp + 1)*sp);
 
-  // Border
-  ctx.strokeStyle = '#FF3333';
-  ctx.lineWidth = 10;
-  ctx.strokeRect(5, 5, WORLD-10, WORLD-10);
-}
+  // Major grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.055)';
+  ctx.lineWidth = 1.5;
+  for (let gx = vx0; gx <= vx1; gx += sp) {
+    ctx.beginPath(); ctx.moveTo(gx, vy0); ctx.lineTo(gx, vy1); ctx.stroke();
+  }
+  for (let gy = vy0; gy <= vy1; gy += sp) {
+    ctx.beginPath(); ctx.moveTo(vx0, gy); ctx.lineTo(vx1, gy); ctx.stroke();
+  }
 
-// ── Food ──────────────────────────────────────────────────────────────────────
-function drawFood(f) {
+  // Minor grid lines (subdivide each tile × 4)
+  const sp2 = sp / 4;
+  ctx.strokeStyle = 'rgba(255,255,255,0.018)';
+  ctx.lineWidth = 0.8;
+  for (let gx = vx0; gx <= vx1; gx += sp2) {
+    if (gx % sp === 0) continue;
+    ctx.beginPath(); ctx.moveTo(gx, vy0); ctx.lineTo(gx, vy1); ctx.stroke();
+  }
+  for (let gy = vy0; gy <= vy1; gy += sp2) {
+    if (gy % sp === 0) continue;
+    ctx.beginPath(); ctx.moveTo(vx0, gy); ctx.lineTo(vx1, gy); ctx.stroke();
+  }
+
+  // Depth vignette — edges of world are darker
+  const vg = ctx.createRadialGradient(WORLD/2, WORLD/2, WORLD*0.18, WORLD/2, WORLD/2, WORLD*0.78);
+  vg.addColorStop(0, 'rgba(0,0,0,0)');
+  vg.addColorStop(1, 'rgba(0,0,0,0.48)');
+  ctx.fillStyle = vg;
+  ctx.fillRect(0, 0, WORLD, WORLD);
+
+  // World border — glowing red wall
   ctx.save();
-  ctx.shadowColor = f.color;
-  ctx.shadowBlur  = 10;
-  ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
-  ctx.fillStyle = f.color; ctx.fill();
+  ctx.shadowColor = '#FF3333';
+  ctx.shadowBlur  = 22;
+  ctx.strokeStyle = '#FF3333';
+  ctx.lineWidth   = 10;
+  ctx.strokeRect(5, 5, WORLD-10, WORLD-10);
   ctx.restore();
-  // shine dot
-  ctx.beginPath(); ctx.arc(f.x - f.r*0.3, f.y - f.r*0.35, f.r*0.32, 0, Math.PI*2);
-  ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.fill();
 }
 
-// ── Blob renderer (shared between preview & main canvas) ──────────────────────
+// ── Food — 3D glowing sphere ──────────────────────────────────────────────────
+function drawFood(f) {
+  const {x, y, r, color} = f;
+
+  // Ground shadow
+  ctx.save();
+  ctx.scale(1, 0.28);
+  ctx.beginPath(); ctx.arc(x, (y + r*1.12)/0.28, r*0.72, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.fill();
+  ctx.restore();
+
+  // Glow halo
+  ctx.save();
+  ctx.shadowColor = color;
+  ctx.shadowBlur  = r * 3.5;
+
+  // 3D sphere gradient — light from top-left
+  const g = ctx.createRadialGradient(x-r*0.32, y-r*0.36, r*0.01, x, y, r);
+  g.addColorStop(0,   lighten(color, 0.75));
+  g.addColorStop(0.38, lighten(color, 0.2));
+  g.addColorStop(0.72, color);
+  g.addColorStop(1,   darken(color, 0.48));
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
+  ctx.fillStyle = g; ctx.fill();
+  ctx.restore();
+
+  // Specular highlight
+  const sg = ctx.createRadialGradient(x-r*0.3, y-r*0.34, 0, x-r*0.3, y-r*0.34, r*0.5);
+  sg.addColorStop(0,   'rgba(255,255,255,0.95)');
+  sg.addColorStop(0.4, 'rgba(255,255,255,0.3)');
+  sg.addColorStop(1,   'rgba(255,255,255,0)');
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
+  ctx.fillStyle = sg; ctx.fill();
+}
+
+// ── Blob renderer — 3D sphere (shared between preview & main canvas) ──────────
 function drawBlobAt(cx, bx, by, r, ci, fi, isKing, showLabel, name, num) {
   const col = COLORS[ci];
 
-  // Drop shadow
+  // ── Ground shadow (flattened oval beneath blob) ────────────────────────────
   cx.save();
-  cx.shadowColor  = 'rgba(0,0,0,0.55)';
-  cx.shadowBlur   = r * 0.55;
-  cx.shadowOffsetY= r * 0.18;
+  cx.scale(1, 0.22);
+  cx.beginPath(); cx.arc(bx, (by + r*1.1)/0.22, r*0.84, 0, Math.PI*2);
+  cx.fillStyle = 'rgba(0,0,0,0.22)'; cx.fill();
+  cx.restore();
 
-  // Body gradient
-  const g = cx.createRadialGradient(bx-r*0.3, by-r*0.3, r*0.05, bx, by, r);
-  g.addColorStop(0, lighten(col.fill, 0.28));
-  g.addColorStop(1, col.fill);
+  // ── Diffuse gradient — directional light from top-left ─────────────────────
+  const lx = bx - r*0.34, ly = by - r*0.38;
+  const g = cx.createRadialGradient(lx, ly, r*0.01, bx, by, r);
+  g.addColorStop(0,    lighten(col.fill, 0.62));
+  g.addColorStop(0.28, lighten(col.fill, 0.22));
+  g.addColorStop(0.62, col.fill);
+  g.addColorStop(1,    darken(col.fill, 0.52));
+
   cx.beginPath(); cx.arc(bx, by, r, 0, Math.PI*2);
   cx.fillStyle = g; cx.fill();
 
-  // Rim
-  cx.lineWidth = Math.max(2, r*0.055);
-  cx.strokeStyle = col.rim; cx.stroke();
-  cx.restore();
+  // ── Rim stroke ─────────────────────────────────────────────────────────────
+  cx.lineWidth   = Math.max(1.5, r*0.035);
+  cx.strokeStyle = col.rim;
+  cx.stroke();
 
-  // Shine
-  cx.beginPath();
-  cx.ellipse(bx-r*0.27, by-r*0.33, r*0.27, r*0.15, -0.5, 0, Math.PI*2);
-  cx.fillStyle = 'rgba(255,255,255,0.38)'; cx.fill();
+  // ── Specular highlight — sharp glassy spot top-left ────────────────────────
+  const sg = cx.createRadialGradient(bx-r*0.31, by-r*0.35, 0, bx-r*0.31, by-r*0.35, r*0.48);
+  sg.addColorStop(0,    'rgba(255,255,255,0.94)');
+  sg.addColorStop(0.38, 'rgba(255,255,255,0.32)');
+  sg.addColorStop(1,    'rgba(255,255,255,0)');
+  cx.beginPath(); cx.arc(bx, by, r, 0, Math.PI*2);
+  cx.fillStyle = sg; cx.fill();
 
-  // Face
+  // ── Rim light — subtle cool tint on bottom-right edge ──────────────────────
+  const rg = cx.createRadialGradient(bx, by, r*0.7, bx, by, r);
+  rg.addColorStop(0, 'rgba(140,200,255,0)');
+  rg.addColorStop(1, 'rgba(140,200,255,0.18)');
+  cx.beginPath(); cx.arc(bx, by, r, 0, Math.PI*2);
+  cx.fillStyle = rg; cx.fill();
+
+  // ── Face ───────────────────────────────────────────────────────────────────
   drawFace(cx, bx, by, r, fi);
 
   if (showLabel) {
-    // Number
-    if (r > 16 && num !== undefined) {
-      const fs = Math.min(r*0.43, 56);
+    // Number — embossed look
+    if (r > 18 && num !== undefined) {
+      const fs = Math.min(r*0.42, 54);
       cx.font = `bold ${Math.max(10,fs)}px monospace`;
       cx.textAlign = 'center'; cx.textBaseline = 'middle';
-      cx.fillStyle = 'rgba(0,0,0,0.4)';
-      cx.fillText(fmt(num), bx+1, by+1);
-      cx.fillStyle = '#fff';
+      cx.fillStyle = 'rgba(0,0,0,0.5)';
+      cx.fillText(fmt(num), bx+1.5, by+1.5);
+      cx.fillStyle = 'rgba(255,255,255,0.95)';
       cx.fillText(fmt(num), bx, by);
     }
 
-    // Name
-    if (r > 28 && name) {
-      const nfs = Math.min(r*0.22, 20);
-      cx.font = `${Math.max(9,nfs)}px monospace`;
+    // Name — floating above
+    if (r > 30 && name) {
+      const nfs = Math.min(r*0.21, 19);
+      cx.font = `bold ${Math.max(9,nfs)}px monospace`;
       cx.textAlign = 'center'; cx.textBaseline = 'bottom';
-      cx.fillStyle = 'rgba(0,0,0,0.5)';
-      cx.fillText(name, bx+1, by-r-2);
+      cx.fillStyle = 'rgba(0,0,0,0.55)';
+      cx.fillText(name, bx+1.5, by-r-2);
       cx.fillStyle = '#fff';
       cx.fillText(name, bx, by-r-3);
     }
   }
 
-  // Crown
+  // ── Crown ──────────────────────────────────────────────────────────────────
   if (isKing) drawCrown(cx, bx, by, r);
 }
 
@@ -693,28 +769,68 @@ function roundedRect(cx, x, y, w, h, r2) {
   cx.closePath();
 }
 
-// ── Crown ─────────────────────────────────────────────────────────────────────
+// ── Crown — 3D metallic gold ──────────────────────────────────────────────────
 function drawCrown(cx, bx, by, r) {
-  const cw = r * 0.88, ch = r * 0.44;
-  const ox = bx - cw/2, oy = by - r - ch - r*0.12;
+  const cw = r * 0.92, ch = r * 0.48;
+  const ox = bx - cw/2, oy = by - r - ch - r*0.1;
+
   cx.save();
+  // Crown shadow
+  cx.save();
+  cx.scale(1, 0.2);
   cx.beginPath();
-  cx.moveTo(ox, oy+ch);
-  cx.lineTo(ox, oy+ch*0.28);
-  cx.lineTo(ox+cw*0.25, oy+ch*0.62);
+  cx.ellipse(bx, (oy+ch*1.05)/0.2, cw*0.5, cw*0.18, 0, 0, Math.PI*2);
+  cx.fillStyle = 'rgba(0,0,0,0.2)'; cx.fill();
+  cx.restore();
+
+  // Crown shape path
+  cx.beginPath();
+  cx.moveTo(ox,       oy+ch);
+  cx.lineTo(ox,       oy+ch*0.26);
+  cx.lineTo(ox+cw*0.25, oy+ch*0.60);
   cx.lineTo(ox+cw*0.5,  oy);
-  cx.lineTo(ox+cw*0.75, oy+ch*0.62);
-  cx.lineTo(ox+cw,      oy+ch*0.28);
-  cx.lineTo(ox+cw,      oy+ch);
+  cx.lineTo(ox+cw*0.75, oy+ch*0.60);
+  cx.lineTo(ox+cw,    oy+ch*0.26);
+  cx.lineTo(ox+cw,    oy+ch);
   cx.closePath();
-  cx.fillStyle = '#FFD700'; cx.fill();
-  cx.strokeStyle = '#AA7700'; cx.lineWidth = Math.max(1.5, r*0.03); cx.stroke();
-  // jewels
-  cx.fillStyle = '#FF2222';
-  cx.beginPath(); cx.arc(ox+cw*0.5, oy+ch*0.22, r*0.09, 0, Math.PI*2); cx.fill();
-  cx.fillStyle = '#EE44EE';
-  cx.beginPath(); cx.arc(ox+cw*0.12, oy+ch*0.72, r*0.07, 0, Math.PI*2); cx.fill();
-  cx.beginPath(); cx.arc(ox+cw*0.88, oy+ch*0.72, r*0.07, 0, Math.PI*2); cx.fill();
+
+  // 3D metallic gradient — light from top-left
+  const cg = cx.createLinearGradient(ox, oy, ox+cw, oy+ch);
+  cg.addColorStop(0,    '#FFEE88');
+  cg.addColorStop(0.22, '#FFD700');
+  cg.addColorStop(0.5,  '#CC9900');
+  cg.addColorStop(0.78, '#FFD700');
+  cg.addColorStop(1,    '#886600');
+  cx.fillStyle = cg; cx.fill();
+
+  cx.strokeStyle = '#7A5500';
+  cx.lineWidth = Math.max(1.5, r*0.03); cx.stroke();
+
+  // Specular band across crown top
+  const sg = cx.createLinearGradient(ox, oy, ox, oy+ch*0.5);
+  sg.addColorStop(0, 'rgba(255,255,255,0.45)');
+  sg.addColorStop(1, 'rgba(255,255,255,0)');
+  cx.fillStyle = sg; cx.fill();
+
+  // ── Jewels — 3D gems ────────────────────────────────────────────────────────
+  function gem3d(gx, gy, gr, baseCol, highlightCol) {
+    // Main gem
+    cx.beginPath(); cx.arc(gx, gy, gr, 0, Math.PI*2);
+    const gg = cx.createRadialGradient(gx-gr*0.3, gy-gr*0.35, gr*0.05, gx, gy, gr);
+    gg.addColorStop(0, highlightCol);
+    gg.addColorStop(0.5, baseCol);
+    gg.addColorStop(1, darken(baseCol, 0.55));
+    cx.fillStyle = gg; cx.fill();
+    cx.strokeStyle = darken(baseCol, 0.4); cx.lineWidth = 1; cx.stroke();
+    // Specular
+    cx.beginPath(); cx.arc(gx-gr*0.28, gy-gr*0.32, gr*0.36, 0, Math.PI*2);
+    cx.fillStyle = 'rgba(255,255,255,0.7)'; cx.fill();
+  }
+
+  gem3d(ox+cw*0.5,  oy+ch*0.2,  r*0.1, '#FF2222', '#FF9999');
+  gem3d(ox+cw*0.12, oy+ch*0.72, r*0.08, '#BB22EE', '#EE88FF');
+  gem3d(ox+cw*0.88, oy+ch*0.72, r*0.08, '#2244EE', '#88AAFF');
+
   cx.restore();
 }
 
