@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
+  <title>Blob Eating</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:#0d1117;overflow:hidden;font-family:monospace;}
+    canvas{display:block;cursor:none;}
+
+    /* Overlays */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);display:flex;
+      align-items:center;justify-content:center;z-index:50;}
+    .box{background:linear-gradient(135deg,#0d1117,#1a1a2e);border:2px solid #333;
+      border-radius:20px;padding:36px 32px;text-align:center;max-width:480px;width:92%;}
+
+    /* Start */
+    #start-overlay .box h1{font-size:2.8rem;color:#FFD700;margin-bottom:6px;}
+    #start-overlay .box p{color:#aaa;font-size:13px;margin-bottom:28px;}
+    .mode-btns{display:flex;gap:14px;justify-content:center;}
+    .mbtn{padding:16px 36px;font:bold 16px monospace;border:none;border-radius:14px;cursor:pointer;transition:transform .1s;}
+    .mbtn:active{transform:scale(0.96);}
+    #btn-1p{background:linear-gradient(135deg,#226622,#44BB44);color:#fff;}
+    #btn-2p{background:linear-gradient(135deg,#224488,#4488CC);color:#fff;}
+
+    /* Skin select */
+    #skin-overlay .box{max-width:620px;}
+    #skin-overlay h2{color:#FFD700;font-size:1.5rem;margin-bottom:20px;}
+    .skin-cols{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;}
+    .skin-col{flex:1;min-width:180px;}
+    .skin-col h3{color:#fff;font-size:14px;margin-bottom:10px;}
+    canvas.prev{border-radius:50%;border:3px solid #444;display:block;margin:0 auto 10px;}
+    .picker{display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0;}
+    .picker button{background:#222;color:#fff;border:1px solid #444;border-radius:8px;
+      padding:4px 10px;cursor:pointer;font:12px monospace;}
+    .picker button:hover{background:#333;}
+    .picker span{color:#ddd;font:12px monospace;min-width:80px;text-align:center;}
+    .play-btn{display:inline-block;margin-top:22px;padding:15px 44px;
+      background:linear-gradient(135deg,#cc8800,#FFD700);color:#111;
+      font:bold 17px monospace;border:none;border-radius:14px;cursor:pointer;}
+    .play-btn:hover{background:linear-gradient(135deg,#FFD700,#ffe066);}
+
+    /* HUD */
+    #hud{display:none;pointer-events:none;position:fixed;inset:0;z-index:10;}
+
+    /* Game over */
+    #over-overlay{display:none;}
+    #over-overlay .box h1{color:#FF4444;font-size:2rem;margin-bottom:10px;}
+    #over-overlay .box .stat{color:#FFD700;font-size:1.1rem;margin:6px 0;}
+    .over-btns{display:flex;gap:12px;justify-content:center;margin-top:20px;}
+    .obtn{padding:12px 28px;font:bold 14px monospace;border:none;border-radius:12px;cursor:pointer;}
+    #btn-again{background:linear-gradient(135deg,#AA2222,#CC4444);color:#fff;}
+    #btn-home{background:linear-gradient(135deg,#444,#666);color:#fff;}
+
+    /* Custom cursor */
+    #cursor{position:fixed;width:18px;height:18px;border:2px solid rgba(255,255,255,0.6);
+      border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);z-index:100;
+      box-shadow:0 0 8px rgba(255,255,255,0.3);}
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <div id="cursor"></div>
+  <div id="hud"></div>
+
+  <!-- Start -->
+  <div class="overlay" id="start-overlay">
+    <div class="box">
+      <h1>🫧 BLOB EATING</h1>
+      <p>Eat food pellets &amp; devour other blobs to grow.<br>Biggest blob wears the 👑 crown!</p>
+      <div class="mode-btns">
+        <button class="mbtn" id="btn-1p" onclick="selectMode(1)">👤 1 PLAYER</button>
+        <button class="mbtn" id="btn-2p" onclick="selectMode(2)">👥 2 PLAYER</button>
+      </div>
+      <p style="color:#555;font-size:11px;margin-top:16px;">1P: Mouse &nbsp;|&nbsp; 2P: Mouse + Arrow Keys</p>
+    </div>
+  </div>
+
+  <!-- Skin select -->
+  <div class="overlay" id="skin-overlay" style="display:none">
+    <div class="box">
+      <h2>🎨 Choose Your Skin</h2>
+      <div class="skin-cols">
+        <div class="skin-col" id="skin-p1">
+          <h3>Player 1</h3>
+          <canvas class="prev" id="prev0" width="130" height="130"></canvas>
+          <div class="picker">
+            <button onclick="cycleColor(0,-1)">◀</button>
+            <span id="cname0">Red</span>
+            <button onclick="cycleColor(0,1)">▶</button>
+          </div>
+          <div class="picker">
+            <button onclick="cycleFace(0,-1)">◀</button>
+            <span id="fname0">Happy 😊</span>
+            <button onclick="cycleFace(0,1)">▶</button>
+          </div>
+        </div>
+        <div class="skin-col" id="skin-p2" style="display:none">
+          <h3>Player 2</h3>
+          <canvas class="prev" id="prev1" width="130" height="130"></canvas>
+          <div class="picker">
+            <button onclick="cycleColor(1,-1)">◀</button>
+            <span id="cname1">Green</span>
+            <button onclick="cycleColor(1,1)">▶</button>
+          </div>
+          <div class="picker">
+            <button onclick="cycleFace(1,-1)">◀</button>
+            <span id="fname1">Angry 😠</span>
+            <button onclick="cycleFace(1,1)">▶</button>
+          </div>
+        </div>
+      </div>
+      <button class="play-btn" onclick="startGame()">▶ PLAY!</button>
+    </div>
+  </div>
+
+  <!-- Game over -->
+  <div class="overlay" id="over-overlay" style="display:none">
+    <div class="box">
+      <div style="font-size:3rem;margin-bottom:8px;">💀</div>
+      <h1>YOU GOT EATEN!</h1>
+      <p class="stat">Score: <span id="over-score">0</span></p>
+      <p class="stat">Kills: <span id="over-kills">0</span></p>
+      <div class="over-btns">
+        <button class="obtn" id="btn-again" onclick="restartGame()">🔄 Play Again</button>
+        <button class="obtn" id="btn-home" onclick="goHome()">🏠 Home</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
