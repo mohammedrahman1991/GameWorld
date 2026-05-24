@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no" />
+  <title>BrainCrate — Memory Training</title>
+  <style>
+    /* ── Base ──────────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:     #0d0d1a;
+      --card:   #13132a;
+      --accent: #7c3aed;
+      --gold:   #f59e0b;
+      --green:  #22c55e;
+      --red:    #ef4444;
+      --text:   #f1f5f9;
+      --muted:  #94a3b8;
+    }
+    html, body { height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── Screens ───────────────────────────────────────────────────────────── */
+    .screen { display: none; min-height: 100vh; padding: 0 16px 60px; flex-direction: column; align-items: center; }
+    .screen.active { display: flex; }
+
+    /* ── Start Screen ──────────────────────────────────────────────────────── */
+    #screen-start {
+      justify-content: center;
+      background: radial-gradient(ellipse at 50% -10%, rgba(120,50,0,0.45) 0%, transparent 65%);
+      padding-top: 40px;
+    }
+    .game-logo { font-size: 5rem; margin-bottom: 4px; animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    .game-title {
+      font-size: clamp(2.6rem, 8vw, 5rem);
+      font-weight: 900;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      letter-spacing: -2px;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+    .game-tagline { color: var(--muted); font-size: 1rem; text-align: center; margin-bottom: 40px; }
+
+    .section-label {
+      color: #475569; font-size: 0.75rem; text-transform: uppercase;
+      letter-spacing: 0.1em; font-weight: 700; margin-bottom: 14px;
+    }
+
+    /* Difficulty buttons */
+    .diff-row { display: flex; gap: 12px; margin-bottom: 36px; flex-wrap: wrap; justify-content: center; }
+    .diff-btn {
+      padding: 14px 28px; border: none; border-radius: 12px;
+      font: bold 0.95rem 'Segoe UI', sans-serif; cursor: pointer;
+      transition: transform .12s, opacity .12s; letter-spacing: 0.02em;
+    }
+    .diff-btn:hover { opacity: 0.88; }
+    .diff-btn:active { transform: scale(0.96); }
+    .d-easy   { background: linear-gradient(135deg,#14532d,#22c55e); color:#fff; }
+    .d-medium { background: linear-gradient(135deg,#78350f,#f59e0b); color:#fff; }
+    .d-hard   { background: linear-gradient(135deg,#7f1d1d,#ef4444); color:#fff; }
+
+    /* Level grid */
+    .level-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      max-width: 560px;
+      width: 100%;
+      margin-bottom: 36px;
+    }
+    @media (max-width: 520px) { .level-grid { grid-template-columns: repeat(5, 1fr); } }
+    .lbtn {
+      background: var(--card);
+      border: 2px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 14px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform .14s, border-color .14s, box-shadow .14s;
+    }
+    .lbtn:hover { transform: translateY(-3px); border-color: var(--gold); box-shadow: 0 8px 24px rgba(245,158,11,0.2); }
+    .lbtn .ln { font-size: 1.4rem; font-weight: 900; color: var(--gold); }
+    .lbtn .ll { font-size: 0.62rem; color: var(--muted); margin-top: 2px; }
+    .lbtn .li { font-size: 0.58rem; color: #475569; margin-top: 1px; }
+
+    /* How to play card */
+    .how-card {
+      max-width: 460px; width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 20px 24px;
+    }
+    .how-card p { color: #94a3b8; font-size: 0.88rem; line-height: 1.7; }
+    .how-card strong { color: var(--text); }
+
+    /* ── Memorize Screen ───────────────────────────────────────────────────── */
+    #screen-memorize { padding-top: 0; justify-content: flex-start; }
+
+    .top-bar {
+      width: 100%;
+      max-width: 920px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      background: rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      border-radius: 0 0 14px 14px;
+      margin-bottom: 18px;
+    }
+    .top-bar .tb-left { display: flex; flex-direction: column; }
+    .tb-phase { font-size: 0.7rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+    .tb-level { font-size: 1rem; font-weight: 800; color: var(--gold); }
+
+    /* SVG ring timer */
+    .ring-wrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 18px; }
+    .timer-ring { transform: rotate(-90deg); }
+    .tr-bg  { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 7; }
+    .tr-fg  { fill: none; stroke: var(--gold); stroke-width: 7; stroke-linecap: round;
+              stroke-dasharray: 283; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear, stroke .3s; }
+    .tr-fg.urgent { stroke: var(--red); }
+    .ring-text { fill: var(--gold); font-size: 26px; font-weight: 900;
+                 text-anchor: middle; dominant-baseline: central;
+                 transform: rotate(90deg); transform-origin: 48px 48px; font-family: inherit; }
+    .ring-text.urgent { fill: var(--red); }
+    .ring-sub { font-size: 0.78rem; color: var(--muted); margin-top: 4px; letter-spacing: .04em; }
+
+    /* Crate */
+    .crate-wrap { width: 100%; max-width: 920px; }
+    .crate {
+      background: linear-gradient(160deg,#7a5618 0%,#5a3e10 45%,#3d2a0a 100%);
+      border: 4px solid #241700;
+      border-radius: 18px;
+      box-shadow: 0 0 0 2px #a07030, inset 0 2px 0 rgba(255,255,255,0.1), 0 24px 60px rgba(0,0,0,0.65);
+      overflow: hidden;
+      position: relative;
+      animation: crate-open .5s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes crate-open { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    /* Wood plank lines */
+    .crate::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: repeating-linear-gradient(90deg, transparent, transparent 55px, rgba(0,0,0,0.1) 55px, rgba(0,0,0,0.1) 57px);
+      pointer-events: none; z-index: 0;
+    }
+    /* Corner bolts */
+    .crate::after {
+      content: '⬤ ⬤';
+      position: absolute; bottom: 10px; right: 16px;
+      font-size: 0.5rem; color: rgba(255,210,100,0.35);
+      letter-spacing: 6px; pointer-events: none;
+    }
+
+    .crate-head {
+      background: linear-gradient(90deg,#5a3e10,#8b6014,#5a3e10);
+      border-bottom: 3px solid #241700;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative; z-index: 1;
+    }
+    .crate-head h2 { font-size: 0.9rem; color: #f5d28a; font-weight: 800; letter-spacing: .06em; text-shadow: 0 1px 4px rgba(0,0,0,.6); }
+    .crate-count { font-size: 0.78rem; color: #c9a858; background: rgba(0,0,0,.35); padding: 3px 12px; border-radius: 99px; }
+
+    .items-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+      gap: 8px;
+      padding: 14px;
+      position: relative; z-index: 1;
+    }
+    .item-card {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 10px;
+      padding: 10px 6px 8px;
+      text-align: center;
+      backdrop-filter: blur(4px);
+      transition: transform .18s, background .18s;
+      animation: item-pop .35s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    .item-card:hover { transform: scale(1.07); background: rgba(255,255,255,0.18); }
+    @keyframes item-pop { from { opacity:0; transform:scale(.5) rotate(-8deg); } to { opacity:1; transform:scale(1) rotate(0); } }
+    .ie { font-size: 1.9rem; line-height: 1; display: block; margin-bottom: 5px; }
+    .in { font-size: 0.62rem; color: #e5d5b0; font-weight: 600; line-height: 1.25; word-break: break-word; }
+
+    /* ── Recall Screen ─────────────────────────────────────────────────────── */
+    #screen-recall { padding-top: 0; justify-content: flex-start; }
+
+    /* Recall progress bar */
+    .recall-topbar {
+      width: 100%; max-width: 720px;
+      padding: 14px 20px;
+      background: rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      border-radius: 0 0 14px 14px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .rtb-left { display: flex; flex-direction: column; gap: 4px; }
+    .rtb-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
+    .rtb-found { font-size: 1.1rem; font-weight: 800; color: var(--green); }
+    .rtb-total { font-size: 0.82rem; color: var(--muted); }
+    .rtb-right { text-align: right; }
+    .recall-secs { font-size: 2rem; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; transition: color .3s; }
+    .recall-secs.urgent { color: var(--red); }
+    .time-bar-wrap { width: 100%; max-width: 720px; height: 5px; background: rgba(255,255,255,0.08); border-radius: 99px; margin-bottom: 20px; overflow: hidden; }
+    .time-bar { height: 100%; background: var(--accent); border-radius: 99px; transition: width 1s linear, background .3s; }
+    .time-bar.urgent { background: var(--red); }
+
+    /* Input area */
+    .recall-main { width: 100%; max-width: 720px; }
+    .input-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    #recall-input {
+      flex: 1;
+      background: var(--card);
+      border: 2px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 15px 18px;
+      font-size: 1.05rem;
+      color: var(--text);
+      font-family: inherit;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    #recall-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,58,237,0.2); }
+    #recall-input.ok {
+      animation: flash-ok .4s ease;
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(34,197,94,0.22);
+    }
+    #recall-input.bad { animation: shake .3s ease; border-color: var(--red); }
+    @keyframes flash-ok { 0%,100%{background:var(--card);} 40%{background:rgba(34,197,94,0.15);} }
+    @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-7px);} 75%{transform:translateX(7px);} }
+    #submit-btn {
+      padding: 15px 22px;
+      background: linear-gradient(135deg,var(--accent),#5b21b6);
+      color: #fff; border: none; border-radius: 12px;
+      font: bold 1rem 'Segoe UI', sans-serif; cursor: pointer; transition: opacity .15s;
+    }
+    #submit-btn:hover { opacity: .87; }
+
+    /* Suggestions */
+    .sugg-row { display: flex; flex-wrap: wrap; gap: 6px; min-height: 26px; margin-bottom: 14px; }
+    .sugg-chip {
+      background: rgba(124,58,237,0.18);
+      border: 1px solid rgba(124,58,237,0.32);
+      color: #c4b5fd;
+      padding: 4px 12px; border-radius: 99px; font-size: 0.78rem;
+      cursor: pointer; transition: background .14s;
+    }
+    .sugg-chip:hover { background: rgba(124,58,237,0.38); }
+
+    /* Found log */
+    .found-heading { font-size: 0.78rem; color: var(--muted); font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .06em; }
+    .found-log {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 14px;
+      min-height: 64px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      align-content: flex-start;
+      margin-bottom: 14px;
+    }
+    .found-chip {
+      display: flex; align-items: center; gap: 5px;
+      background: rgba(34,197,94,0.14);
+      border: 1px solid rgba(34,197,94,0.32);
+      color: #86efac;
+      padding: 5px 12px; border-radius: 99px; font-size: 0.8rem; font-weight: 600;
+      animation: chip-pop .3s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes chip-pop { from{opacity:0;transform:scale(.6)} to{opacity:1;transform:scale(1)} }
+    .found-chip .ce { font-size: 1rem; }
+    .log-placeholder { color: #475569; font-size: 0.85rem; align-self: center; }
+
+    .done-btn {
+      display: block; margin: 0 auto;
+      padding: 11px 28px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--muted);
+      border-radius: 10px; font-size: 0.88rem;
+      cursor: pointer; font-family: inherit; transition: background .14s;
+    }
+    .done-btn:hover { background: rgba(255,255,255,0.1); }
+
+    /* ── Results Screen ────────────────────────────────────────────────────── */
+    #screen-results { padding-top: 40px; justify-content: flex-start; }
+
+    .res-top { text-align: center; margin-bottom: 28px; width: 100%; max-width: 700px; }
+    .res-emoji { font-size: 4rem; margin-bottom: 8px; animation: res-pop .5s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes res-pop { from{transform:scale(0)} to{transform:scale(1)} }
+    .res-title { font-size: 2rem; font-weight: 900; margin-bottom: 8px; }
+    .stars { font-size: 2.4rem; letter-spacing: 4px; }
+
+    .score-row { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-bottom: 28px; width: 100%; max-width: 700px; }
+    .sc { background: var(--card); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 18px 22px; text-align: center; flex: 1; min-width: 110px; }
+    .sc-n { font-size: 1.9rem; font-weight: 900; color: var(--gold); }
+    .sc-l { font-size: 0.72rem; color: var(--muted); margin-top: 3px; }
+
+    .res-grid-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 700; margin-bottom: 12px; width: 100%; max-width: 700px; }
+    .res-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 8px;
+      width: 100%; max-width: 700px;
+      margin-bottom: 28px;
+    }
+    .ri {
+      border-radius: 10px; padding: 10px 7px; text-align: center;
+      font-size: 0.68rem; font-weight: 600;
+      animation: ri-in .3s ease both;
+    }
+    .ri-emoji { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+    .ri.found { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.28); color: #86efac; }
+    .ri.missed { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.22); color: #fca5a5; }
+    @keyframes ri-in { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+    .res-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .res-btn {
+      padding: 13px 30px; border-radius: 12px; border: none;
+      font: bold 0.92rem 'Segoe UI',sans-serif; cursor: pointer;
+      transition: opacity .14s, transform .1s;
+    }
+    .res-btn:active { transform: scale(.97); }
+    .rb-next  { background: linear-gradient(135deg,var(--accent),#06b6d4); color:#fff; }
+    .rb-retry { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14); color:var(--text); }
+    .rb-home  { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); color:var(--muted); }
+
+    /* ── Close overlay ─────────────────────────────────────────────────────── */
+    #close-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.82); z-index: 300;
+      align-items: center; justify-content: center; flex-direction: column; gap: 14px;
+    }
+    #close-overlay.show { display: flex; animation: fade-in .2s ease; }
+    @keyframes fade-in { from{opacity:0} to{opacity:1} }
+    .close-icon { font-size: 5rem; animation: slam .4s cubic-bezier(.36,.07,.19,.97); }
+    @keyframes slam { 0%{transform:translateY(-80px) scale(1.4)} 60%{transform:translateY(6px) scale(.97)} 100%{transform:none scale(1)} }
+    .close-msg { font-size: 1.8rem; font-weight: 900; color: var(--red); text-align: center; }
+    .close-sub { font-size: 1rem; color: var(--gold); font-weight: 700; }
+
+    /* ── Setup Overlay ─────────────────────────────────────────────────────── */
+    #setup-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.88); z-index: 400;
+      align-items: center; justify-content: center;
+    }
+    #setup-overlay.show { display: flex; animation: fade-in .2s ease; }
+    .setup-box {
+      background: #13132a;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 36px 32px;
+      max-width: 420px;
+      width: 92%;
+      text-align: center;
+    }
+    .setup-title { font-size: 1.5rem; font-weight: 900; color: var(--text); margin-bottom: 6px; }
+    .setup-sub   { color: var(--muted); font-size: 0.88rem; margin-bottom: 22px; line-height: 1.5; }
+    .pc-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 22px; }
+    .pc-btn {
+      width: 56px; height: 56px;
+      border-radius: 14px; border: 2px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: var(--text); font-size: 1.3rem; font-weight: 900;
+      cursor: pointer; transition: all .14s;
+    }
+    .pc-btn:hover   { border-color: var(--accent); }
+    .pc-btn.pc-active { border-color: var(--accent); background: rgba(124,58,237,0.22); color: #c4b5fd; }
+    #name-inputs { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+    .name-input {
+      background: rgba(255,255,255,0.07);
+      border: 1.5px solid rgba(255,255,255,0.12);
+      border-radius: 10px; padding: 12px 16px;
+      color: var(--text); font-size: 0.95rem; font-family: inherit;
+      transition: border-color .2s;
+    }
+    .name-input:focus { outline: none; border-color: var(--accent); }
+    .start-game-btn {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg,var(--accent),#06b6d4);
+      border: none; border-radius: 12px;
+      color: #fff; font: bold 1rem 'Segoe UI',sans-serif;
+      cursor: pointer; transition: opacity .14s;
+    }
+    .start-game-btn:hover { opacity: 0.86; }
+
+    /* ── Handoff Overlay ───────────────────────────────────────────────────── */
+    #handoff-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.93); z-index: 500;
+      align-items: center; justify-content: center; flex-direction: column;
+    }
+    #handoff-overlay.show { display: flex; animation: fade-in .25s ease; }
+    .handoff-box { text-align: center; padding: 0 20px; }
+    .handoff-big-emoji { font-size: 5.5rem; margin-bottom: 12px; animation: float 2s ease-in-out infinite; }
+    .handoff-num  { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px; }
+    .handoff-name-text {
+      font-size: clamp(2rem,8vw,3.2rem); font-weight: 900;
+      background: linear-gradient(135deg,#a78bfa,#22d3ee);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      margin-bottom: 8px;
+    }
+    .handoff-hint { color: var(--muted); font-size: 0.95rem; margin-bottom: 28px; }
+    .ready-btn {
+      padding: 15px 40px;
+      background: linear-gradient(135deg,var(--accent),#06b6d4);
+      border: none; border-radius: 14px;
+      color: #fff; font: bold 1.05rem 'Segoe UI',sans-serif;
+      cursor: pointer; transition: opacity .14s, transform .1s;
+    }
+    .ready-btn:hover  { opacity: 0.85; }
+    .ready-btn:active { transform: scale(.97); }
+
+    /* ── Player indicator (recall screen) ──────────────────────────────────── */
+    .player-indicator {
+      display: none; align-items: center; gap: 8px;
+      background: rgba(124,58,237,0.15);
+      border: 1px solid rgba(124,58,237,0.3);
+      border-radius: 99px; padding: 4px 14px 4px 10px;
+      font-size: 0.85rem; font-weight: 700; color: #c4b5fd;
+      margin-bottom: 6px;
+    }
+
+    /* ── Leaderboard Screen ─────────────────────────────────────────────────── */
+    #screen-leaderboard { padding-top: 36px; justify-content: flex-start; }
+    .lb-header { text-align: center; margin-bottom: 28px; width: 100%; }
+    .lb-title {
+      font-size: clamp(1.8rem,6vw,2.6rem); font-weight: 900;
+      background: linear-gradient(135deg,#fbbf24,#f59e0b,#ef4444);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      margin-bottom: 4px;
+    }
+    .lb-subtitle { color: #64748b; font-size: 0.85rem; }
+
+    .lb-rows { width: 100%; max-width: 680px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+    .lb-row {
+      display: flex; align-items: center; gap: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px; padding: 15px 18px;
+    }
+    .lb-row.lb-winner { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3); }
+    .lb-medal  { font-size: 2.2rem; flex-shrink: 0; }
+    .lb-info   { flex: 1; min-width: 0; }
+    .lb-name   { font-size: 1.05rem; font-weight: 800; color: var(--text); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lb-stats  { font-size: 0.72rem; color: var(--muted); margin-bottom: 7px; }
+    .lb-bar-wrap { height: 6px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+    .lb-bar    { height: 100%; border-radius: 99px; transition: width .7s cubic-bezier(.34,1.56,.64,1); }
+    .lb-score  { font-size: 1.7rem; font-weight: 900; color: var(--gold); flex-shrink: 0; }
+
+    .lb-breakdown { width: 100%; max-width: 680px; }
+    .lb-player-section { margin-bottom: 26px; }
+    .lb-player-header {
+      font-size: 0.75rem; color: var(--muted); font-weight: 700;
+      text-transform: uppercase; letter-spacing: .07em; margin-bottom: 10px;
+      padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .lb-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 16px 0 40px; width: 100%; max-width: 680px; }
+  </style>
+</head>
+<body>
+
+<!-- ── Close animation overlay ─────────────────────────────────── -->
+<div id="close-overlay">
+  <div class="close-icon">📦</div>
+  <div class="close-msg">Box Closed!</div>
+  <div class="close-sub">Now recall what you saw...</div>
+</div>
+
+<!-- ── Player Setup overlay ───────────────────────────────────── -->
+<div id="setup-overlay">
+  <div class="setup-box">
+    <div class="setup-title">👥 Who's playing?</div>
+    <div class="setup-sub">Choose the number of players and enter your names. You'll all watch the same box, then take turns recalling!</div>
+    <div class="pc-row">
+      <button class="pc-btn pc-active" onclick="setPlayerCount(1)">1</button>
+      <button class="pc-btn" onclick="setPlayerCount(2)">2</button>
+      <button class="pc-btn" onclick="setPlayerCount(3)">3</button>
+      <button class="pc-btn" onclick="setPlayerCount(4)">4</button>
+    </div>
+    <div id="name-inputs"></div>
+    <button class="start-game-btn" onclick="startGame()">▶ Start Game</button>
+  </div>
+</div>
+
+<!-- ── Player handoff overlay ─────────────────────────────────── -->
+<div id="handoff-overlay">
+  <div class="handoff-box">
+    <div class="handoff-big-emoji">🧠</div>
+    <div class="handoff-num" id="handoff-number">Player 1 of 2</div>
+    <div class="handoff-name-text" id="handoff-name">Player 1</div>
+    <div class="handoff-hint">Others, look away! It's your turn to recall.</div>
+    <button class="ready-btn" onclick="beginPlayerRecall()">I'm Ready →</button>
+  </div>
+</div>
+
+<!-- ═══ START ═══════════════════════════════════════════════════════════════ -->
+<div class="screen active" id="screen-start">
+  <div class="game-logo">📦</div>
+  <h1 class="game-title">BrainCrate</h1>
+  <p class="game-tagline">Open the crate · Memorize the contents · Recall them all</p>
+
+  <p class="section-label">Quick Start</p>
+  <div class="diff-row">
+    <button class="diff-btn d-easy"   onclick="startDiff('easy')">🟢 Easy</button>
+    <button class="diff-btn d-medium" onclick="startDiff('medium')">🟡 Medium</button>
+    <button class="diff-btn d-hard"   onclick="startDiff('hard')">🔴 Hard</button>
+  </div>
+
+  <p class="section-label">Choose a Level</p>
+  <div class="level-grid" id="level-grid"></div>
+
+  <div class="how-card">
+    <p>🧠 <strong>How to play:</strong> A crate opens showing everyday items — batteries, flashlights, tools, household supplies, and more. You have limited time to <strong>memorize everything</strong> inside. When the box slams shut, type as many items as you can remember! Correct answers turn green.</p>
+  </div>
+</div>
+
+<!-- ═══ MEMORIZE ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-memorize">
+  <div class="top-bar">
+    <div class="tb-left">
+      <span class="tb-phase">📋 Memorize Phase</span>
+      <span class="tb-level" id="mem-level-tag">Level 1 — Starter</span>
+    </div>
+    <div style="font-size:0.8rem;color:var(--muted);">Look carefully — the box will close!</div>
+  </div>
+
+  <div class="ring-wrap">
+    <svg class="timer-ring" width="96" height="96" viewBox="0 0 96 96">
+      <circle class="tr-bg" cx="48" cy="48" r="42"/>
+      <circle class="tr-fg" id="tr-fg" cx="48" cy="48" r="42"/>
+      <text class="ring-text" id="mem-timer" x="48" y="48">30</text>
+    </svg>
+    <span class="ring-sub">seconds remaining</span>
+  </div>
+
+  <div class="crate-wrap">
+    <div class="crate" id="crate-box">
+      <div class="crate-head">
+        <h2>📦 BRAINCRATE — CONTENTS</h2>
+        <span class="crate-count" id="crate-count">10 items</span>
+      </div>
+      <div class="items-grid" id="items-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ RECALL ════════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-recall">
+  <div class="recall-topbar">
+    <div class="rtb-left">
+      <div class="player-indicator" id="player-indicator">
+        🧠 <span id="current-player-name">Player 1</span>
+      </div>
+      <span class="rtb-label">✏️ Recall Phase</span>
+      <span class="rtb-found"><span id="recall-found">0</span> <span class="rtb-total">/ <span id="recall-total">10</span> found</span></span>
+    </div>
+    <div class="rtb-right">
+      <div class="recall-secs" id="recall-secs">90</div>
+      <div style="font-size:0.7rem;color:var(--muted);">seconds left</div>
+    </div>
+  </div>
+  <div class="time-bar-wrap" style="width:100%;max-width:720px;">
+    <div class="time-bar" id="time-bar" style="width:100%"></div>
+  </div>
+
+  <div class="recall-main">
+    <div class="input-row">
+      <input type="text" id="recall-input"
+        placeholder='Type an item you saw… press Enter'
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+      <button id="submit-btn" onclick="submitRecall()">Submit</button>
+    </div>
+    <div class="sugg-row" id="sugg-row"></div>
+
+    <div class="found-heading">Items you recalled:</div>
+    <div class="found-log" id="found-log">
+      <span class="log-placeholder" id="log-placeholder">Correct items appear here as you type them…</span>
+    </div>
+
+    <button class="done-btn" onclick="finishRecall()">✓ I'm done — show results</button>
+  </div>
+</div>
+
+<!-- ═══ RESULTS ═══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-results">
+  <div class="res-top">
+    <div class="res-emoji" id="res-emoji">🎉</div>
+    <div class="res-title" id="res-title">Great Memory!</div>
+    <div class="stars" id="res-stars">⭐⭐⭐</div>
+  </div>
+
+  <div class="score-row">
+    <div class="sc"><div class="sc-n" id="sc-found">0</div><div class="sc-l">Found</div></div>
+    <div class="sc"><div class="sc-n" id="sc-total">0</div><div class="sc-l">Total</div></div>
+    <div class="sc"><div class="sc-n" id="sc-acc">0%</div><div class="sc-l">Accuracy</div></div>
+    <div class="sc"><div class="sc-n" id="sc-score">0</div><div class="sc-l">Score</div></div>
+  </div>
+
+  <div class="res-grid-label">All items in the box:</div>
+  <div class="res-grid" id="res-grid"></div>
+
+  <div class="res-btns">
+    <button class="res-btn rb-next"  id="btn-next"  onclick="nextLevel()">Next Level →</button>
+    <button class="res-btn rb-retry" onclick="retryLevel()">↩ Retry</button>
+    <button class="res-btn rb-home"  onclick="goHome()">🏠 Home</button>
+  </div>
+</div>
+
+<!-- ═══ LEADERBOARD ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-leaderboard">
+  <div class="lb-header">
+    <div class="lb-title">🏆 Final Scores</div>
+    <div class="lb-subtitle" id="lb-level">Level 1 — Starter · 10 items</div>
+  </div>
+
+  <div class="lb-rows" id="lb-rows"></div>
+
+  <div class="res-grid-label" style="width:100%;max-width:680px;">Player breakdowns:</div>
+  <div class="lb-breakdown" id="lb-breakdown"></div>
+
+  <div class="lb-btns">
+    <button class="res-btn rb-retry" onclick="retryLevel()">↩ Play Again</button>
+    <button class="res-btn rb-home"  onclick="goHome()">🏠 Home</button>
+  </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
