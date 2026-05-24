@@ -571,29 +571,32 @@ function drawFloor() {
 }
 
 function drawWalls() {
-  const WH=420; // wall height in world units
+  const WH=380;
   function sc(wx,wy,wh){ const p=project(wx,wy,wh); return p?[p.sx,p.sy]:null; }
   function wallFace(bl,br,tr,tl,topC,botC) {
     if(!bl||!br||!tr||!tl) return;
+    // Clamp so walls never fill more than half the floor area
+    const topCap=HORIZON+8, botCap=H+60;
+    tl=[tl[0],Math.max(tl[1],topCap)]; tr=[tr[0],Math.max(tr[1],topCap)];
+    bl=[bl[0],Math.min(bl[1],botCap)]; br=[br[0],Math.min(br[1],botCap)];
     const allY=[bl[1],br[1],tr[1],tl[1]];
     const minY=Math.min(...allY), maxY=Math.max(...allY);
-    if(maxY<HORIZON) return;
-    const g=ctx.createLinearGradient(0,Math.max(HORIZON,minY),0,Math.min(H+200,maxY));
+    if(maxY<=HORIZON||minY>=H) return;
+    const g=ctx.createLinearGradient(0,minY,0,maxY);
     g.addColorStop(0,topC); g.addColorStop(1,botC);
     ctx.beginPath();
     ctx.moveTo(bl[0],bl[1]); ctx.lineTo(br[0],br[1]);
     ctx.lineTo(tr[0],tr[1]); ctx.lineTo(tl[0],tl[1]);
     ctx.closePath(); ctx.fillStyle=g; ctx.fill();
-    ctx.strokeStyle='rgba(255,80,80,0.8)'; ctx.lineWidth=3; ctx.stroke();
+    ctx.strokeStyle='rgba(255,80,80,0.7)'; ctx.lineWidth=2.5; ctx.stroke();
   }
-  const ny=camY+3, fy=Math.min(WORLD,camY+MAX_VIEW);
-  // Far wall (y = WORLD)
+  // Start side walls well in front of camera (not right behind player)
+  const ny=camY+Math.max(180, dynCamBack*0.45);
+  const fy=Math.min(WORLD,camY+MAX_VIEW);
   if(WORLD-camY>0&&WORLD-camY<MAX_VIEW)
-    wallFace(sc(0,WORLD,0),sc(WORLD,WORLD,0),sc(WORLD,WORLD,WH),sc(0,WORLD,WH),'#DD5555','#881111');
-  // Left wall (x = 0)
-  wallFace(sc(0,ny,0),sc(0,fy,0),sc(0,fy,WH),sc(0,ny,WH),'#CC4444','#771111');
-  // Right wall (x = WORLD)
-  wallFace(sc(WORLD,ny,0),sc(WORLD,fy,0),sc(WORLD,fy,WH),sc(WORLD,ny,WH),'#CC4444','#771111');
+    wallFace(sc(0,WORLD,0),sc(WORLD,WORLD,0),sc(WORLD,WORLD,WH),sc(0,WORLD,WH),'#CC4444','#771111');
+  wallFace(sc(0,ny,0),sc(0,fy,0),sc(0,fy,WH),sc(0,ny,WH),'#BB3333','#661111');
+  wallFace(sc(WORLD,ny,0),sc(WORLD,fy,0),sc(WORLD,fy,WH),sc(WORLD,ny,WH),'#BB3333','#661111');
 }
 
 // ── Food (3D glowing sphere) ─────────────────────────────────────────────────
