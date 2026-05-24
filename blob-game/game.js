@@ -536,7 +536,7 @@ function drawFloor() {
   const ty0=Math.ceil(nearY/TILE_SZ)*TILE_SZ;
   for(let wy=ty0;wy<farY;wy+=TILE_SZ){
     const dy=wy-camY; if(dy<1) continue;
-    const sy=HORIZON+CAM_H*FL/dy;
+    const sy=HORIZON+dynCamH*FL/dy;
     if(sy>H+2) continue;
     if(sy<=HORIZON) break;
     const t=(sy-HORIZON)/(H-HORIZON);  // 0=far,1=near
@@ -552,7 +552,7 @@ function drawFloor() {
   ctx.lineWidth=0.7;
   for(let wx=wx0;wx<=wx1;wx+=TILE_SZ){
     const sxN=W/2+(wx-camX)*FL/nearDy;
-    const syN=Math.min(H+60,HORIZON+CAM_H*FL/nearDy);
+    const syN=Math.min(H+60,HORIZON+dynCamH*FL/nearDy);
     // Fade lateral lines that are far off-center
     const lateralOffset=Math.abs(wx-camX);
     const alpha=Math.max(0,0.22-lateralOffset/18000);
