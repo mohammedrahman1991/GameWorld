@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Loading Game — Wacky Brains</title>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8332361685144393" crossorigin="anonymous"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#0d0d1a;color:#f1f5f9;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:40px 20px}
+
+    .top-bar{width:100%;max-width:700px;display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+    .logo{font-weight:900;font-size:1.1rem;background:linear-gradient(135deg,#a78bfa,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-decoration:none}
+    .home-link{color:#64748b;font-size:.85rem;text-decoration:none;transition:color .2s}
+    .home-link:hover{color:#f1f5f9}
+
+    .card{background:#13132a;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px 28px;width:100%;max-width:700px;display:flex;flex-direction:column;align-items:center;gap:20px}
+
+    .spinner-wrap{position:relative;width:64px;height:64px}
+    .spinner{width:64px;height:64px;border:4px solid rgba(124,58,237,.2);border-top-color:#7c3aed;border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .loading-title{font-size:1.4rem;font-weight:800;text-align:center}
+    .loading-sub{color:#64748b;font-size:.9rem;text-align:center}
+
+    /* countdown ring */
+    .ring-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+    .ring{width:56px;height:56px}
+    .ring-track{fill:none;stroke:rgba(255,255,255,.08);stroke-width:5}
+    .ring-fill{fill:none;stroke:url(#rg);stroke-width:5;stroke-linecap:round;stroke-dasharray:138;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear;transform:rotate(-90deg);transform-origin:50% 50%}
+    .ring-num{font-size:1.5rem;font-weight:800;color:#a78bfa;line-height:1}
+
+    /* ad container */
+    .ad-wrap{width:100%;min-height:90px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;overflow:hidden}
+    .ad-label{color:#334155;font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;text-align:center;padding:6px 0 2px}
+
+    .skip-btn{background:none;border:1.5px solid rgba(255,255,255,.12);border-radius:10px;color:#64748b;cursor:pointer;font-size:.88rem;padding:9px 24px;transition:.18s}
+    .skip-btn:hover{border-color:#7c3aed;color:#a78bfa}
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="/" class="logo">Wacky Brains</a>
+  <a href="/" class="home-link">← Back to games</a>
+</div>
+
+<div class="card">
+  <div class="spinner-wrap"><div class="spinner"></div></div>
+
+  <div>
+    <div class="loading-title" id="game-name">Loading your game…</div>
+    <div class="loading-sub">Brought to you free by Wacky Brains</div>
+  </div>
+
+  <!-- Google AdSense — auto ads will fill this area -->
+  <div class="ad-wrap" style="min-height:280px;flex-direction:column">
+    <div class="ad-label">Advertisement</div>
+    <ins class="adsbygoogle"
+         style="display:block;width:100%;min-height:250px"
+         data-ad-client="ca-pub-8332361685144393"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+  </div>
+
+  <div class="ring-wrap">
+    <svg class="ring" viewBox="0 0 48 48">
+      <defs>
+        <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#7c3aed"/>
+          <stop offset="100%" stop-color="#06b6d4"/>
+        </linearGradient>
+      </defs>
+      <circle class="ring-track" cx="24" cy="24" r="22"/>
+      <circle class="ring-fill" id="ring-fill" cx="24" cy="24" r="22"/>
+    </svg>
+    <div class="ring-num" id="countdown">5</div>
+  </div>
+
+  <button class="skip-btn" id="skip-btn">Skip →</button>
+</div>
+
+<script>
+(function(){
+  // Push the AdSense slot
+  try{ (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e){}
+
+  // Read destination from query string
+  var params = new URLSearchParams(window.location.search);
+  var dest   = params.get('g') || '/';
+  var name   = params.get('n') || '';
+  if(name) document.getElementById('game-name').textContent = 'Loading ' + decodeURIComponent(name) + '…';
+
+  // Countdown + ring
+  var TOTAL = 5;
+  var secs  = TOTAL;
+  var circumference = 2 * Math.PI * 22; // ~138.2
+  var ring  = document.getElementById('ring-fill');
+  var num   = document.getElementById('countdown');
+  ring.style.strokeDasharray  = circumference;
+  ring.style.strokeDashoffset = 0;
+
+  function go(){ window.location.href = decodeURIComponent(dest); }
+
+  var timer = setInterval(function(){
+    secs--;
+    num.textContent = secs;
+    ring.style.strokeDashoffset = circumference * (1 - secs / TOTAL);
+    if(secs <= 0){ clearInterval(timer); go(); }
+  }, 1000);
+
+  document.getElementById('skip-btn').addEventListener('click', function(){
+    clearInterval(timer); go();
+  });
+})();
+</script>
+</body>
+</html>

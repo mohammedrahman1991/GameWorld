@@ -1054,12 +1054,14 @@
   /* ── MODAL ── */
   var modal     = document.getElementById('game-modal');
   var panelEl   = document.getElementById('gm-panel');
-  var currentHref = '';
+  var currentHref  = '';
+  var currentTitle = '';
 
   function openModal(id) {
     var g = GAMES[id];
     if (!g) return;
-    currentHref = g.href;
+    currentHref  = g.href;
+    currentTitle = g.title;
 
     // icon
     var icon = document.getElementById('gm-icon');
@@ -1144,7 +1146,9 @@
   /* ── AD OVERLAY ── */
   document.getElementById('gm-play-now').addEventListener('click', function() {
     closeModal();
-    window.location.href = currentHref;
+    var name = encodeURIComponent(currentTitle);
+    var dest = encodeURIComponent(currentHref);
+    window.location.href = '/play.html?g=' + dest + '&n=' + name;
   });
 
 })();
