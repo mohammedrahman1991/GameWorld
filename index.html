@@ -6,7 +6,6 @@
   <title>Wacky Brains – Free Online Games | Play Instantly, No Download</title>
   <meta name="description" content="Play 25+ free browser games instantly at Wacky Brains — action, sports, racing, puzzle, and adventure games. No downloads, no sign-ups required. 1 and 2 player games for all ages." />
   <meta name="keywords" content="free online games, browser games, play online, 2 player games, action games, racing games, puzzle games, no download games" />
-  <!-- Amazon affiliate ads — no AdSense -->
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -21,133 +20,34 @@
       --radius: 16px;
     }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      min-height: 100vh;
-    }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
 
     /* Header */
-    header {
-      text-align: center;
-      padding: 60px 20px 40px;
-      background: radial-gradient(ellipse at 50% 0%, #3b0764 0%, transparent 70%);
-    }
-
-    header h1 {
-      font-size: clamp(2.5rem, 6vw, 5rem);
-      font-weight: 900;
-      letter-spacing: -1px;
-      background: linear-gradient(135deg, #a78bfa, #22d3ee, #fbbf24);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    header p {
-      color: var(--muted);
-      margin-top: 10px;
-      font-size: 1.1rem;
-    }
+    header { text-align: center; padding: 60px 20px 40px; background: radial-gradient(ellipse at 50% 0%, #3b0764 0%, transparent 70%); }
+    header h1 { font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 900; letter-spacing: -1px; background: linear-gradient(135deg, #a78bfa, #22d3ee, #fbbf24); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    header p { color: var(--muted); margin-top: 10px; font-size: 1.1rem; }
 
     /* Grid */
-    main {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px 20px 80px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 24px;
-    }
+    main { max-width: 1200px; margin: 0 auto; padding: 20px 20px 80px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
 
     /* Card */
-    .card {
-      background: var(--card-bg);
-      border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,0.07);
-      overflow: hidden;
-      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
-      display: flex;
-      flex-direction: column;
-    }
+    .card { background: var(--card-bg); border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.07); overflow: hidden; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; cursor: pointer; }
+    .card:hover { transform: translateY(-4px); border-color: rgba(124,58,237,0.5); box-shadow: 0 12px 40px rgba(124,58,237,0.2); }
+    .card-thumb { height: 140px; display: flex; align-items: center; justify-content: center; font-size: 4rem; position: relative; overflow: hidden; }
+    .card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .card-body h2 { font-size: 1.1rem; font-weight: 700; }
+    .card-body p { color: var(--muted); font-size: 0.85rem; flex: 1; }
 
-    .card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(124, 58, 237, 0.5);
-      box-shadow: 0 12px 40px rgba(124,58,237,0.2);
-    }
+    .badge { display: inline-block; font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .badge-live   { background: #064e3b; color: #6ee7b7; }
+    .badge-server { background: #3b1c08; color: #fdba74; }
 
-    .card-thumb {
-      height: 140px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 4rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .card-body {
-      padding: 18px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .card-body h2 {
-      font-size: 1.1rem;
-      font-weight: 700;
-    }
-
-    .card-body p {
-      color: var(--muted);
-      font-size: 0.85rem;
-      flex: 1;
-    }
-
-    .badge {
-      display: inline-block;
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: 99px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .badge-live    { background: #064e3b; color: #6ee7b7; }
-    .badge-server  { background: #3b1c08; color: #fdba74; }
-
-    .play-btn {
-      display: block;
-      text-align: center;
-      padding: 10px;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      text-decoration: none;
-      transition: opacity 0.15s;
-    }
-
-    .play-btn-active {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #fff;
-    }
-
+    .play-btn { display: block; text-align: center; padding: 10px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; text-decoration: none; transition: opacity 0.15s; border: none; cursor: pointer; }
+    .play-btn-active { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
     .play-btn-active:hover { opacity: 0.85; }
+    .play-btn-disabled { background: rgba(255,255,255,0.05); color: var(--muted); cursor: default; }
 
-    .play-btn-disabled {
-      background: rgba(255,255,255,0.05);
-      color: var(--muted);
-      cursor: default;
-    }
-
-    /* Gradient overlays for each card */
     .g1  { background: linear-gradient(135deg, #1e3a5f, #0f172a); }
     .g2  { background: linear-gradient(135deg, #1a1a2e, #16213e); }
     .g3  { background: linear-gradient(135deg, #2d1b69, #11001c); }
@@ -163,17 +63,8 @@
     .g13 { background: linear-gradient(135deg, #1a3a1a, #0a1f0a); }
     .g14 { background: linear-gradient(135deg, #4a0a0a, #1c0000); }
 
-    /* Section label */
-    .section-label {
-      color: var(--muted);
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin: 40px 0 16px;
-    }
+    .section-label { color: var(--muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin: 40px 0 16px; }
 
-    /* Nav */
     nav { background: rgba(13,13,26,0.97); border-bottom: 1px solid rgba(255,255,255,0.08); position: sticky; top: 0; z-index: 100; }
     .nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; height: 56px; }
     .nav-logo { font-weight: 900; font-size: 1.1rem; background: linear-gradient(135deg,#a78bfa,#22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
@@ -181,120 +72,76 @@
     .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.88rem; transition: color .2s; }
     .nav-links a:hover { color: var(--text); }
 
-    /* About section */
-    .about-section {
-      background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(6,182,212,0.06));
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 20px;
-      padding: 36px 40px;
-      margin-bottom: 48px;
-    }
+    .about-section { background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(6,182,212,0.06)); border: 1px solid rgba(255,255,255,0.07); border-radius: 20px; padding: 36px 40px; margin-bottom: 48px; }
     .about-section h2 { font-size: 1.35rem; font-weight: 800; color: var(--text); margin-bottom: 14px; }
     .about-section p { color: #cbd5e1; font-size: 0.95rem; line-height: 1.75; margin-bottom: 12px; }
     .about-section p:last-child { margin-bottom: 0; }
     .cat-pills { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
-    .cat-pill { background: rgba(124,58,237,0.18); border: 1px solid rgba(124,58,237,0.35); color: #c4b5fd;
-      padding: 5px 14px; border-radius: 99px; font-size: 0.8rem; font-weight: 600; }
+    .cat-pill { background: rgba(124,58,237,0.18); border: 1px solid rgba(124,58,237,0.35); color: #c4b5fd; padding: 5px 14px; border-radius: 99px; font-size: 0.8rem; font-weight: 600; }
 
-    /* Footer */
-    footer {
-      text-align: center;
-      padding: 24px;
-      color: var(--muted);
-      font-size: 0.8rem;
-      border-top: 1px solid rgba(255,255,255,0.05);
-    }
+    footer { text-align: center; padding: 24px; color: var(--muted); font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.05); }
     footer a { color: var(--accent2); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
 
-    /* ── Ad Interstitial ─────────────────────────────────────────────── */
-    #ad-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.88);
-      z-index: 9999;
-      align-items: center;
-      justify-content: center;
-    }
+    /* ── Ad Interstitial ── */
+    #ad-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 9999; align-items: center; justify-content: center; }
     #ad-overlay.visible { display: flex; }
-
-    #ad-box {
-      background: #13132a;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 20px;
-      padding: 24px 22px 20px;
-      width: min(420px, 94vw);
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 10px;
-    }
-
-    .ad-sponsor-label {
-      text-align: center;
-      color: #64748b;
-      font-size: 0.68rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-
-    .amzn-card {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: #fff;
-      border-radius: 12px;
-      padding: 13px 16px;
-      text-decoration: none;
-      transition: background 0.15s, transform 0.12s;
-    }
+    #ad-box { background: #13132a; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 24px 22px 20px; width: min(420px, 94vw); display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
+    .ad-sponsor-label { text-align: center; color: #64748b; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; }
+    .amzn-card { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 12px; padding: 13px 16px; text-decoration: none; transition: background 0.15s, transform 0.12s; }
     .amzn-card:hover { background: #fffaf0; transform: translateY(-1px); }
-
-    .amzn-badge {
-      font-size: 1.5em;
-      line-height: 1;
-    }
-
+    .amzn-badge { font-size: 1.5em; line-height: 1; }
     .amzn-info { flex: 1; text-align: left; }
-    .amzn-brand {
-      font-size: 0.7rem;
-      font-weight: 900;
-      color: #FF9900;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-    .amzn-title {
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: #232f3e;
-      margin-top: 1px;
-    }
-
-    .amzn-arrow {
-      color: #FF9900;
-      font-size: 1.3em;
-      font-weight: 900;
-    }
-
-    #ad-continue {
-      margin-top: 4px;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      font-weight: 700;
-      font-size: 0.95rem;
-      cursor: pointer;
-      background: linear-gradient(135deg, #7c3aed, #06b6d4);
-      color: #fff;
-      transition: opacity 0.15s;
-    }
-    #ad-continue:disabled {
-      background: rgba(255,255,255,0.08);
-      color: #64748b;
-      cursor: default;
-    }
+    .amzn-brand { font-size: 0.7rem; font-weight: 900; color: #FF9900; letter-spacing: 0.5px; text-transform: uppercase; }
+    .amzn-title { font-size: 0.9rem; font-weight: 700; color: #232f3e; margin-top: 1px; }
+    .amzn-arrow { color: #FF9900; font-size: 1.3em; font-weight: 900; }
+    #ad-continue { margin-top: 4px; padding: 12px; border-radius: 10px; border: none; font-weight: 700; font-size: 0.95rem; cursor: pointer; background: linear-gradient(135deg, #7c3aed, #06b6d4); color: #fff; transition: opacity 0.15s; }
+    #ad-continue:disabled { background: rgba(255,255,255,0.08); color: #64748b; cursor: default; }
     #ad-continue:not(:disabled):hover { opacity: 0.85; }
+
+    /* ── Game Detail Modal ── */
+    #game-modal { position: fixed; inset: 0; z-index: 8000; background: rgba(0,0,0,.86); display: none; align-items: flex-start; justify-content: center; padding: 24px 16px; overflow-y: auto; }
+    #game-modal.open { display: flex; }
+    .gm-panel { background: #13132a; border: 1px solid rgba(255,255,255,.1); border-radius: 22px; width: 100%; max-width: 780px; position: relative; overflow: hidden; margin: auto; }
+    .gm-close { position: absolute; top: 14px; right: 14px; z-index: 10; background: rgba(255,255,255,.1); border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; color: #fff; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; transition: .15s; }
+    .gm-close:hover { background: rgba(255,255,255,.2); }
+
+    .gm-header { display: flex; gap: 20px; padding: 28px 28px 20px; align-items: flex-start; }
+    .gm-icon { width: 96px; height: 96px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 3.4rem; flex-shrink: 0; }
+    .gm-info { flex: 1; min-width: 0; }
+    .gm-title { font-size: 1.65rem; font-weight: 800; margin-bottom: 6px; }
+    .gm-tags { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 10px; }
+    .gm-tag { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 99px; font-size: .74rem; padding: 3px 10px; color: #94a3b8; }
+    .gm-stars { display: flex; align-items: center; gap: 6px; margin-bottom: 14px; }
+    .gm-star-row { color: #fbbf24; font-size: 1rem; letter-spacing: 1px; }
+    .gm-rating-num { color: #94a3b8; font-size: .88rem; }
+    .gm-play-now { background: linear-gradient(135deg, #7c3aed, #06b6d4); border: none; border-radius: 12px; color: #fff; cursor: pointer; font-size: 1rem; font-weight: 700; padding: 12px 32px; transition: .18s; }
+    .gm-play-now:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(124,58,237,.4); }
+
+    .gm-shots { display: flex; gap: 10px; padding: 0 28px 22px; overflow-x: auto; scrollbar-width: none; }
+    .gm-shots::-webkit-scrollbar { display: none; }
+    .gm-shot { min-width: 220px; height: 130px; border-radius: 14px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 3rem; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,.08); }
+    .gm-shot-label { position: absolute; bottom: 0; left: 0; right: 0; text-align: center; font-size: .65rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.9); background: rgba(0,0,0,.45); padding: 4px 0; }
+
+    .gm-section { padding: 0 28px 22px; }
+    .gm-section h3 { font-size: .76rem; text-transform: uppercase; letter-spacing: .1em; color: #64748b; margin-bottom: 10px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,.05); padding-bottom: 6px; }
+    .gm-about { color: #cbd5e1; font-size: .95rem; line-height: 1.72; }
+    .gm-controls { list-style: none; }
+    .gm-controls li { color: #cbd5e1; font-size: .9rem; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.05); display: flex; gap: 12px; }
+    .gm-controls li:last-child { border-bottom: none; }
+    .gm-ctrl-key { background: rgba(255,255,255,.08); border-radius: 6px; padding: 2px 9px; font-family: monospace; font-size: .82rem; color: #a78bfa; white-space: nowrap; flex-shrink: 0; }
+    .gm-meta { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap: 10px; }
+    .gm-meta-item { background: rgba(255,255,255,.04); border-radius: 10px; padding: 10px 14px; }
+    .gm-meta-label { color: #64748b; font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; }
+    .gm-meta-val { color: #f1f5f9; font-size: .92rem; font-weight: 600; margin-top: 3px; }
+    .gm-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+    .gm-chip { background: rgba(124,58,237,.12); border: 1px solid rgba(124,58,237,.25); border-radius: 99px; color: #c4b5fd; font-size: .73rem; padding: 4px 12px; }
+
+    @media (max-width: 520px) {
+      .gm-header { flex-direction: column; align-items: center; text-align: center; }
+      .gm-tags { justify-content: center; }
+      .gm-stars { justify-content: center; }
+    }
   </style>
 </head>
 <body>
@@ -319,7 +166,6 @@
 
 <main>
 
-  <!-- About section -->
   <div class="about-section">
     <h2>🎮 What is Wacky Brains?</h2>
     <p>Wacky Brains is a free online gaming platform with 25+ original browser games you can play instantly — no downloads, no sign-ups, no paywalls. Every game here was designed and built from scratch, spanning action battles, sports competitions, adventure simulations, and brain-teasing puzzles.</p>
@@ -336,397 +182,393 @@
   <p class="section-label">⭐ Featured Games</p>
   <div class="grid">
 
-    <div class="card">
+    <div class="card" data-game="buckman">
       <div class="card-thumb g1">🦇</div>
       <div class="card-body">
         <h2>BuckMan</h2>
         <p>A Batman-themed racing adventure.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="BuckMan/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="drone-zayn">
       <div class="card-thumb g2">🚁</div>
       <div class="card-body">
         <h2>Drone Game Zayn</h2>
         <p>Fly a DJI-style drone in a 3D world.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="Drone%20Game%20Zayn/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="goofy-house">
       <div class="card-thumb g3">🏠</div>
       <div class="card-body">
         <h2>Goofy House</h2>
         <p>Explore a quirky 3D house built with React Three Fiber.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="GoofyHouse/dist/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="monster-truck">
       <div class="card-thumb g4">🚛</div>
       <div class="card-body">
         <h2>Monster Truck</h2>
         <p>Smash through obstacles with a monster truck.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="Monster%20truck/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="turtles">
       <div class="card-thumb g11">🐢</div>
       <div class="card-body">
         <h2>Turtles Team Up</h2>
         <p>Cooperative turtle adventure.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="Turtles%20Team%20Up/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="sniper">
       <div class="card-thumb g12">🎯</div>
       <div class="card-body">
         <h2>One v One Sniper</h2>
         <p>1v1 sniper duel — outshoot your opponent.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="one%20v%20one%20sniper/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
   </div>
 
-  <!-- ACTION & COMBAT -->
   <p class="section-label">🎯 Action &amp; Combat</p>
   <div class="grid">
 
-    <div class="card">
+    <div class="card" data-game="fight-arrows">
       <div class="card-thumb g7">🏹</div>
       <div class="card-body">
         <h2>Fight Arrows</h2>
-        <p>Archery duel — hold to charge your bow, release to fire. Hit a flying bird and your arrow redirects straight at the enemy. Snowy, desert &amp; jungle maps. First to 5 kills wins!</p>
+        <p>Archery duel — hold to charge your bow, release to fire. Hit a flying bird and your arrow redirects straight at the enemy. First to 5 kills wins!</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="fight-arrows/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="castle-man">
       <div class="card-thumb g1">🏰</div>
       <div class="card-body">
         <h2>Castle Man Battles</h2>
         <p>Pixel PvP — destroy the enemy castle or survive zombie waves! Choose from swords, SMGs, shotguns &amp; rocket launchers. 1–2 players.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="castle-man-battles/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="sniper">
       <div class="card-thumb g12">🎯</div>
       <div class="card-body">
         <h2>One v One Sniper</h2>
         <p>1v1 sniper duel — scope in, time your shot, and outshoot your opponent before they get you. Twitchy aiming and one-shot kills.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="one%20v%20one%20sniper/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="shootpoint">
       <div class="card-thumb g7">🔫</div>
       <div class="card-body">
         <h2>Shootpoint</h2>
         <p>Top-down battle royale shooter — take out enemies, grab power-ups, and be the last one standing. Fast-paced and intense.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="Shootpoint/public/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="space-invasion">
       <div class="card-thumb g2">🚀</div>
       <div class="card-body">
         <h2>Space Invasion</h2>
         <p>Classic alien-blasting action — defend Earth from waves of extraterrestrial invaders. Move, shoot, and survive as long as you can.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="space%20invasion/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="capaw">
       <div class="card-thumb g10">🐔</div>
       <div class="card-body">
         <h2>CaPaw!</h2>
         <p>Chaotic chicken fighting — choose your bird, battle opponents, and peck your way to victory in this wild animal brawler.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="CaPaw/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="turtles">
       <div class="card-thumb g11">🐢</div>
       <div class="card-body">
         <h2>Turtles Team Up</h2>
         <p>Cooperative turtle adventure — team up with a friend and fight your way through enemies together. Turtle power!</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="Turtles%20Team%20Up/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="blob-eating">
       <div class="card-thumb g5">🫧</div>
       <div class="card-body">
         <h2>Blob Eating</h2>
         <p>Agar.io-style blob battle! Eat food pellets &amp; devour other blobs to grow. 1,000 bots, 8 face skins, 12 colors. Biggest blob wears the 👑 crown!</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="blob-game/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
   </div>
 
-  <!-- SPORTS & RACING -->
   <p class="section-label">🏎️ Sports &amp; Racing</p>
   <div class="grid">
 
-    <div class="card">
+    <div class="card" data-game="moto-island">
       <div class="card-thumb g2">🏍️</div>
       <div class="card-body">
         <h2>Moto Island</h2>
         <p>Race 3 laps around a tropical island! Compete against 5 AI opponents or go head-to-head in 2-player splitscreen mode.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="moto-island/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="bike-rider">
       <div class="card-thumb g3">🏍️</div>
       <div class="card-body">
         <h2>Bike Rider</h2>
         <p>Side-scrolling motorbike challenge! 5 maps from Easy to Extreme — jump gaps, dodge laser gates, race to the checkpoint. 1 or 2 players.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="bike-rider/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="futbol">
       <div class="card-thumb g4">⚽</div>
       <div class="card-body">
         <h2>1 v 1 Futbol</h2>
         <p>Charge your kick, steal the ball, and score 5 goals to win this intense 2-player soccer showdown. Two legends, one pitch.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="1v1-futbol/public/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="bball">
       <div class="card-thumb g7">🏀</div>
       <div class="card-body">
         <h2>One V One BBALL</h2>
         <p>Basketball hoop challenge — time your jump shot perfectly to outscore your opponent. Simple controls, satisfying swishes.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="Noah's%20Game/public/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="parkour">
       <div class="card-thumb g4">🏃</div>
       <div class="card-body">
         <h2>Parkour 2.0</h2>
         <p>Run, jump &amp; slide through 10 wild worlds — Snow Storm, Dark Cave, Dino Forest, Future Tech &amp; more! Slide → Jump = Super Jump ⚡</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="parkour-game/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="swing-man">
       <div class="card-thumb g9">🕺</div>
       <div class="card-body">
         <h2>Swing Man</h2>
         <p>Swing through the city on a grappling hook — time your launches perfectly to build momentum and soar between buildings.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="Swing%20Man/public/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="monster-truck">
       <div class="card-thumb g4">🚛</div>
       <div class="card-body">
         <h2>Monster Truck</h2>
         <p>Smash, crush, and plow through obstacles with a massive monster truck. Huge tires, huge air, huge fun.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="Monster%20truck/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="buckman">
       <div class="card-thumb g1">🦇</div>
       <div class="card-body">
         <h2>BuckMan</h2>
         <p>A Batman-themed racing adventure — speed through the night city, dodge obstacles, and race to the finish.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="BuckMan/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="drone-zayn">
       <div class="card-thumb g2">🚁</div>
       <div class="card-body">
         <h2>Drone Game Zayn</h2>
         <p>Pilot a DJI-style drone through a 3D world. Master throttle, tilt, and yaw controls to navigate like a real drone pilot.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="Drone%20Game%20Zayn/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
   </div>
 
-  <!-- ADVENTURE & SIMULATION -->
   <p class="section-label">🌍 Adventure &amp; Simulation</p>
   <div class="grid">
 
-    <div class="card">
+    <div class="card" data-game="packaging">
       <div class="card-thumb g14">📦</div>
       <div class="card-body">
         <h2>Packaging Game</h2>
         <p>Accept orders on your phone, pack the box, drive your van through a 3D city with real traffic, then walk to deliver the package to the door.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="packaging-game/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="farming">
       <div class="card-thumb g13">🌾</div>
       <div class="card-body">
         <h2>Farming Land</h2>
         <p>3D farming world — plant seeds, tend your crops, and earn coins. Buy Carrot, Potato, Sunflower, Legendary &amp; OG seeds from the shop.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="farming-land/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="hide-seek">
       <div class="card-thumb g13">🙈</div>
       <div class="card-body">
         <h2>Hide &amp; Seek</h2>
         <p>3D 3-floor house — find hiding spots and avoid the seeker. 1P vs 20 bots or 2P split-screen with 10 bots. Stealth and strategy.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="Hide%20and%20Seek%20Game/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="obstacle">
       <div class="card-thumb g14">🏃</div>
       <div class="card-body">
         <h2>Obstacle Game</h2>
         <p>3D obstacle course adventure! Dodge laser grids, survive lava, cross sky bridges &amp; reach the Grand Finish Island with a ball pit &amp; treasure chest.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="obstacle-game/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="goofy-house">
       <div class="card-thumb g3">🏠</div>
       <div class="card-body">
         <h2>Goofy House</h2>
         <p>Explore a quirky interactive 3D house built with React Three Fiber. Open drawers, discover secrets, and enjoy the weirdness.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="GoofyHouse/dist/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="resell">
       <div class="card-thumb g6">💰</div>
       <div class="card-body">
         <h2>Re-Sell Game</h2>
         <p>Build your reselling empire — buy low, sell high, manage inventory, and grow from a garage seller to a business mogul.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="Re%20sell%20game/dist/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
   </div>
 
-  <!-- PUZZLE & STRATEGY -->
   <p class="section-label">🧩 Puzzle &amp; Strategy</p>
   <div class="grid">
 
-    <div class="card">
+    <div class="card" data-game="paintball">
       <div class="card-thumb g9">🎨</div>
       <div class="card-body">
         <h2>Paint Ball</h2>
         <p>Bubble-shooter puzzle — aim your cannon and pop groups of 3+ matching colors. 12 vibrant colors, ~100 balls, 50 challenging levels.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="color-ball-launcher/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="blackjack">
       <div class="card-thumb g4">🃏</div>
       <div class="card-body">
         <h2>Blackjack</h2>
         <p>2-player blackjack — hit, stand, and try to reach 21 without going bust. Compete against a friend or test your card instincts.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="BLACK%20JACK%20GAME/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="tictactoe">
       <div class="card-thumb g5">❌</div>
       <div class="card-body">
         <h2>Tic Tac Toe</h2>
         <p>Classic 2-player X vs O with score tracking — simple to learn, tricky to master. Best-of battles to see who's the real strategist.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="Tiktaktoe/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="marbles">
       <div class="card-thumb g3">🔵</div>
       <div class="card-body">
         <h2>Marble Ringer</h2>
         <p>2-player marble shooting battle — flick your marbles, knock opponents out of the ring, and be the last marble standing.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="MARBLES%20GAME/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="spelling">
       <div class="card-thumb g8">📝</div>
       <div class="card-body">
         <h2>Spelling Game</h2>
         <p>Learn spelling the fun way — listen to words, type them correctly, and level up through increasingly tricky vocabulary challenges.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="Spelling%20game/public/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="touch-arrow">
       <div class="card-thumb g7">🏹</div>
       <div class="card-body">
         <h2>Touch Arrow Fire</h2>
         <p>Tap directional arrows to aim and release to fire — quick reflexes and precise timing needed to take out all targets.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="Touch%20arrow%20fire%20game/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="braincrate">
       <div class="card-thumb g6">📦</div>
       <div class="card-body">
         <h2>BrainCrate</h2>
         <p>A crate opens revealing everyday items — batteries, tools, food, and more. Memorize everything, then recall as many as you can. 1–4 players, 10 levels.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="memory-box/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-game="find-word">
       <div class="card-thumb g2">🔤</div>
       <div class="card-body">
         <h2>Find the Word</h2>
         <p>A definition appears — click the matching word before time runs out! 5 difficulty levels, 150+ words, multiplayer, and real audio cues. Build vocabulary fast.</p>
         <span class="badge badge-live">Live</span>
-        <a class="play-btn play-btn-active" href="find-the-word/index.html">Play</a>
+        <button class="play-btn play-btn-active">▶ Play</button>
       </div>
     </div>
 
@@ -745,7 +587,7 @@
   &copy; 2026 Wacky Brains &nbsp;·&nbsp; All games built with ❤️ &nbsp;·&nbsp; Free to play, always.
 </footer>
 
-<!-- ── Affiliate Ad Overlay (powered by ads-config.js) ── -->
+<!-- ── Ad Interstitial ── -->
 <div id="ad-overlay">
   <div id="ad-box">
     <div class="ad-sponsor-label">Sponsored — supports Wacky Brains 🎮</div>
@@ -754,62 +596,626 @@
   </div>
 </div>
 
+<!-- ── Game Detail Modal ── -->
+<div id="game-modal">
+  <div class="gm-panel" id="gm-panel">
+    <button class="gm-close" id="gm-close">✕</button>
+
+    <div class="gm-header">
+      <div class="gm-icon" id="gm-icon"></div>
+      <div class="gm-info">
+        <div class="gm-title" id="gm-title"></div>
+        <div class="gm-tags" id="gm-tags"></div>
+        <div class="gm-stars">
+          <span class="gm-star-row" id="gm-stars">★★★★☆</span>
+          <span class="gm-rating-num" id="gm-rating"></span>
+        </div>
+        <button class="gm-play-now" id="gm-play-now">▶&nbsp; Play Now</button>
+      </div>
+    </div>
+
+    <div class="gm-shots" id="gm-shots"></div>
+
+    <div class="gm-section">
+      <h3>About Game</h3>
+      <div class="gm-about" id="gm-about"></div>
+    </div>
+
+    <div class="gm-section">
+      <h3>How to Play</h3>
+      <ul class="gm-controls" id="gm-controls"></ul>
+    </div>
+
+    <div class="gm-section">
+      <h3>Game Info</h3>
+      <div class="gm-meta" id="gm-meta"></div>
+    </div>
+
+    <div class="gm-section">
+      <div class="gm-chips" id="gm-chips"></div>
+    </div>
+  </div>
+</div>
+
 <script src="ads-config.js"></script>
 <script>
-  (function () {
-    var _dest = '', _timer = null;
+(function () {
+  'use strict';
 
-    document.querySelectorAll('.play-btn-active').forEach(function (btn) {
-      btn.addEventListener('click', function (e) {
-        e.preventDefault();
-        _dest = btn.getAttribute('href');
-        showAd();
-      });
+  /* ── GAME DATABASE ── */
+  var GAMES = {
+    'buckman': {
+      title: 'BuckMan', emoji: '🦇', grad: 'g1',
+      href: 'BuckMan/index.html',
+      cat: 'Racing · Adventure', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.2,
+      tags: ['racing', 'adventure', 'batman', 'browser', 'free'],
+      about: 'BuckMan is a Batman-inspired high-speed racing adventure set across dark, neon-lit city streets. Speed through winding roads, dodge obstacles, and outrun the clock to reach the finish line. With stylish dark visuals and tight controls, BuckMan delivers a sleek arcade racing experience.',
+      controls: [
+        ['← → / A D', 'Steer left and right'],
+        ['↑ / W', 'Accelerate'],
+        ['↓ / S', 'Brake / reverse'],
+        ['Space', 'Boost / jump'],
+      ]
+    },
+    'drone-zayn': {
+      title: 'Drone Game Zayn', emoji: '🚁', grad: 'g2',
+      href: 'Drone%20Game%20Zayn/index.html',
+      cat: 'Flight · Simulation', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop', age: '0+', rating: 4.3,
+      tags: ['drone', 'flight', '3d', 'simulation', 'browser'],
+      about: 'Drone Game Zayn puts you in the cockpit of a DJI-style FPV drone soaring through a detailed 3D world. Master the physics-based throttle, pitch, roll, and yaw controls to fly smooth lines and pull off technical manoeuvres. A must-play for drone enthusiasts and flight-sim fans.',
+      controls: [
+        ['W / S', 'Pitch forward / backward'],
+        ['A / D', 'Roll left / right'],
+        ['Q / E', 'Yaw (rotate)'],
+        ['Shift / Ctrl', 'Throttle up / down'],
+      ]
+    },
+    'goofy-house': {
+      title: 'Goofy House', emoji: '🏠', grad: 'g3',
+      href: 'GoofyHouse/dist/index.html',
+      cat: 'Adventure · Exploration', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.0,
+      tags: ['3d', 'exploration', 'interactive', 'house', 'react'],
+      about: 'Goofy House is a fully interactive 3D house built with React Three Fiber. Wander through rooms, open drawers, flip switches, and uncover hidden secrets lurking in every corner. It\'s part game, part interactive art project — a weird and wonderful place to explore.',
+      controls: [
+        ['W A S D', 'Walk around'],
+        ['Mouse', 'Look around'],
+        ['E', 'Interact with objects'],
+        ['Shift', 'Run'],
+      ]
+    },
+    'monster-truck': {
+      title: 'Monster Truck', emoji: '🚛', grad: 'g4',
+      href: 'Monster%20truck/index.html',
+      cat: 'Racing · Stunt', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.4,
+      tags: ['monster truck', 'racing', 'stunts', 'browser', 'free'],
+      about: 'Climb behind the wheel of a thundering monster truck and smash through everything in your path. Crush cars, launch off ramps, and pull off aerial stunts on huge open levels. With massive tyres and exaggerated physics, Monster Truck is pure over-the-top destruction fun.',
+      controls: [
+        ['← → / A D', 'Steer'],
+        ['↑ / W', 'Accelerate'],
+        ['↓ / S', 'Brake / reverse'],
+        ['X', 'Turbo / trick'],
+      ]
+    },
+    'turtles': {
+      title: 'Turtles Team Up', emoji: '🐢', grad: 'g11',
+      href: 'Turtles%20Team%20Up/index.html',
+      cat: 'Action · Co-op', dev: 'Wacky Brains',
+      players: '1–2 Players', platform: 'Desktop', age: '0+', rating: 4.5,
+      tags: ['co-op', 'action', '2-player', 'turtles', 'browser'],
+      about: 'Turtles Team Up is a cooperative brawler inspired by the classic TMNT arcade games. Two players work together on the same keyboard to fight through waves of enemies, collect power-ups, and take down bosses. Teamwork and timing are the keys to victory.',
+      controls: [
+        ['WASD', 'Player 1 move'],
+        ['F', 'Player 1 attack'],
+        ['Arrow Keys', 'Player 2 move'],
+        ['Enter / L', 'Player 2 attack'],
+      ]
+    },
+    'sniper': {
+      title: 'One v One Sniper', emoji: '🎯', grad: 'g12',
+      href: 'one%20v%20one%20sniper/index.html',
+      cat: 'Action · PvP', dev: 'Wacky Brains',
+      players: '1–2 Players', platform: 'Desktop', age: '0+', rating: 4.3,
+      tags: ['sniper', '1v1', 'pvp', 'shooting', 'browser'],
+      about: 'One v One Sniper is an intense 1v1 sharpshooter duel on the same keyboard. Players scope in, steady their aim, and race to land the first kill shot. With one-shot kill mechanics and tight controls, every match is a tense standoff of nerves and precision.',
+      controls: [
+        ['W A S D', 'Player 1 move & aim'],
+        ['F / G', 'Player 1 shoot / scope'],
+        ['Arrow Keys', 'Player 2 move & aim'],
+        ['L / K', 'Player 2 shoot / scope'],
+      ]
+    },
+    'fight-arrows': {
+      title: 'Fight Arrows', emoji: '🏹', grad: 'g7',
+      href: 'fight-arrows/index.html',
+      cat: 'Action · PvP', dev: 'Wacky Brains',
+      players: '1–2 Players', platform: 'Desktop', age: '0+', rating: 4.6,
+      tags: ['archery', '1v1', 'pvp', 'birds', 'browser', 'snowy'],
+      about: 'Fight Arrows is a physics-based archery duel with a twist — hit a passing bird mid-flight and your arrow curves back toward your enemy! Choose from snowy, desert, and jungle maps. Master your charge time and arc to land shots, first to 5 kills wins the duel.',
+      controls: [
+        ['W A S D', 'Player 1 move'],
+        ['Hold Space', 'Player 1 charge bow'],
+        ['Release Space', 'Player 1 fire'],
+        ['Arrow Keys + Enter', 'Player 2 same'],
+      ]
+    },
+    'castle-man': {
+      title: 'Castle Man Battles', emoji: '🏰', grad: 'g1',
+      href: 'castle-man-battles/index.html',
+      cat: 'Action · PvP', dev: 'Wacky Brains',
+      players: '1–2 Players', platform: 'Desktop', age: '0+', rating: 4.7,
+      tags: ['pixel', 'pvp', 'castle', 'weapons', 'zombie', 'browser'],
+      about: 'Castle Man Battles is a pixel-art PvP brawler where you defend your castle while trying to destroy the enemy\'s. Pick from a wide arsenal: swords, SMGs, shotguns, and rocket launchers. Play head-to-head with a friend or hold off zombie waves in survival mode. Explosive fun every round.',
+      controls: [
+        ['W A D', 'Player 1 move / jump'],
+        ['F', 'Player 1 attack'],
+        ['1-4', 'Player 1 switch weapon'],
+        ['Arrow Keys + L', 'Player 2 same controls'],
+      ]
+    },
+    'shootpoint': {
+      title: 'Shootpoint', emoji: '🔫', grad: 'g7',
+      href: 'Shootpoint/public/index.html',
+      cat: 'Action · Battle Royale', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.2,
+      tags: ['top-down', 'shooter', 'battle royale', 'browser', 'free'],
+      about: 'Shootpoint drops you into a top-down arena packed with enemies and power-ups. Outmanoeuvre opponents, grab weapon upgrades, and be the last player standing. Fast, fluid movement and satisfying gunplay make every run feel fresh.',
+      controls: [
+        ['W A S D', 'Move'],
+        ['Mouse', 'Aim'],
+        ['Left Click', 'Shoot'],
+        ['R', 'Reload'],
+      ]
+    },
+    'space-invasion': {
+      title: 'Space Invasion', emoji: '🚀', grad: 'g2',
+      href: 'space%20invasion/index.html',
+      cat: 'Action · Arcade', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.1,
+      tags: ['space', 'arcade', 'aliens', 'shoot-em-up', 'browser'],
+      about: 'Space Invasion is a love letter to classic arcade shooters. Defend Earth as wave after wave of alien armadas descends from above. Move fast, shoot faster, and dodge enemy fire to survive as long as possible. How many waves can you clear?',
+      controls: [
+        ['← → / A D', 'Move ship'],
+        ['Space / Z', 'Shoot'],
+        ['P', 'Pause'],
+      ]
+    },
+    'capaw': {
+      title: 'CaPaw!', emoji: '🐔', grad: 'g10',
+      href: 'CaPaw/index.html',
+      cat: 'Action · Brawler', dev: 'Wacky Brains',
+      players: '1–2 Players', platform: 'Desktop', age: '0+', rating: 4.4,
+      tags: ['chicken', 'brawler', '2-player', 'animals', 'browser'],
+      about: 'CaPaw! is a chaotic chicken brawler where you choose your fighting bird and go wing-to-wing against opponents. Peck, dash, and claw your way to victory with each character having unique moves and stats. Wild, fast-paced, and endlessly funny.',
+      controls: [
+        ['W A S D', 'Player 1 move'],
+        ['F / G', 'Player 1 attack / special'],
+        ['Arrow Keys', 'Player 2 move'],
+        ['L / K', 'Player 2 attack / special'],
+      ]
+    },
+    'blob-eating': {
+      title: 'Blob Eating', emoji: '🫧', grad: 'g5',
+      href: 'blob-game/index.html',
+      cat: 'Action · IO Game', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.5,
+      tags: ['blob', 'io', 'agar', 'browser', 'free', 'bots'],
+      about: 'Blob Eating is an agar.io-inspired arena where you start as a tiny blob and devour food pellets and smaller blobs to grow massive. 1,000 AI bots fight for dominance. Choose from 8 face skins and 12 colors. The biggest blob earns the 👑 crown — can you reach #1?',
+      controls: [
+        ['Mouse', 'Move blob'],
+        ['Space / W', 'Split blob'],
+        ['Q', 'Eject mass'],
+      ]
+    },
+    'moto-island': {
+      title: 'Moto Island', emoji: '🏍️', grad: 'g2',
+      href: 'moto-island/index.html',
+      cat: 'Racing', dev: 'Wacky Brains',
+      players: '1–2 Players', platform: 'Desktop', age: '0+', rating: 4.4,
+      tags: ['racing', 'moto', 'island', '2-player', 'browser'],
+      about: 'Moto Island is a tropical motorbike racer with 3 laps, 5 AI opponents, and a 2-player split-screen mode. Blast around curves, hit boost pads, and overtake your way to the podium. The island scenery and arcade physics make every race feel exciting from start to finish.',
+      controls: [
+        ['↑ / W', 'Accelerate'],
+        ['↓ / S', 'Brake'],
+        ['← → / A D', 'Steer'],
+        ['Shift', 'Boost'],
+      ]
+    },
+    'bike-rider': {
+      title: 'Bike Rider', emoji: '🏍️', grad: 'g3',
+      href: 'bike-rider/index.html',
+      cat: 'Racing · Platformer', dev: 'Wacky Brains',
+      players: '1–2 Players', platform: 'Desktop', age: '0+', rating: 4.3,
+      tags: ['bike', 'side-scrolling', '2-player', 'platformer', 'browser'],
+      about: 'Bike Rider is a side-scrolling motorbike challenge across 5 increasingly brutal maps — from Easy flatlands to Extreme laser-and-lava gauntlets. Jump gaps, duck obstacles, and race to the checkpoint. Play solo or go head-to-head with a friend on the same keyboard.',
+      controls: [
+        ['↑', 'Player 1 accelerate / jump'],
+        ['↓', 'Player 1 brake'],
+        ['W', 'Player 2 accelerate / jump'],
+        ['S', 'Player 2 brake'],
+      ]
+    },
+    'futbol': {
+      title: '1 v 1 Futbol', emoji: '⚽', grad: 'g4',
+      href: '1v1-futbol/public/index.html',
+      cat: 'Sports · Soccer', dev: 'Wacky Brains',
+      players: '2 Players', platform: 'Desktop', age: '0+', rating: 4.6,
+      tags: ['soccer', 'football', '2-player', 'sports', 'browser'],
+      about: '1 v 1 Futbol is an intense 2-player soccer showdown on the same keyboard. Charge up your kick to blast shots, steal the ball with precision tackles, and score 5 goals to win the match. Simple controls and explosive gameplay make every match a genuine battle.',
+      controls: [
+        ['W A S D', 'Player 1 move'],
+        ['F', 'Player 1 kick / tackle'],
+        ['Arrow Keys', 'Player 2 move'],
+        ['L', 'Player 2 kick / tackle'],
+      ]
+    },
+    'bball': {
+      title: 'One V One BBALL', emoji: '🏀', grad: 'g7',
+      href: 'Noah\'s%20Game/public/index.html',
+      cat: 'Sports · Basketball', dev: 'Wacky Brains',
+      players: '1–2 Players', platform: 'Desktop', age: '0+', rating: 4.2,
+      tags: ['basketball', 'sports', '2-player', 'browser', 'free'],
+      about: 'One V One BBALL is a fast-paced basketball duel where timing is everything. Jump, shoot, and arc your ball perfectly through the hoop to outscore your opponent. Clean mechanics and satisfying swish sounds make each shot a thrill. First to the target score wins.',
+      controls: [
+        ['A D', 'Player 1 move'],
+        ['W / Space', 'Player 1 jump & shoot'],
+        ['← →', 'Player 2 move'],
+        ['↑ / Enter', 'Player 2 jump & shoot'],
+      ]
+    },
+    'parkour': {
+      title: 'Parkour 2.0', emoji: '🏃', grad: 'g4',
+      href: 'parkour-game/index.html',
+      cat: 'Platformer · Runner', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.7,
+      tags: ['parkour', 'runner', 'platformer', 'worlds', 'browser'],
+      about: 'Parkour 2.0 is a high-speed platformer across 10 wildly different worlds — Snow Storm, Dark Cave, Dino Forest, Future Tech, and more. Master the Slide → Jump combo for a Super Jump that launches you massive distances. Every world has unique hazards, aesthetics, and secrets.',
+      controls: [
+        ['← → / A D', 'Run'],
+        ['Space / W / ↑', 'Jump'],
+        ['↓ / S', 'Slide'],
+        ['Slide then Jump', 'Super Jump ⚡'],
+      ]
+    },
+    'swing-man': {
+      title: 'Swing Man', emoji: '🕺', grad: 'g9',
+      href: 'Swing%20Man/public/index.html',
+      cat: 'Platformer · Physics', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.3,
+      tags: ['grapple', 'swing', 'physics', 'city', 'browser'],
+      about: 'Swing Man puts a grappling hook in your hands and a city skyline in front of you. Launch your hook at buildings, hold to swing, and release at the perfect moment to build speed and soar. The physics engine rewards smooth arcs and penalises mistimed launches with painful falls.',
+      controls: [
+        ['Left Click / Tap', 'Shoot grapple hook'],
+        ['Hold', 'Swing on rope'],
+        ['Release', 'Let go and fly'],
+        ['R', 'Restart'],
+      ]
+    },
+    'packaging': {
+      title: 'Packaging Game', emoji: '📦', grad: 'g14',
+      href: 'packaging-game/index.html',
+      cat: 'Simulation · Adventure', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop', age: '0+', rating: 4.5,
+      tags: ['delivery', 'simulation', '3d', 'driving', 'city', 'browser'],
+      about: 'The Packaging Game is a full delivery simulation: receive orders on your phone, carefully pack items into a box, hop into your van and drive through a living 3D city with real traffic, then walk the package to the customer\'s door. A surprisingly deep and satisfying loop.',
+      controls: [
+        ['W A S D', 'Walk / drive'],
+        ['E', 'Pick up / interact'],
+        ['Mouse', 'Look around'],
+        ['Space', 'Jump / confirm'],
+      ]
+    },
+    'farming': {
+      title: 'Farming Land', emoji: '🌾', grad: 'g13',
+      href: 'farming-land/index.html',
+      cat: 'Simulation · Strategy', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.3,
+      tags: ['farming', 'simulation', '3d', 'coins', 'browser'],
+      about: 'Farming Land is a relaxing 3D farming simulation where you plant seeds, tend your crops, and sell harvests for coins. Visit the shop to buy Carrot, Potato, Sunflower, Legendary, and rare OG seeds. Expand your farm, unlock upgrades, and build the most productive land in the county.',
+      controls: [
+        ['W A S D', 'Walk'],
+        ['E', 'Plant / harvest'],
+        ['Tab', 'Open inventory'],
+        ['Mouse', 'Look & interact'],
+      ]
+    },
+    'hide-seek': {
+      title: 'Hide & Seek', emoji: '🙈', grad: 'g13',
+      href: 'Hide%20and%20Seek%20Game/index.html',
+      cat: 'Adventure · Stealth', dev: 'Wacky Brains',
+      players: '1–2 Players', platform: 'Desktop', age: '0+', rating: 4.4,
+      tags: ['hide and seek', 'stealth', '3d', 'house', '2-player', 'browser'],
+      about: 'Hide & Seek drops you into a 3-floor 3D house filled with hiding spots, furniture, and tight corridors. In 1-player mode, outwit 20 AI bots. In 2-player split-screen, one hides and one seeks with 10 bots in the mix. Strategy, timing, and knowing the house layout are everything.',
+      controls: [
+        ['W A S D', 'Move'],
+        ['Mouse', 'Look'],
+        ['E', 'Hide / interact'],
+        ['Shift', 'Crouch / sneak'],
+      ]
+    },
+    'obstacle': {
+      title: 'Obstacle Game', emoji: '🏃', grad: 'g14',
+      href: 'obstacle-game/index.html',
+      cat: 'Adventure · Platformer', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop', age: '0+', rating: 4.2,
+      tags: ['obstacle', '3d', 'platformer', 'laser', 'lava', 'browser'],
+      about: 'The Obstacle Game throws you into a series of brutal 3D courses — dodge laser grids, sprint across lava bridges, creep along sky beams, and race to the Grand Finish Island complete with a ball pit and treasure chest. Each zone escalates the challenge to the next level.',
+      controls: [
+        ['W A S D', 'Move'],
+        ['Space', 'Jump'],
+        ['Mouse', 'Camera'],
+        ['Shift', 'Sprint'],
+      ]
+    },
+    'resell': {
+      title: 'Re-Sell Game', emoji: '💰', grad: 'g6',
+      href: 'Re%20sell%20game/dist/index.html',
+      cat: 'Strategy · Simulation', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.1,
+      tags: ['resell', 'business', 'strategy', 'simulation', 'browser'],
+      about: 'Re-Sell Game puts you in the shoes of a savvy reseller. Scout deals, buy low, flip high, and manage your inventory wisely. Start from a garage and grow your operation into a full reselling business. Market prices shift, competition rises — your hustle determines how far you go.',
+      controls: [
+        ['Mouse / Tap', 'Navigate menus'],
+        ['Click', 'Buy / sell items'],
+        ['Tab', 'View inventory'],
+      ]
+    },
+    'paintball': {
+      title: 'Paint Ball', emoji: '🎨', grad: 'g9',
+      href: 'color-ball-launcher/index.html',
+      cat: 'Puzzle · Arcade', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.4,
+      tags: ['puzzle', 'bubble shooter', 'colors', 'arcade', 'browser'],
+      about: 'Paint Ball is a polished bubble-shooter puzzle game with 12 vibrant colors and ~100 balls per level. Aim your color cannon, fire, and pop groups of 3 or more matching balls before they reach the bottom. 50 levels of escalating challenge for casual and hardcore puzzle fans alike.',
+      controls: [
+        ['Mouse / Touch', 'Aim'],
+        ['Click / Tap', 'Shoot'],
+        ['Space', 'Swap color'],
+      ]
+    },
+    'blackjack': {
+      title: 'Blackjack', emoji: '🃏', grad: 'g4',
+      href: 'BLACK%20JACK%20GAME/index.html',
+      cat: 'Card Game · Puzzle', dev: 'Wacky Brains',
+      players: '1–2 Players', platform: 'Desktop & Mobile', age: '0+', rating: 4.0,
+      tags: ['blackjack', 'cards', '21', '2-player', 'browser'],
+      about: 'Blackjack is the classic casino card game brought to Wacky Brains as a clean 2-player experience. Hit to draw more cards, stand to keep your total, and get closer to 21 than your opponent without going bust. Simple to learn but full of suspense — every hand matters.',
+      controls: [
+        ['Click "Hit"', 'Draw another card'],
+        ['Click "Stand"', 'End your turn'],
+        ['Click "Deal"', 'Start a new hand'],
+      ]
+    },
+    'tictactoe': {
+      title: 'Tic Tac Toe', emoji: '❌', grad: 'g5',
+      href: 'Tiktaktoe/index.html',
+      cat: 'Puzzle · Strategy', dev: 'Wacky Brains',
+      players: '1–2 Players', platform: 'Desktop & Mobile', age: '0+', rating: 3.9,
+      tags: ['tic tac toe', 'classic', '2-player', 'strategy', 'browser'],
+      about: 'Tic Tac Toe is the timeless X vs O showdown, now with score tracking so you can keep a running tally of wins across multiple matches. Play against a friend and find out once and for all who really is the better strategist. The perfect quick game.',
+      controls: [
+        ['Click / Tap', 'Place your X or O'],
+        ['New Game button', 'Start the next round'],
+      ]
+    },
+    'marbles': {
+      title: 'Marble Ringer', emoji: '🔵', grad: 'g3',
+      href: 'MARBLES%20GAME/index.html',
+      cat: 'Puzzle · PvP', dev: 'Wacky Brains',
+      players: '2 Players', platform: 'Desktop', age: '0+', rating: 4.2,
+      tags: ['marbles', '2-player', 'physics', 'ring', 'browser'],
+      about: 'Marble Ringer is a physics-based 2-player marble shooting game. Take turns flicking your marbles at the ring, aiming to knock your opponent\'s pieces out while keeping yours inside. Strategy, angle judgement, and a bit of luck decide who walks away champion.',
+      controls: [
+        ['Mouse', 'Aim direction'],
+        ['Click & drag', 'Set shot power'],
+        ['Release', 'Fire marble'],
+      ]
+    },
+    'spelling': {
+      title: 'Spelling Game', emoji: '📝', grad: 'g8',
+      href: 'Spelling%20game/public/index.html',
+      cat: 'Educational · Puzzle', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop', age: '0+', rating: 4.3,
+      tags: ['spelling', 'educational', 'typing', 'words', 'browser'],
+      about: 'Spelling Game makes vocabulary fun — listen carefully to the word being read aloud, then type it correctly to score points and level up. Words get progressively harder across each level, building real spelling skills while keeping the challenge engaging.',
+      controls: [
+        ['Keyboard', 'Type the spelling'],
+        ['Enter', 'Submit answer'],
+        ['Space', 'Replay audio'],
+      ]
+    },
+    'touch-arrow': {
+      title: 'Touch Arrow Fire', emoji: '🏹', grad: 'g7',
+      href: 'Touch%20arrow%20fire%20game/index.html',
+      cat: 'Puzzle · Reflex', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.1,
+      tags: ['archery', 'reflex', 'mobile', 'arrows', 'browser'],
+      about: 'Touch Arrow Fire tests your directional reflexes and aim. Tap the on-screen arrows to rotate your aim, hold to charge, and release to fire. Take out all targets in the fewest shots possible. Designed for mobile but just as fun on desktop.',
+      controls: [
+        ['Tap arrow buttons', 'Aim direction'],
+        ['Hold', 'Charge shot power'],
+        ['Release', 'Fire arrow'],
+      ]
+    },
+    'braincrate': {
+      title: 'BrainCrate', emoji: '📦', grad: 'g6',
+      href: 'memory-box/index.html',
+      cat: 'Memory · Puzzle', dev: 'Wacky Brains',
+      players: '1–4 Players', platform: 'Desktop & Mobile', age: '0+', rating: 4.6,
+      tags: ['memory', 'puzzle', 'multiplayer', '3d', 'brain training', 'browser'],
+      about: 'BrainCrate opens a 3D wooden crate packed with scattered everyday items — tools, food, electronics, and more. Study every object before the crate closes, then recall as many as you can. With 10 difficulty levels and 1-to-4-player multiplayer with a leaderboard, it\'s a serious memory workout.',
+      controls: [
+        ['Mouse / Tap', 'Click items to recall them'],
+        ['Start button', 'Begin memorising'],
+        ['Multiplayer', 'Enter player names then take turns'],
+      ]
+    },
+    'find-word': {
+      title: 'Find the Word', emoji: '🔤', grad: 'g2',
+      href: 'find-the-word/index.html',
+      cat: 'Educational · Word Game', dev: 'Wacky Brains',
+      players: '1–4 Players', platform: 'Desktop & Mobile', age: '0+', rating: 4.5,
+      tags: ['vocabulary', 'educational', 'word game', 'multiplayer', 'timer', 'browser'],
+      about: 'Find the Word is a fast-paced vocabulary game across 5 difficulty levels — from Easy everyday words to Expert obscure terms. A definition appears and you click the matching word tile from the pool before the 30-second timer runs out. Audio cues, a multiplayer mode, and 150+ unique words keep every session fresh.',
+      controls: [
+        ['Click word tile', 'Select your answer'],
+        ['Timer', '30 seconds per round (varies by level)'],
+        ['Multiplayer', 'Up to 4 players, take turns'],
+      ]
+    },
+  };
+
+  /* ── STAR RENDERER ── */
+  function stars(rating) {
+    var full = Math.floor(rating), half = (rating - full) >= 0.4 ? 1 : 0;
+    var s = '★'.repeat(full) + (half ? '⭑' : '') + '☆'.repeat(5 - full - half);
+    return s;
+  }
+
+  /* ── MODAL ── */
+  var modal     = document.getElementById('game-modal');
+  var panelEl   = document.getElementById('gm-panel');
+  var currentHref = '';
+
+  function openModal(id) {
+    var g = GAMES[id];
+    if (!g) return;
+    currentHref = g.href;
+
+    // icon
+    var icon = document.getElementById('gm-icon');
+    icon.textContent = g.emoji;
+    icon.className = 'gm-icon ' + g.grad;
+
+    document.getElementById('gm-title').textContent = g.title;
+
+    // tags
+    var tagsEl = document.getElementById('gm-tags');
+    tagsEl.innerHTML = [g.cat, g.dev, g.players, g.platform]
+      .map(function(t){ return '<span class="gm-tag">' + t + '</span>'; }).join('');
+
+    // stars
+    document.getElementById('gm-stars').textContent = stars(g.rating);
+    document.getElementById('gm-rating').textContent = g.rating.toFixed(1) + ' rating';
+
+    // screenshots (3 styled placeholders)
+    var labels = ['GAMEPLAY', 'FEATURES', g.players.includes('2') ? 'MULTIPLAYER' : 'SOLO MODE'];
+    var shots = document.getElementById('gm-shots');
+    shots.innerHTML = labels.map(function(lbl, i) {
+      var styles = [
+        'filter:brightness(1.1)',
+        'filter:brightness(0.85) saturate(1.3)',
+        'filter:brightness(0.7) hue-rotate(30deg)'
+      ];
+      return '<div class="gm-shot ' + g.grad + '" style="' + styles[i] + '">'
+        + '<span style="font-size:2.8rem">' + g.emoji + '</span>'
+        + '<div class="gm-shot-label">' + lbl + '</div>'
+        + '</div>';
+    }).join('');
+
+    // about
+    document.getElementById('gm-about').textContent = g.about;
+
+    // controls
+    var ctrl = document.getElementById('gm-controls');
+    ctrl.innerHTML = g.controls.map(function(c) {
+      return '<li><span class="gm-ctrl-key">' + c[0] + '</span><span>' + c[1] + '</span></li>';
+    }).join('');
+
+    // meta
+    var meta = document.getElementById('gm-meta');
+    meta.innerHTML = [
+      ['Age Rating', g.age],
+      ['Players', g.players],
+      ['Platform', g.platform],
+      ['Category', g.cat.split(' · ')[0]],
+    ].map(function(m) {
+      return '<div class="gm-meta-item"><div class="gm-meta-label">' + m[0] + '</div><div class="gm-meta-val">' + m[1] + '</div></div>';
+    }).join('');
+
+    // chips
+    document.getElementById('gm-chips').innerHTML = (g.tags || []).map(function(t){
+      return '<span class="gm-chip">' + t + '</span>';
+    }).join('');
+
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('gm-close').addEventListener('click', closeModal);
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) closeModal();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  // Card clicks open the modal
+  document.querySelectorAll('.card[data-game]').forEach(function(card) {
+    card.addEventListener('click', function() {
+      openModal(card.dataset.game);
     });
+  });
 
-    function showAd() {
-      var overlay  = document.getElementById('ad-overlay');
-      var playBtn  = document.getElementById('ad-continue');
-      var cdEl     = document.getElementById('ad-countdown');
-      var cards    = document.getElementById('ad-cards');
-      var secs     = 5;
+  /* ── AD OVERLAY ── */
+  var _timer = null;
 
-      // Build Amazon affiliate cards from ads-config.js
-      var ads = (typeof WACKY_ADS !== 'undefined') ? WACKY_ADS : [];
-      cards.innerHTML = ads.map(function (ad) {
-        return '<a class="amzn-card" href="' + ad.url + '" target="_blank" rel="noopener sponsored">'
-          + '<span class="amzn-badge">' + ad.badge + '</span>'
-          + '<span class="amzn-info">'
-          +   '<div class="amzn-brand">amazon</div>'
-          +   '<div class="amzn-title">' + ad.title + '</div>'
-          + '</span>'
-          + '<span class="amzn-arrow">&#8594;</span>'
-          + '</a>';
-      }).join('');
+  document.getElementById('gm-play-now').addEventListener('click', function() {
+    closeModal();
+    showAd();
+  });
 
-      overlay.classList.add('visible');
-      playBtn.disabled = true;
+  function showAd() {
+    var overlay = document.getElementById('ad-overlay');
+    var playBtn = document.getElementById('ad-continue');
+    var cdEl    = document.getElementById('ad-countdown');
+    var cards   = document.getElementById('ad-cards');
+    var secs    = 5;
+
+    var ads = (typeof WACKY_ADS !== 'undefined') ? WACKY_ADS : [];
+    cards.innerHTML = ads.map(function(ad) {
+      return '<a class="amzn-card" href="' + ad.url + '" target="_blank" rel="noopener sponsored">'
+        + '<span class="amzn-badge">' + ad.badge + '</span>'
+        + '<span class="amzn-info">'
+        +   '<div class="amzn-brand">amazon</div>'
+        +   '<div class="amzn-title">' + ad.title + '</div>'
+        + '</span>'
+        + '<span class="amzn-arrow">&#8594;</span>'
+        + '</a>';
+    }).join('');
+
+    overlay.classList.add('visible');
+    playBtn.disabled = true;
+    cdEl.textContent = secs;
+
+    clearInterval(_timer);
+    _timer = setInterval(function() {
+      secs--;
       cdEl.textContent = secs;
+      if (secs <= 0) {
+        clearInterval(_timer);
+        playBtn.disabled = false;
+        playBtn.textContent = '▶  Play Now!';
+      }
+    }, 1000);
+  }
 
-      clearInterval(_timer);
-      _timer = setInterval(function () {
-        secs--;
-        cdEl.textContent = secs;
-        if (secs <= 0) {
-          clearInterval(_timer);
-          playBtn.disabled = false;
-          playBtn.textContent = '▶  Play Now!';
-        }
-      }, 1000);
-    }
+  document.getElementById('ad-continue').addEventListener('click', function() {
+    document.getElementById('ad-overlay').classList.remove('visible');
+    this.disabled = true;
+    this.innerHTML = 'Play in <span id="ad-countdown">5</span>s';
+    window.location.href = currentHref;
+  });
 
-    document.getElementById('ad-continue').addEventListener('click', function () {
-      document.getElementById('ad-overlay').classList.remove('visible');
-      this.disabled = true;
-      this.innerHTML = 'Play in <span id="ad-countdown">5</span>s';
-      window.location.href = _dest;
-    });
-  })();
+})();
 </script>
 
 </body>
