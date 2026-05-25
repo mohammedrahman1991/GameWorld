@@ -84,22 +84,6 @@
     footer a { color: var(--accent2); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
 
-    /* ── Ad Interstitial ── */
-    #ad-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 9999; align-items: center; justify-content: center; }
-    #ad-overlay.visible { display: flex; }
-    #ad-box { background: #13132a; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 24px 22px 20px; width: min(420px, 94vw); display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
-    .ad-sponsor-label { text-align: center; color: #64748b; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; }
-    .amzn-card { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 12px; padding: 13px 16px; text-decoration: none; transition: background 0.15s, transform 0.12s; }
-    .amzn-card:hover { background: #fffaf0; transform: translateY(-1px); }
-    .amzn-badge { font-size: 1.5em; line-height: 1; }
-    .amzn-info { flex: 1; text-align: left; }
-    .amzn-brand { font-size: 0.7rem; font-weight: 900; color: #FF9900; letter-spacing: 0.5px; text-transform: uppercase; }
-    .amzn-title { font-size: 0.9rem; font-weight: 700; color: #232f3e; margin-top: 1px; }
-    .amzn-arrow { color: #FF9900; font-size: 1.3em; font-weight: 900; }
-    #ad-continue { margin-top: 4px; padding: 12px; border-radius: 10px; border: none; font-weight: 700; font-size: 0.95rem; cursor: pointer; background: linear-gradient(135deg, #7c3aed, #06b6d4); color: #fff; transition: opacity 0.15s; }
-    #ad-continue:disabled { background: rgba(255,255,255,0.08); color: #64748b; cursor: default; }
-    #ad-continue:not(:disabled):hover { opacity: 0.85; }
-
     /* ── Game Detail Modal ── */
     #game-modal { position: fixed; inset: 0; z-index: 8000; background: rgba(0,0,0,.86); display: none; align-items: flex-start; justify-content: center; padding: 24px 16px; overflow-y: auto; }
     #game-modal.open { display: flex; }
@@ -588,14 +572,6 @@
   &copy; 2026 Wacky Brains &nbsp;·&nbsp; All games built with ❤️ &nbsp;·&nbsp; Free to play, always.
 </footer>
 
-<!-- ── Ad Interstitial ── -->
-<div id="ad-overlay">
-  <div id="ad-box">
-    <div class="ad-sponsor-label">Sponsored — supports Wacky Brains 🎮</div>
-    <div id="ad-cards"></div>
-    <button id="ad-continue" disabled>Play in <span id="ad-countdown">5</span>s</button>
-  </div>
-</div>
 
 <!-- ── Game Detail Modal ── -->
 <div id="game-modal">
@@ -638,7 +614,6 @@
   </div>
 </div>
 
-<script src="ads-config.js"></script>
 <script>
 (function () {
   'use strict';
@@ -1167,52 +1142,8 @@
   });
 
   /* ── AD OVERLAY ── */
-  var _timer = null;
-
   document.getElementById('gm-play-now').addEventListener('click', function() {
     closeModal();
-    showAd();
-  });
-
-  function showAd() {
-    var overlay = document.getElementById('ad-overlay');
-    var playBtn = document.getElementById('ad-continue');
-    var cdEl    = document.getElementById('ad-countdown');
-    var cards   = document.getElementById('ad-cards');
-    var secs    = 5;
-
-    var ads = (typeof WACKY_ADS !== 'undefined') ? WACKY_ADS : [];
-    cards.innerHTML = ads.map(function(ad) {
-      return '<a class="amzn-card" href="' + ad.url + '" target="_blank" rel="noopener sponsored">'
-        + '<span class="amzn-badge">' + ad.badge + '</span>'
-        + '<span class="amzn-info">'
-        +   '<div class="amzn-brand">amazon</div>'
-        +   '<div class="amzn-title">' + ad.title + '</div>'
-        + '</span>'
-        + '<span class="amzn-arrow">&#8594;</span>'
-        + '</a>';
-    }).join('');
-
-    overlay.classList.add('visible');
-    playBtn.disabled = true;
-    cdEl.textContent = secs;
-
-    clearInterval(_timer);
-    _timer = setInterval(function() {
-      secs--;
-      cdEl.textContent = secs;
-      if (secs <= 0) {
-        clearInterval(_timer);
-        playBtn.disabled = false;
-        playBtn.textContent = '▶  Play Now!';
-      }
-    }, 1000);
-  }
-
-  document.getElementById('ad-continue').addEventListener('click', function() {
-    document.getElementById('ad-overlay').classList.remove('visible');
-    this.disabled = true;
-    this.innerHTML = 'Play in <span id="ad-countdown">5</span>s';
     window.location.href = currentHref;
   });
 
