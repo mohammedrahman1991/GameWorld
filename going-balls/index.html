@@ -104,6 +104,7 @@ kbd{background:rgba(255,255,255,.12);border-radius:5px;padding:1px 7px;font-size
     <button class="btn btn-orange" id="btn-1p">▶ 1 PLAYER</button>
     <button class="btn btn-purple" id="btn-2p">👥 2 PLAYERS</button>
     <button class="btn btn-green btn-sm" id="btn-shop-title">🛒 Ball Shop</button>
+    <button class="btn btn-gray btn-sm" id="btn-share-title" onclick="shareGame()">🔗 Share Game</button>
     <div class="controls">
       Steer Left: <kbd>←</kbd> <kbd>A</kbd> &nbsp;·&nbsp; Steer Right: <kbd>→</kbd> <kbd>D</kbd>
     </div>
@@ -145,6 +146,12 @@ kbd{background:rgba(255,255,255,.12);border-radius:5px;padding:1px 7px;font-size
 
 <script>
 'use strict';
+function shareGame(){
+  const url=location.href;
+  const text='Play Going Balls on WackyBrains! 🎱 30 levels, 20 balls, 1 & 2 player!';
+  if(navigator.share){navigator.share({title:'Going Balls',text,url});}
+  else{navigator.clipboard.writeText(url).then(()=>alert('Link copied! Share it with friends 🎱'));}
+}
 // ═══════════════════════════════════════════════════════════════
 //  SKINS
 // ═══════════════════════════════════════════════════════════════
