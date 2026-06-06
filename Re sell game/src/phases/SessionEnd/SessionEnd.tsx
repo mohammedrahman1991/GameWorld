@@ -130,18 +130,35 @@ export function SessionEnd() {
         </motion.div>
       )}
 
-      <motion.button
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={handleContinue}
-        className="px-10 py-4 rounded-2xl text-2xl font-storybook text-white shadow-lg"
-        style={{ background: 'linear-gradient(135deg, #6C5CE7, #a855f7)' }}
-      >
-        Explore Town → (spends 🪙 {restockCost} to restock)
-      </motion.button>
+      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleContinue}
+          className="px-10 py-4 rounded-2xl text-2xl font-storybook text-white shadow-lg"
+          style={{ background: 'linear-gradient(135deg, #6C5CE7, #a855f7)' }}
+        >
+          Explore Town → (spends 🪙 {restockCost} to restock)
+        </motion.button>
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => {
+            const w = window as any
+            if (w.WackyShare) w.WackyShare.show('Re Sell Game', `I made 🪙${totalProfit >= 0 ? '+' : ''}${totalProfit} profit (🪙${totalRevenue} revenue) in Re Sell Game!`, 'https://wackybrains.com/Re%20sell%20game/')
+          }}
+          className="px-8 py-4 rounded-2xl text-xl font-storybook text-white shadow-lg"
+          style={{ background: 'linear-gradient(135deg, #f97316, #fbbf24)' }}
+        >
+          ⬆ Share Result
+        </motion.button>
+      </div>
     </div>
   )
 }

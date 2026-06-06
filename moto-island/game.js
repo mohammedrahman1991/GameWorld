@@ -493,8 +493,17 @@ function renderFinish() {
   drawBtn('▶ TRY AGAIN', CW/2-218,CH/2+118,200,52, tryH);
   drawBtn('⌂ GO BACK',   CW/2+18, CH/2+118,200,52, goH);
   if (mclick) {
-    if (tryH) initRace(numP);
-    if (goH)  state = 'title';
+    if (tryH) { initRace(numP); const _sb=document.getElementById('wb-moto-share'); if(_sb)_sb.style.display='none'; }
+    if (goH)  { state = 'title'; const _sb=document.getElementById('wb-moto-share'); if(_sb)_sb.style.display='none'; }
+  }
+  // Share button
+  const _sb = document.getElementById('wb-moto-share');
+  if(_sb && _sb.style.display==='none'){
+    _sb.style.display='block';
+    const _res = numP===1
+      ? (p1pos===1 ? 'I won 1st place in Moto Island!' : `I finished ${ordinal(p1pos)} in Moto Island!`)
+      : (p1pos < sorted.indexOf(bikes[1])+1 ? 'Player 1 wins in Moto Island!' : 'Player 2 wins in Moto Island!');
+    _sb.onclick = ()=>{ if(window.WackyShare) WackyShare.show('Moto Island', _res, 'https://wackybrains.com/moto-island/'); };
   }
 }
 
