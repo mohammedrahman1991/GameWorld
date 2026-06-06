@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Going Balls</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;display:flex;align-items:center;justify-content:center;
+     height:100vh;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;user-select:none}
+canvas{display:block;touch-action:none}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+'use strict';
+// ═══════════════════════════════════════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════════════════════════════════════
+const BASE_W = 480, BASE_H = 720;
+let CW = BASE_W, CH = BASE_H;
+
+// Perspective
+const HORIZ_RATIO = 0.22;
+const BALL_Y_RATIO = 0.78;
+let HORIZ, BALL_SCREEN_Y, CX;
+const MAX_Z = 110;
+const PERSP = 3.2;
+const PATH_UNITS = 5.5;  // half-width in world units at z=0
+const COIN_R_WORLD = 1.2;
+const BARREL_W_WORLD = 1.6;
+const BARREL_H_WORLD = 2.4;
+const TRAMP_Z_OFFSET = 6;  // how far before end to show trampoline
+
+// ═══════════════════════════════════════════════════════════════
+//  BALL SKINS
+// ═══════════════════════════════════════════════════════════════
+const BALLS = [
+  {name:'Classic',    c1:'#e74c3c',c2:'#ff9a8e',price:0},
+  {name:'Ocean Blue', c1:'#1565c0',c2:'#64b5f6',price:50},
+  {name:'Emerald',    c1:'#1b5e20',c2:'#66bb6a',price:50},
+  {name:'Sunshine',   c1:'#e65100',c2:'#ffcc02',price:75},
+  {name:'Grape',      c1:'#6a1b9a',c2:'#ce93d8',price:100},
+  {name:'Hot Pink',   c1:'#ad1457',c2:'#f48fb1',price:100},
+  {name:'Ice',        c1:'#b3e5fc',c2:'#ffffff',price:150},
+  {name:'Shadow',     c1:'#212121',c2:'#757575',price:150},
+  {name:'Gold Rush',  c1:'#c79100',c2:'#ffe082',price:200},
+  {name:'Rainbow',    c1:'#ff1744',c2:'#ff9100',price:200},
+  {name:'Fireball',   c1:'#bf360c',c2:'#ff6d00',price:250},
+  {name:'Frost',      c1:'#80d8ff',c2:'#e1f5fe',price:250},
+  {name:'Lava',       c1:'#7f0000',c2:'#ff3d00',price:300},
+  {name:'Galaxy',     c1:'#0a0020',c2:'#7c4dff',price:300},
+  {name:'Neon',       c1:'#1b5e20',c2:'#76ff03',price:300},
+  {name:'Electric',   c1:'#01579b',c2:'#40c4ff',price:350},
+  {name:'Rose Gold',  c1:'#880e4f',c2:'#f8bbd0',price:350},
+  {name:'Inferno',    c1:'#621a15',c2:'#ff7043',price:400},
+  {name:'Diamond',    c1:'#b2ebf2',c2:'#ffffff',price:450},
+  {name:'Crown',      c1:'#f57f17',c2:'#fff176',price:500},
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  SAVE DATA
+// ═══════════════════════════════════════════════════════════════
+function loadSave(){
+  try{
+    const s=JSON.parse(localStorage.getItem('gb_save')||'{}');
+    return {
+      coins: s.coins||0,
+      owned: s.owned||[0],
+      selected: s.selected||0,
+      highLevel: s.highLevel||1,
+    };
+  }catch(e){return{coins:0,owned:[0],selected:0,highLevel:1};}
+}
+function writeSave(){
+  localStorage.setItem('gb_save',JSON.stringify({
+    coins:save.coins,owned:save.owned,selected:save.selected,highLevel:save.highLevel
+  }));
+}
+let save=loadSave();
+
+// ═══════════════════════════════════════════════════════════════
+//  LEVEL GENERATION
+// ═══════════════════════════════════════════════════════════════
+function seededRand(seed){
+  let s=seed;
+  return ()=>{s=(s*9301+49297)%233280;return s/233280;};
+}
+
+function generateLevel(lvl){
+  const r=seededRand(lvl*137+7);
+  const diff=(lvl-1)/29; // 0→1
+  const speed=2.8+diff*4.2;
+  const halfW=PATH_UNITS - diff*1.8;
+  const numWP=14+Math.floor(diff*22);
+  const turnStr=diff*2.8;
+  const coinCount=8+Math.floor(diff*14);
+  const barrelCount=2+Math.floor(diff*14);
+
+  // Waypoints (center line)
+  const wp=[{x:0,z:0}];
+  let cx=0;
+  for(let i=1;i<=numWP;i++){
+    const dz=10;
+    cx+=(r()-0.5)*turnStr*dz*0.6;
+    cx=Math.max(-9,Math.min(9,cx));
+    wp.push({x:cx,z:i*dz});
+  }
+  const totalZ=wp[wp.length-1].z;
+
+  // Coins
+  const coins=[];
+  for(let i=0;i<coinCount;i++){
+    const z=8+r()*(totalZ-20);
+    const pathCx=lerpPath(wp,z);
+    const x=pathCx+(r()-0.5)*halfW*0.7;
+    coins.push({x,z,collected:false,popAnim:0});
+  }
+
+  // Barrels
+  const barrels=[];
+  for(let i=0;i<barrelCount;i++){
+    const z=12+r()*(totalZ-24);
+    const pathCx=lerpPath(wp,z);
+    const x=pathCx+(r()-0.5)*halfW*0.55;
+    barrels.push({x,z,hit:false,hitT:0,vx:0,vy:0});
+  }
+
+  return{wp,halfW,speed,totalZ,coins,barrels,
+    coinCount,barrelCount,diff};
+}
+
+function lerpPath(wp,z){
+  for(let i=0;i<wp.length-1;i++){
+    if(z>=wp[i].z&&z<=wp[i+1].z){
+      const t=(z-wp[i].z)/(wp[i+1].z-wp[i].z);
+      return wp[i].x+t*(wp[i+1].x-wp[i].x);
+    }
+  }
+  return wp[wp.length-1].x;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PROJECTION
+// ═══════════════════════════════════════════════════════════════
+function proj(wx,wz){
+  if(wz<=0.01)return{sx:CX+wx*(BALL_SCREEN_Y-HORIZ)/MAX_Z*PERSP*MAX_Z,sy:BALL_SCREEN_Y+20,sc:1.2};
+  const t=Math.min(wz/MAX_Z,0.998);
+  const sy=BALL_SCREEN_Y-t*(BALL_SCREEN_Y-HORIZ);
+  const sc=1-t*0.85;
+  const sx=CX+wx*sc*PERSP*(CW/BASE_W);
+  return{sx,sy,sc};
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  GAME STATE
+// ═══════════════════════════════════════════════════════════════
+let screen='title'; // title|playing|levelComplete|shop|dead
+let numPlayers=1;
+let currentLevel=1;
+let levelData=null;
+let players=[];
+
+// Coin popup particles
+let coinPops=[];
+// Barrel pieces
+let barrelPieces=[];
+
+// ─── Player template ────────────────────────────────────────
+function makePlayer(idx){
+  return{
+    idx,
+    camZ:0,
+    ballX:0,   // x offset from path center
+    vx:0,
+    alive:true,
+    finished:false,
+    trampolineAnim:0,  // 0=not hit, >0=bounce anim
+    coinsThisLevel:0,
+    deadAnim:0,
+    deadY:0,
+    deadDir:0,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  KEYS
+// ═══════════════════════════════════════════════════════════════
+const keys={};
+window.addEventListener('keydown',e=>{keys[e.code]=true;e.preventDefault();});
+window.addEventListener('keyup',  e=>{keys[e.code]=false;});
+
+function isLeft(p){
+  if(numPlayers===1)return keys['ArrowLeft']||keys['KeyA'];
+  return p.idx===0?keys['KeyA']:keys['ArrowLeft'];
+}
+function isRight(p){
+  if(numPlayers===1)return keys['ArrowRight']||keys['KeyD'];
+  return p.idx===0?keys['KeyD']:keys['ArrowRight'];
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CANVAS & RESIZE
+// ═══════════════════════════════════════════════════════════════
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+
+function resize(){
+  const sw=window.innerWidth, sh=window.innerHeight;
+  const scale=Math.min(sw/(numPlayers===2?BASE_W*2:BASE_W), sh/BASE_H);
+  CW=Math.round((numPlayers===2?BASE_W*2:BASE_W)*scale);
+  CH=Math.round(BASE_H*scale);
+  canvas.width=CW;
+  canvas.height=CH;
+  canvas.style.width=CW+'px';
+  canvas.style.height=CH+'px';
+  HORIZ=CH*HORIZ_RATIO;
+  BALL_SCREEN_Y=CH*BALL_Y_RATIO;
+  CX=CW/2;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  BUTTON SYSTEM
+// ═══════════════════════════════════════════════════════════════
+let clickHandlers=[];
+canvas.addEventListener('click',e=>{
+  const rect=canvas.getBoundingClientRect();
+  const mx=(e.clientX-rect.left)*(canvas.width/rect.width);
+  const my=(e.clientY-rect.top)*(canvas.height/rect.height);
+  for(const h of clickHandlers) if(h.test(mx,my)) h.fn();
+});
+canvas.addEventListener('touchend',e=>{
+  e.preventDefault();
+  const rect=canvas.getBoundingClientRect();
+  const t=e.changedTouches[0];
+  const mx=(t.clientX-rect.left)*(canvas.width/rect.width);
+  const my=(t.clientY-rect.top)*(canvas.height/rect.height);
+  for(const h of clickHandlers) if(h.test(mx,my)) h.fn();
+},{passive:false});
+
+function clearButtons(){clickHandlers=[];}
+function addButton(x,y,w,h,fn){
+  clickHandlers.push({test:(mx,my)=>mx>=x&&mx<=x+w&&my>=y&&my<=y+h,fn});
+}
+
+// Draw styled button, returns {x,y,w,h}
+function drawBtn(label,cx,cy,w,h,color='#f97316',textColor='#fff'){
+  const x=cx-w/2, y=cy-h/2;
+  const r=h/2;
+  ctx.save();
+  // Shadow
+  ctx.shadowColor='rgba(0,0,0,0.4)';ctx.shadowBlur=8;ctx.shadowOffsetY=4;
+  // Background
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);
+  ctx.arc(x+w-r,y+r,r,-Math.PI/2,Math.PI/2);
+  ctx.lineTo(x+r,y+h);
+  ctx.arc(x+r,y+r,r,Math.PI/2,3*Math.PI/2);
+  ctx.closePath();
+  ctx.fillStyle=color;ctx.fill();
+  ctx.shadowColor='transparent';
+  // Top shine
+  const shine=ctx.createLinearGradient(x,y,x,y+h*0.5);
+  shine.addColorStop(0,'rgba(255,255,255,0.25)');
+  shine.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=shine;ctx.fill();
+  // Text
+  ctx.fillStyle=textColor;
+  ctx.font=`bold ${Math.round(h*0.38)}px 'Segoe UI',Arial,sans-serif`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(label,cx,cy+1);
+  ctx.restore();
+  addButton(x,y,w,h,()=>{});
+  return{x,y,w,h};
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  DRAW BACKGROUND
+// ═══════════════════════════════════════════════════════════════
+function drawBG(offsetX=0,viewW=CW){
+  // Sky
+  const sky=ctx.createLinearGradient(offsetX,0,offsetX,HORIZ);
+  sky.addColorStop(0,'#1a6dd3');
+  sky.addColorStop(1,'#87ceeb');
+  ctx.fillStyle=sky;
+  ctx.fillRect(offsetX,0,viewW,HORIZ);
+
+  // Clouds
+  ctx.save();
+  ctx.globalAlpha=0.6;
+  const drawCloud=(x,y,s)=>{
+    ctx.fillStyle='#fff';
+    ctx.beginPath();
+    ctx.arc(offsetX+x,y,s*0.7,0,Math.PI*2);
+    ctx.arc(offsetX+x+s,y-s*0.3,s*0.9,0,Math.PI*2);
+    ctx.arc(offsetX+x+s*2,y,s*0.7,0,Math.PI*2);
+    ctx.fill();
+  };
+  drawCloud(viewW*0.08, HORIZ*0.35, 16*(CW/BASE_W));
+  drawCloud(viewW*0.55, HORIZ*0.5, 12*(CW/BASE_W));
+  drawCloud(viewW*0.75, HORIZ*0.25, 20*(CW/BASE_W));
+  ctx.restore();
+
+  // Grass sides (below horizon)
+  const grass=ctx.createLinearGradient(offsetX,HORIZ,offsetX,CH);
+  grass.addColorStop(0,'#2d7a0e');
+  grass.addColorStop(1,'#1a4a08');
+  ctx.fillStyle=grass;
+  ctx.fillRect(offsetX,HORIZ,viewW,CH-HORIZ);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  DRAW PATH
+// ═══════════════════════════════════════════════════════════════
+function drawPath(player, offsetX=0, viewW=CW){
+  const{camZ,ballX}=player;
+  const ld=levelData;
+  const STEPS=50;
+
+  // Draw from far to near
+  for(let i=STEPS;i>=1;i--){
+    const z1=(i/STEPS)*MAX_Z;
+    const z2=((i-1)/STEPS)*MAX_Z;
+    const wz1=camZ+z1, wz2=camZ+z2;
+    const pc1=lerpPath(ld.wp,wz1)-ballX;
+    const pc2=lerpPath(ld.wp,wz2)-ballX;
+    const hw=ld.halfW;
+
+    const p1=proj(pc1-hw,z1);
+    const p2=proj(pc1+hw,z1);
+    const p3=proj(pc2+hw,z2);
+    const p4=proj(pc2-hw,z2);
+
+    // Road color (alternating tiles for visual rhythm)
+    const tileIdx=Math.floor((camZ+z2)/4);
+    const base=tileIdx%2===0?180:170;
+    ctx.fillStyle=`rgb(${base},${base+2},${base+8})`;
+    ctx.beginPath();
+    ctx.moveTo(offsetX+p1.sx-(CW===BASE_W?0:CW/2-BASE_W/2),p1.sy);
+    ctx.lineTo(offsetX+p2.sx-(CW===BASE_W?0:CW/2-BASE_W/2),p2.sy);
+    ctx.lineTo(offsetX+p3.sx-(CW===BASE_W?0:CW/2-BASE_W/2),p3.sy);
+    ctx.lineTo(offsetX+p4.sx-(CW===BASE_W?0:CW/2-BASE_W/2),p4.sy);
+    ctx.closePath();
+    ctx.fill();
+
+    // Edge lines
+    if(i>2){
+      ctx.strokeStyle=`rgba(255,255,255,${0.35*(1-i/STEPS)})`;
+      ctx.lineWidth=1.5*(viewW/BASE_W);
+      ctx.stroke();
+    }
+  }
+
+  // Lane center dashes
+  for(let d=5;d<MAX_Z;d+=8){
+    const wz=camZ+d;
+    if(wz<0||wz>ld.totalZ+10)continue;
+    const pc=lerpPath(ld.wp,wz)-ballX;
+    const p=proj(pc,d);
+    const p2=proj(pc,d+3);
+    const alpha=0.25*(1-d/MAX_Z);
+    ctx.strokeStyle=`rgba(255,255,255,${alpha})`;
+    ctx.lineWidth=Math.max(1,2*(1-d/MAX_Z));
+    ctx.beginPath();
+    const ox=offsetX+(p.sx-CX);
+    const ox2=offsetX+(p2.sx-CX);
+    ctx.moveTo(CX+ox,p.sy); // reuse projection relative to center
+    ctx.lineTo(CX+ox2,p2.sy);
+    ctx.stroke();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  DRAW BALL
+// ═══════════════════════════════════════════════════════════════
+function drawBall(ballIdx,sx,sy,sc,bounceY=0){
+  const skin=BALLS[ballIdx];
+  const r=Math.round(20*(sc||1)*(CW/BASE_W));
+  const bx=sx, by=sy-bounceY;
+
+  // Shadow
+  ctx.save();
+  ctx.globalAlpha=0.25*Math.max(0.2,sc);
+  ctx.beginPath();
+  ctx.ellipse(bx,by+r*0.9,r*0.85,r*0.25,0,0,Math.PI*2);
+  ctx.fillStyle='#000';ctx.fill();
+  ctx.restore();
+
+  // Ball body
+  const grad=ctx.createRadialGradient(bx-r*0.3,by-r*0.3,r*0.05,bx,by,r);
+  grad.addColorStop(0,skin.c2);
+  grad.addColorStop(0.55,skin.c1);
+  grad.addColorStop(1,'rgba(0,0,0,0.8)');
+  ctx.beginPath();
+  ctx.arc(bx,by,r,0,Math.PI*2);
+  ctx.fillStyle=grad;
+  ctx.fill();
+
+  // Shine
+  const shine=ctx.createRadialGradient(bx-r*0.4,by-r*0.4,0,bx-r*0.4,by-r*0.4,r*0.55);
+  shine.addColorStop(0,'rgba(255,255,255,0.7)');
+  shine.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.beginPath();
+  ctx.arc(bx,by,r,0,Math.PI*2);
+  ctx.fillStyle=shine;ctx.fill();
+
+  // Crown ball special decoration
+  if(ballIdx===19){
+    ctx.save();
+    ctx.fillStyle='#f57f17';
+    ctx.font=`bold ${r}px serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('👑',bx,by-r*0.1);
+    ctx.restore();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  DRAW COINS
+// ═══════════════════════════════════════════════════════════════
+function drawCoins(player,offsetX=0){
+  const{camZ,ballX}=player;
+  const ld=levelData;
+  for(const c of ld.coins){
+    if(c.collected)continue;
+    const wz=c.z-camZ;
+    if(wz<0||wz>MAX_Z)continue;
+    const rx=c.x-ballX;
+    const p=proj(rx,wz);
+    const r=Math.max(3,COIN_R_WORLD*p.sc*(CW/BASE_W)*PERSP*0.7);
+    const sx=offsetX+(p.sx-CX);
+
+    // Coin glow
+    ctx.save();
+    ctx.shadowColor='#FFD700';ctx.shadowBlur=8;
+    // Coin body
+    const cg=ctx.createRadialGradient(CX+sx-r*0.3,p.sy-r*0.3,0,CX+sx,p.sy,r);
+    cg.addColorStop(0,'#fffde7');
+    cg.addColorStop(0.5,'#FFD700');
+    cg.addColorStop(1,'#e65100');
+    ctx.beginPath();
+    ctx.arc(CX+sx,p.sy,r,0,Math.PI*2);
+    ctx.fillStyle=cg;ctx.fill();
+    // $ sign
+    if(r>6){
+      ctx.fillStyle='rgba(180,100,0,0.7)';
+      ctx.font=`bold ${r*1.1}px Arial`;
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText('$',CX+sx,p.sy);
+    }
+    ctx.restore();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  DRAW BARRELS
+// ═══════════════════════════════════════════════════════════════
+function drawBarrels(player,offsetX=0){
+  const{camZ,ballX}=player;
+  const ld=levelData;
+  for(const b of ld.barrels){
+    if(b.hit&&b.hitT>1)continue;
+    const wz=b.z-camZ;
+    if(wz<0||wz>MAX_Z)continue;
+    const rx=b.x-ballX+(b.hit?Math.sin(b.hitT*20)*2:0);
+    const p=proj(rx,wz);
+    const sc2=p.sc*(CW/BASE_W);
+    const bw=BARREL_W_WORLD*sc2*PERSP*0.65;
+    const bh=BARREL_H_WORLD*sc2*PERSP*0.65;
+    const sx=CX+(p.sx-CX)+offsetX;
+    const sy=p.sy;
+    const alpha=b.hit?Math.max(0,1-b.hitT):1;
+
+    ctx.save();
+    ctx.globalAlpha=alpha;
+
+    // Barrel body
+    const barrelGrad=ctx.createLinearGradient(sx-bw,sy-bh,sx+bw,sy);
+    barrelGrad.addColorStop(0,'#a0522d');
+    barrelGrad.addColorStop(0.4,'#8B4513');
+    barrelGrad.addColorStop(1,'#4a2009');
+    ctx.beginPath();
+    ctx.ellipse(sx,sy-bh*0.1,bw*0.9,bh*0.5,0,0,Math.PI*2);
+    ctx.fillStyle=barrelGrad;ctx.fill();
+    // Top ellipse
+    ctx.beginPath();
+    ctx.ellipse(sx,sy-bh*0.55,bw*0.9,bh*0.22,0,0,Math.PI*2);
+    ctx.fillStyle='#c68642';ctx.fill();
+    // Metal rings
+    const ringColors=['#666','#888'];
+    [-bh*0.25,bh*0.05,bh*0.3].forEach((dy,i)=>{
+      ctx.beginPath();
+      ctx.ellipse(sx,sy+dy-bh*0.1,bw*0.85,bh*0.12,0,0,Math.PI*2);
+      ctx.strokeStyle=ringColors[i%2];
+      ctx.lineWidth=Math.max(1,2*sc2);
+      ctx.stroke();
+    });
+
+    ctx.restore();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  DRAW TRAMPOLINE
+// ═══════════════════════════════════════════════════════════════
+function drawTrampoline(player,offsetX=0){
+  const{camZ,ballX}=player;
+  const ld=levelData;
+  const trampZ=ld.totalZ;
+  const wz=trampZ-camZ;
+  if(wz<0||wz>MAX_Z)return;
+  const pathCx=lerpPath(ld.wp,trampZ)-ballX;
+  const p=proj(pathCx,wz);
+  const sc2=p.sc*(CW/BASE_W);
+  const tw=ld.halfW*sc2*PERSP*1.3;
+  const th=tw*0.3;
+  const sx=CX+(p.sx-CX)+offsetX;
+  const sy=p.sy;
+
+  ctx.save();
+  // Frame legs
+  ctx.strokeStyle='#d32f2f';ctx.lineWidth=Math.max(2,4*sc2);
+  ctx.beginPath();ctx.moveTo(sx-tw,sy-th*0.5);ctx.lineTo(sx-tw,sy+th);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(sx+tw,sy-th*0.5);ctx.lineTo(sx+tw,sy+th);ctx.stroke();
+  // Trampoline bed
+  const tg=ctx.createLinearGradient(sx-tw,sy-th,sx+tw,sy+th);
+  tg.addColorStop(0,'#ffca28');
+  tg.addColorStop(0.5,'#ff6f00');
+  tg.addColorStop(1,'#e53935');
+  ctx.beginPath();
+  ctx.ellipse(sx,sy,tw,th,0,0,Math.PI*2);
+  ctx.fillStyle=tg;ctx.fill();
+  ctx.strokeStyle='#d32f2f';ctx.lineWidth=Math.max(1,2*sc2);ctx.stroke();
+  // Springs
+  for(let i=-1;i<=1;i++){
+    ctx.beginPath();
+    ctx.moveTo(sx+i*tw*0.7,sy+th*0.5);
+    ctx.lineTo(sx+i*tw*0.7,sy+th*1.2);
+    ctx.strokeStyle='#bdbdbd';ctx.lineWidth=Math.max(1,2*sc2);ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  DRAW COIN POPUPS
+// ═══════════════════════════════════════════════════════════════
+function drawCoinPops(offsetX=0){
+  for(let i=coinPops.length-1;i>=0;i--){
+    const p=coinPops[i];
+    p.y-=1.5;p.life-=1;p.alpha=p.life/30;
+    if(p.life<=0){coinPops.splice(i,1);continue;}
+    ctx.save();
+    ctx.globalAlpha=p.alpha;
+    ctx.fillStyle='#FFD700';
+    ctx.font=`bold ${14*(CW/BASE_W)}px Arial`;
+    ctx.textAlign='center';
+    ctx.fillText('+1',offsetX+p.x,p.y);
+    ctx.restore();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RENDER ONE PLAYER VIEW
+// ═══════════════════════════════════════════════════════════════
+function renderPlayer(player,offsetX=0,viewW=CW){
+  // Clip to this player's half
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(offsetX,0,viewW,CH);
+  ctx.clip();
+
+  const ld=levelData;
+  const halfW=viewW/2;
+
+  drawBG(offsetX,viewW);
+  drawPath(player,offsetX,viewW);
+  drawCoins(player,offsetX);
+  drawBarrels(player,offsetX);
+  drawTrampoline(player,offsetX);
+  drawCoinPops(offsetX);
+
+  // Draw the ball at fixed screen position
+  if(player.alive&&!player.finished){
+    drawBall(save.selected,offsetX+halfW,BALL_SCREEN_Y,1.0);
+  }
+
+  // Trampoline bounce animation
+  if(player.trampolineAnim>0){
+    const bounceY=Math.sin(player.trampolineAnim*Math.PI)*CH*0.35;
+    const sc=1+bounceY/CH*0.5;
+    drawBall(save.selected,offsetX+halfW,BALL_SCREEN_Y,sc,bounceY);
+  }
+
+  // Dead fall animation
+  if(!player.alive){
+    const fallY=BALL_SCREEN_Y+player.deadY;
+    const dx=player.deadDir*player.deadAnim*40;
+    if(fallY<CH+40){
+      ctx.save();
+      ctx.globalAlpha=Math.max(0,1-player.deadY/200);
+      drawBall(save.selected,offsetX+halfW+dx,fallY,0.9);
+      ctx.restore();
+    }
+  }
+
+  // HUD
+  const hudSize=16*(CW/BASE_W);
+  ctx.fillStyle='rgba(0,0,0,0.45)';
+  ctx.beginPath();ctx.roundRect(offsetX+8,8,140*(CW/BASE_W),36*(CW/BASE_W),8);ctx.fill();
+  ctx.fillStyle='#fff';
+  ctx.font=`bold ${hudSize}px 'Segoe UI',Arial`;
+  ctx.textAlign='left';ctx.textBaseline='middle';
+  ctx.fillText(`Level ${currentLevel}  🪙 ${save.coins+player.coinsThisLevel}`,
+    offsetX+18,26*(CW/BASE_W));
+
+  // 2-player label
+  if(numPlayers===2){
+    ctx.fillStyle='#fff';
+    ctx.font=`bold ${12*(CW/BASE_W)}px Arial`;
+    ctx.textAlign='center';
+    ctx.fillText(`P${player.idx+1}`,offsetX+viewW/2,12*(CW/BASE_W));
+  }
+
+  // Progress bar
+  const progress=Math.min(1,player.camZ/ld.totalZ);
+  const pbW=viewW-32,pbH=6*(CW/BASE_W);
+  ctx.fillStyle='rgba(0,0,0,0.4)';
+  ctx.beginPath();ctx.roundRect(offsetX+16,CH-24*(CW/BASE_W),pbW,pbH,pbH/2);ctx.fill();
+  const pf=ctx.createLinearGradient(offsetX+16,0,offsetX+16+pbW*progress,0);
+  pf.addColorStop(0,'#f97316');pf.addColorStop(1,'#fbbf24');
+  ctx.fillStyle=pf;
+  ctx.beginPath();ctx.roundRect(offsetX+16,CH-24*(CW/BASE_W),pbW*progress,pbH,pbH/2);ctx.fill();
+  // Flag at end
+  ctx.fillStyle='#fff';ctx.font=`${14*(CW/BASE_W)}px serif`;ctx.textAlign='right';
+  ctx.fillText('🏁',offsetX+viewW-10,CH-18*(CW/BASE_W));
+
+  // Divider for 2p
+  if(numPlayers===2&&player.idx===0){
+    ctx.strokeStyle='rgba(255,255,255,0.5)';
+    ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(offsetX+viewW,0);ctx.lineTo(offsetX+viewW,CH);ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  UPDATE GAME LOGIC
+// ═══════════════════════════════════════════════════════════════
+function updatePlayer(player,dt){
+  const ld=levelData;
+  if(!player.alive||player.finished) return;
+
+  const spd=ld.speed;
+  player.camZ+=spd*dt*60;
+
+  // Steer
+  const accel=0.18*(CW/BASE_W);
+  const friction=0.88;
+  if(isLeft(player))  player.vx-=accel;
+  if(isRight(player)) player.vx+=accel;
+  player.vx*=friction;
+  player.vx=Math.max(-0.55,Math.min(0.55,player.vx));
+  player.ballX+=player.vx;
+
+  // Clamp to path
+  const pathCx=lerpPath(ld.wp,player.camZ);
+  const hw=ld.halfW;
+  const absX=pathCx+player.ballX;
+  const edgeDist=absX-pathCx;
+
+  if(Math.abs(edgeDist)>hw+0.4){
+    // Fall off
+    player.alive=false;
+    player.deadY=0;
+    player.deadAnim=0;
+    player.deadDir=edgeDist>0?1:-1;
+    return;
+  }
+
+  // Soft push back from edge
+  if(Math.abs(edgeDist)>hw*0.85){
+    player.vx-=Math.sign(edgeDist)*0.04;
+  }
+
+  // Coin collection
+  for(const c of ld.coins){
+    if(c.collected)continue;
+    const dz=Math.abs(c.z-player.camZ);
+    const dx=Math.abs(c.x-(pathCx+player.ballX));
+    if(dz<COIN_R_WORLD*2&&dx<COIN_R_WORLD*1.8){
+      c.collected=true;
+      player.coinsThisLevel++;
+      const p=proj(c.x-player.ballX,c.z-player.camZ);
+      coinPops.push({x:CX+(p.sx-CX),y:BALL_SCREEN_Y-30*(CW/BASE_W),life:30,alpha:1});
+    }
+  }
+
+  // Barrel collision
+  for(const b of ld.barrels){
+    if(b.hit)continue;
+    const dz=Math.abs(b.z-player.camZ);
+    const dx=Math.abs(b.x-(pathCx+player.ballX));
+    if(dz<BARREL_W_WORLD*1.2&&dx<BARREL_W_WORLD*1.2){
+      b.hit=true;
+      b.hitT=0;
+      player.vx*=0.3; // slow down
+      // Brief speed penalty
+      ld.speed=Math.max(1.5,ld.speed-0.3);
+      setTimeout(()=>{ld.speed=generateLevel(currentLevel).speed;},600);
+    }
+  }
+
+  // Advance barrel break animations
+  for(const b of ld.barrels){
+    if(b.hit) b.hitT+=dt*2;
+  }
+
+  // Trampoline
+  if(player.camZ>=ld.totalZ-TRAMP_Z_OFFSET&&!player.finished){
+    player.finished=true;
+    player.trampolineAnim=0.01;
+    save.coins+=player.coinsThisLevel;
+    if(currentLevel>save.highLevel) save.highLevel=currentLevel;
+    writeSave();
+  }
+
+  // Bounce animation
+  if(player.trampolineAnim>0){
+    player.trampolineAnim+=dt*1.8;
+    if(player.trampolineAnim>1){
+      player.trampolineAnim=0;
+      allDone();
+    }
+  }
+}
+
+function allDone(){
+  // Check if all alive players finished (or died)
+  const allOver=players.every(p=>p.finished||!p.alive);
+  if(!allOver)return;
+  setTimeout(()=>{ screen='levelComplete'; clearButtons(); },200);
+}
+
+function updateDead(player,dt){
+  if(player.alive) return;
+  player.deadY+=8*dt*60;
+  player.deadAnim+=dt;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SCREENS
+// ═══════════════════════════════════════════════════════════════
+
+// ── TITLE ───────────────────────────────────────────────────
+function drawTitle(){
+  clearButtons();
+  // BG
+  const bg=ctx.createLinearGradient(0,0,0,CH);
+  bg.addColorStop(0,'#0a0a20');
+  bg.addColorStop(1,'#1a2040');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,CW,CH);
+
+  // Stars
+  for(let i=0;i<60;i++){
+    const sx=((i*137.5)%CW);
+    const sy=((i*73.1)%CH*0.55);
+    const sr=Math.random()*1.5+0.5;
+    ctx.fillStyle=`rgba(255,255,255,${0.4+Math.random()*0.6})`;
+    ctx.beginPath();ctx.arc(sx,sy,sr,0,Math.PI*2);ctx.fill();
+  }
+
+  // Title text
+  const titleY=CH*0.22;
+  ctx.save();
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  // Outer glow
+  ctx.shadowColor='#f97316';ctx.shadowBlur=40;
+  ctx.fillStyle='#fff';
+  ctx.font=`900 ${58*(CW/BASE_W)}px 'Segoe UI',Arial,sans-serif`;
+  ctx.fillText('GOING',CX,titleY);
+  ctx.fillStyle='#f97316';
+  ctx.shadowColor='#fff';ctx.shadowBlur=20;
+  ctx.fillText('BALLS',CX,titleY+62*(CW/BASE_W));
+  ctx.restore();
+
+  // Ball decorations
+  const ballY=CH*0.48;
+  const ballSpacing=70*(CW/BASE_W);
+  [1,0,2,9,19].forEach((ballIdx,i)=>{
+    drawBall(ballIdx,CX+(i-2)*ballSpacing,ballY,0.7);
+  });
+
+  // Coin display
+  ctx.fillStyle='rgba(255,255,255,0.15)';
+  ctx.beginPath();ctx.roundRect(CX-80*(CW/BASE_W),CH*0.57,160*(CW/BASE_W),36*(CW/BASE_W),18);ctx.fill();
+  ctx.fillStyle='#FFD700';
+  ctx.font=`bold ${18*(CW/BASE_W)}px Arial`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(`🪙 ${save.coins} coins`,CX,CH*0.57+18*(CW/BASE_W));
+
+  // Buttons
+  const btnW=200*(CW/BASE_W), btnH=52*(CW/BASE_W);
+  const b1=drawBtn('▶ 1 PLAYER',CX,CH*0.68,btnW,btnH,'#f97316');
+  addButton(b1.x,b1.y,b1.w,b1.h,()=>startGame(1));
+
+  const b2=drawBtn('👥 2 PLAYERS',CX,CH*0.78,btnW,btnH,'#7c3aed');
+  addButton(b2.x,b2.y,b2.w,b2.h,()=>startGame(2));
+
+  const b3=drawBtn('🛒 SHOP',CX,CH*0.88,btnW*0.7,btnH*0.8,'#059669');
+  addButton(b3.x,b3.y,b3.w,b3.h,()=>{screen='shop';clearButtons();});
+
+  // High level
+  if(save.highLevel>1){
+    ctx.fillStyle='rgba(255,255,255,0.5)';
+    ctx.font=`${12*(CW/BASE_W)}px Arial`;
+    ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.fillText(`Best: Level ${save.highLevel}`,CX,CH*0.93);
+  }
+}
+
+// ── START GAME ───────────────────────────────────────────────
+function startGame(np){
+  numPlayers=np;
+  resize();
+  levelData=generateLevel(currentLevel);
+  coinPops=[];barrelPieces=[];
+  players=[];
+  for(let i=0;i<np;i++) players.push(makePlayer(i));
+  screen='playing';
+  clearButtons();
+}
+
+// ── LEVEL COMPLETE ───────────────────────────────────────────
+function drawLevelComplete(){
+  clearButtons();
+  // Overlay
+  const og=ctx.createLinearGradient(0,0,0,CH);
+  og.addColorStop(0,'rgba(0,20,60,0.97)');
+  og.addColorStop(1,'rgba(20,0,40,0.97)');
+  ctx.fillStyle=og;ctx.fillRect(0,0,CW,CH);
+
+  // Confetti
+  for(let i=0;i<30;i++){
+    const cx=((i*181+Date.now()*0.03)%CW);
+    const cy=((i*97+Date.now()*0.05)%CH*0.6)+40;
+    const colors=['#f97316','#fbbf24','#10b981','#3b82f6','#ec4899','#8b5cf6'];
+    ctx.fillStyle=colors[i%colors.length];
+    ctx.beginPath();ctx.rect(cx,cy,6*(CW/BASE_W),10*(CW/BASE_W));ctx.fill();
+  }
+
+  // Check if all players are dead (no winners)
+  const anyFinished=players.some(p=>p.finished);
+
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  if(anyFinished){
+    ctx.fillStyle='#fbbf24';
+    ctx.font=`900 ${48*(CW/BASE_W)}px 'Segoe UI',Arial`;
+    ctx.shadowColor='#f97316';ctx.shadowBlur=30;
+    ctx.fillText('🎉 LEVEL CLEAR!',CX,CH*0.15);
+    ctx.shadowBlur=0;
+
+    // Stars based on coins collected
+    const coinsTotal=players.reduce((s,p)=>s+p.coinsThisLevel,0);
+    const maxCoins=levelData.coinCount;
+    const stars=coinsTotal>=maxCoins?3:coinsTotal>=maxCoins*0.6?2:1;
+    ctx.font=`${40*(CW/BASE_W)}px serif`;
+    ctx.fillText('⭐'.repeat(stars)+'☆'.repeat(3-stars),CX,CH*0.26);
+
+    // Stats
+    ctx.fillStyle='rgba(255,255,255,0.9)';
+    ctx.font=`${18*(CW/BASE_W)}px 'Segoe UI',Arial`;
+    ctx.fillText(`Coins collected: 🪙 ${coinsTotal} / ${maxCoins}`,CX,CH*0.36);
+    ctx.fillText(`Total coins: 🪙 ${save.coins}`,CX,CH*0.44);
+
+    if(numPlayers===2){
+      const winner=players.find(p=>p.finished);
+      if(winner) ctx.fillText(`Player ${winner.idx+1} wins!`,CX,CH*0.52);
+    }
+  } else {
+    ctx.fillStyle='#ef4444';
+    ctx.font=`900 ${44*(CW/BASE_W)}px 'Segoe UI',Arial`;
+    ctx.fillText('💀 YOU FELL!',CX,CH*0.2);
+    ctx.fillStyle='rgba(255,255,255,0.7)';
+    ctx.font=`${18*(CW/BASE_W)}px Arial`;
+    ctx.fillText('Keep trying!',CX,CH*0.32);
+  }
+
+  // Three buttons
+  const btnW=150*(CW/BASE_W), btnH=52*(CW/BASE_W);
+  const gap=20*(CW/BASE_W);
+  const totalW=btnW*3+gap*2;
+  const startX=CX-totalW/2+btnW/2;
+  const btnY=CH*0.72;
+
+  const bm=drawBtn('🏠 Menu',startX,btnY,btnW,btnH,'#374151');
+  addButton(bm.x,bm.y,bm.w,bm.h,()=>{
+    numPlayers=1;resize();
+    screen='title';clearButtons();
+  });
+
+  const bs=drawBtn('🛒 Shop',startX+btnW+gap,btnY,btnW,btnH,'#059669');
+  addButton(bs.x,bs.y,bs.w,bs.h,()=>{screen='shop';clearButtons();});
+
+  let nextLabel='▶ Retry';
+  let nextColor='#f97316';
+  let nextFn=()=>startGame(numPlayers);
+  if(anyFinished&&currentLevel<30){
+    nextLabel='Next ▶';
+    nextFn=()=>{ currentLevel++; startGame(numPlayers); };
+  } else if(anyFinished&&currentLevel===30){
+    nextLabel='🏆 Done!';
+    nextFn=()=>{ currentLevel=1; screen='title'; resize(); clearButtons(); };
+  }
+  const bn=drawBtn(nextLabel,startX+(btnW+gap)*2,btnY,btnW,btnH,nextColor);
+  addButton(bn.x,bn.y,bn.w,bn.h,nextFn);
+
+  // Level indicator
+  ctx.fillStyle='rgba(255,255,255,0.35)';
+  ctx.font=`${12*(CW/BASE_W)}px Arial`;
+  ctx.fillText(`Level ${currentLevel} / 30`,CX,CH*0.88);
+}
+
+// ── SHOP ─────────────────────────────────────────────────────
+let shopScroll=0;
+function drawShop(){
+  clearButtons();
+  // BG
+  const bg=ctx.createLinearGradient(0,0,0,CH);
+  bg.addColorStop(0,'#0f0a1a');
+  bg.addColorStop(1,'#1a0f2e');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,CW,CH);
+
+  // Header
+  ctx.fillStyle='#fff';
+  ctx.font=`900 ${32*(CW/BASE_W)}px 'Segoe UI',Arial`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('🛒 BALL SHOP',CX,38*(CW/BASE_W));
+
+  ctx.fillStyle='#FFD700';
+  ctx.font=`bold ${18*(CW/BASE_W)}px Arial`;
+  ctx.fillText(`🪙 ${save.coins} coins`,CX,68*(CW/BASE_W));
+
+  // Ball grid (4 columns)
+  const cols=4;
+  const cellW=(CW-32*(CW/BASE_W))/cols;
+  const cellH=115*(CW/BASE_W);
+  const startY=95*(CW/BASE_W);
+  const rows=Math.ceil(BALLS.length/cols);
+
+  // Clip area
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0,startY,CW,CH-startY-60*(CW/BASE_W));
+  ctx.clip();
+
+  for(let i=0;i<BALLS.length;i++){
+    const ball=BALLS[i];
+    const col=i%cols;
+    const row=Math.floor(i/cols);
+    const cx=16*(CW/BASE_W)+col*cellW+cellW/2;
+    const cy=startY+row*cellH+cellH/2-shopScroll;
+    if(cy+cellH/2<startY||cy-cellH/2>CH) continue;
+
+    const owned=save.owned.includes(i);
+    const selected=save.selected===i;
+    const canAfford=save.coins>=ball.price;
+
+    // Cell bg
+    ctx.fillStyle=selected?'rgba(249,115,22,0.25)':owned?'rgba(255,255,255,0.08)':'rgba(255,255,255,0.04)';
+    ctx.strokeStyle=selected?'#f97316':owned?'rgba(255,255,255,0.3)':'rgba(255,255,255,0.1)';
+    ctx.lineWidth=selected?2.5:1.5;
+    ctx.beginPath();ctx.roundRect(cx-cellW/2+4,cy-cellH/2+4,cellW-8,cellH-8,10);
+    ctx.fill();ctx.stroke();
+
+    // Ball preview
+    drawBall(i,cx,cy-16*(CW/BASE_W),0.65);
+
+    // Ball name
+    ctx.fillStyle='#fff';
+    ctx.font=`${11*(CW/BASE_W)}px 'Segoe UI',Arial`;
+    ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.fillText(ball.name,cx,cy+14*(CW/BASE_W));
+
+    // Price / status
+    if(owned){
+      ctx.fillStyle=selected?'#f97316':'#10b981';
+      ctx.font=`bold ${10*(CW/BASE_W)}px Arial`;
+      ctx.fillText(selected?'✓ SELECTED':'✓ OWNED',cx,cy+28*(CW/BASE_W));
+    } else {
+      ctx.fillStyle=canAfford?'#FFD700':'#ef4444';
+      ctx.font=`bold ${10*(CW/BASE_W)}px Arial`;
+      ctx.fillText(`🪙 ${ball.price}`,cx,cy+28*(CW/BASE_W));
+    }
+
+    // Click area
+    const bx=cx-cellW/2+4, by=cy-cellH/2+4;
+    const bw=cellW-8, bh=cellH-8;
+    addButton(bx,by+shopScroll,bw,bh,()=>{
+      if(owned){save.selected=i;writeSave();}
+      else if(canAfford){
+        save.coins-=ball.price;
+        save.owned.push(i);
+        save.selected=i;
+        writeSave();
+      }
+    });
+  }
+  ctx.restore();
+
+  // Back button
+  const backBtn=drawBtn('← Back',CX,CH-30*(CW/BASE_W),160*(CW/BASE_W),44*(CW/BASE_W),'#374151');
+  addButton(backBtn.x,backBtn.y,backBtn.w,backBtn.h,()=>{
+    screen=players.length>0?'levelComplete':'title';
+    clearButtons();
+  });
+}
+
+// Scroll shop
+canvas.addEventListener('wheel',e=>{
+  if(screen==='shop'){
+    shopScroll=Math.max(0,Math.min(200*(CW/BASE_W),shopScroll+e.deltaY*0.5));
+  }
+});
+
+// Touch scroll for shop
+let touchStartY=0;
+canvas.addEventListener('touchstart',e=>{touchStartY=e.touches[0].clientY;},{passive:true});
+canvas.addEventListener('touchmove',e=>{
+  if(screen==='shop'){
+    const dy=touchStartY-e.touches[0].clientY;
+    shopScroll=Math.max(0,Math.min(200*(CW/BASE_W),shopScroll+dy*0.5));
+    touchStartY=e.touches[0].clientY;
+  }
+},{passive:true});
+
+// ── DEAD SCREEN ───────────────────────────────────────────────
+function drawDeadOverlay(){
+  ctx.fillStyle='rgba(0,0,0,0.0)'; // transparent - game still visible
+  // Red flash fade
+  if(players.every(p=>!p.alive)){
+    ctx.fillStyle='rgba(220,0,0,0.15)';
+    ctx.fillRect(0,0,CW,CH);
+    ctx.fillStyle='#fff';
+    ctx.font=`bold ${28*(CW/BASE_W)}px Arial`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.shadowColor='#ef4444';ctx.shadowBlur=20;
+    ctx.fillText('💀 YOU FELL!',CX,CH*0.45);
+    ctx.shadowBlur=0;
+    ctx.font=`${15*(CW/BASE_W)}px Arial`;
+    ctx.fillStyle='rgba(255,255,255,0.7)';
+    ctx.fillText('Restarting...',CX,CH*0.55);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  MAIN LOOP
+// ═══════════════════════════════════════════════════════════════
+let lastT=0;
+let deadTimer=0;
+
+function loop(ts){
+  requestAnimationFrame(loop);
+  const dt=Math.min((ts-lastT)/1000,0.05);
+  lastT=ts;
+  ctx.clearRect(0,0,CW,CH);
+
+  if(screen==='title'){
+    drawTitle();
+    return;
+  }
+
+  if(screen==='levelComplete'){
+    drawLevelComplete();
+    return;
+  }
+
+  if(screen==='shop'){
+    drawShop();
+    return;
+  }
+
+  if(screen==='playing'){
+    // Update
+    for(const p of players){
+      updatePlayer(p,dt);
+      updateDead(p,dt);
+    }
+
+    // Render
+    if(numPlayers===1){
+      renderPlayer(players[0],0,CW);
+      if(!players[0].alive) drawDeadOverlay();
+    } else {
+      const hw=CW/2;
+      for(const p of players) renderPlayer(p,p.idx*hw,hw);
+    }
+
+    // Auto restart if all dead
+    if(players.every(p=>!p.alive)){
+      deadTimer+=dt;
+      if(deadTimer>2){
+        deadTimer=0;
+        screen='levelComplete';
+        clearButtons();
+      }
+    } else {
+      deadTimer=0;
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════
+window.addEventListener('resize',()=>{resize();});
+resize();
+currentLevel=1;
+screen='title';
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
