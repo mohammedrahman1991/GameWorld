@@ -2,27 +2,23 @@
 ## Project Memory (auto-managed by Cortex)
 
 ### Last Session
-The combo now works two ways:
-1. **Hold SLIDE + press JUMP** at same time → instant super jump (`ts=0`, always triggers)
-2. **Release SLIDE then press JUMP within 500ms** → still super jump
+<ide_opened_file>The user opened the file /Users/mohammedrahman/Desktop/GameOfficial/GameWorld/ads.txt in the IDE. This may or may not be related to t. [Image: original 3024x1486, displayed at 2000x983. Multiply coordinates by 1.51 to map to original image.]. Looking at your AdSense dashboard, here's what the status means:
 
-Now for p. its already set up. just push code. Your branch is up to date with 'origin/first-push'.
-
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (us
+**Good news:** You've completed all the setup steps:
+- Ads settings confirmed (green checkmark)
+- Site connected
+- Payment info submit
 
 ### Recent Decisions
-- **going with a gate-style laser with a moving gap, terrain as an array of points with linear interpolation and gaps, simple bike physics with gravity and jumping, a camera that follows the bike horizont**: a gate-style laser with a moving gap, terrain as an array of points with linear  — )_ _(
+_No decisions recorded yet._
 
 ### Current Context
 _No context available._
 
 ### Open Problems
 - Tool permission request failed: Error: Tool permission stream closed before response received
-- Exit code 2
 
-_Last updated: 2026-05-23T17:57:50.129Z | Tokens: 229/800_
+_Last updated: 2026-06-06T18:09:17.917Z | Tokens: 164/800_
 <!-- CORTEX:END -->
 
 

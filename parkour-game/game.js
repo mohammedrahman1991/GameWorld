@@ -258,7 +258,7 @@ function resetP(checkpoint=false){
 const obs=[],plats=[],bombs=[],spins=[],coins_=[],dust=[],exps=[],bgProps=[],cps=[],trucks=[],narrows=[],pits=[],pads=[];
 
 // ── Input ─────────────────────────────────────────────────────────────
-const K={},T={up:false,down:false,left:false,right:false};
+const K={},T={up:false,down:false,left:false,right:false,run:false};
 document.addEventListener('keydown',e=>{K[e.code]=true;e.preventDefault();});
 document.addEventListener('keyup',e=>K[e.code]=false);
 ['b-left','b-right','b-up','b-down'].forEach(id=>{
@@ -267,9 +267,10 @@ document.addEventListener('keyup',e=>K[e.code]=false);
   el.addEventListener('pointerup',()=>T[dir]=false);
   el.addEventListener('pointercancel',()=>T[dir]=false);
 });
-const jB=document.getElementById('b-jump'),sB=document.getElementById('b-slide');
+const jB=document.getElementById('b-jump'),sB=document.getElementById('b-slide'),rB=document.getElementById('b-run');
 if(jB){jB.addEventListener('pointerdown',e=>{T.up=true;e.preventDefault();},{passive:false});jB.addEventListener('pointerup',()=>T.up=false);}
 if(sB){sB.addEventListener('pointerdown',e=>{T.down=true;e.preventDefault();},{passive:false});sB.addEventListener('pointerup',()=>T.down=false);}
+if(rB){rB.addEventListener('pointerdown',e=>{T.run=true;e.preventDefault();},{passive:false});rB.addEventListener('pointerup',()=>T.run=false);rB.addEventListener('pointercancel',()=>T.run=false);}
 
 // ── Spawn ─────────────────────────────────────────────────────────────
 function spawnAt(wx){
@@ -672,6 +673,7 @@ function update(rawDt){
   const doS=K['ArrowDown']||K['KeyS']||T.down;
   const goL=K['ArrowLeft']||K['KeyA']||T.left;
   const goR=K['ArrowRight']||K['KeyD']||T.right;
+  const doRun=K['ShiftLeft']||K['ShiftRight']||T.run;
 
   // ── Jump — floaty gravity on ascent ──────────────────────────────
   // ── Slide ────────────────────────────────────────────────────────
@@ -695,7 +697,9 @@ function update(rawDt){
     const inSlide=P.state==='slide';
     const ts=inSlide?0:Date.now()-P.slideEnd;
     const isSuper=ts<SLIDE_WIN;
-    P.vy=isSuper?SJV:JV;P.onG=false;
+    const jumpBoost=doRun?1.28:1;
+    P.vy=(isSuper?SJV:JV)*jumpBoost;P.onG=false;
+    if(doRun)P.vx=Math.min(MAX_VX,P.vx*1.35);
     P.state=isSuper?'superJump':'jump';P.hairVy=-18;
     jumpSlowT=0.45;
     P.flipAngle=0;P.flipSpd=isSuper?16:9;
@@ -733,7 +737,8 @@ function update(rawDt){
 
   // ── Horizontal velocity → drives camera ──────────────────────────
   // Speed cap grows with distance — the further you run, the faster you go
-  const MAX_VX=Math.min(900, (260+dist*0.055)*LV().spdMult);
+  const runMult=doRun?1.7:1;
+  const MAX_VX=Math.min(1400, (260+dist*0.055)*LV().spdMult*runMult);
   const ACCEL=900, FRIC=700;
   // Passive auto-boost while running right: gentle push toward current max
   if(P.onG&&P.state==='run'&&P.vx>50) P.vx=Math.min(MAX_VX, P.vx+30*dt);
