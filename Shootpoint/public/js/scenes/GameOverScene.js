@@ -168,6 +168,17 @@ class GameOverScene extends Phaser.Scene {
     const H = this.scale.height;
     this.makeButton(cx - 140, H - 52, 'PLAY AGAIN', 0x44ff88, () => this.scene.start('CharacterSelectScene'));
     this.makeButton(cx + 140, H - 52, 'MAIN MENU',  0x4488ff, () => this.scene.start('MainMenuScene'));
+
+    // Share button
+    const _sb = document.getElementById('wb-sp-share') || (()=>{
+      const b=document.createElement('button'); b.id='wb-sp-share';
+      b.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 32px;background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:12px;color:#fff;font-size:1rem;font-weight:800;cursor:pointer;z-index:999;';
+      b.textContent='⬆ Share Result'; document.body.appendChild(b); return b;
+    })();
+    _sb.style.display='block';
+    const _won = this.won;
+    const _kills = this.kills;
+    _sb.onclick=()=>{ if(window.WackyShare) WackyShare.show('Shootpoint', (_won?'Victory! ':'Eliminated! ')+`I got ${_kills} kills in Shootpoint!`, 'https://wackybrains.com/Shootpoint/'); };
   }
 
   showAssignedFeedback(cx, y, weaponName, soldierName) {

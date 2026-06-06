@@ -107,6 +107,17 @@ class GameOverScene extends Phaser.Scene {
     this.input.keyboard.once('keydown-ENTER', () => this.scene.start('GameScene'));
     this.input.keyboard.once('keydown-ESCAPE', () => this.scene.start('TitleScene'));
 
+    // Share button
+    const _scores = this._scores;
+    const _winner = this._winner;
+    const _sb = document.getElementById('wb-futbol-share') || (()=>{
+      const b=document.createElement('button'); b.id='wb-futbol-share';
+      b.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 32px;background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:12px;color:#fff;font-size:1rem;font-weight:800;cursor:pointer;z-index:999;';
+      b.textContent='⬆ Share Result'; document.body.appendChild(b); return b;
+    })();
+    _sb.style.display='block';
+    _sb.onclick=()=>{ if(window.WackyShare){ const res = _winner==='draw'?`I drew ${_scores.messai}-${_scores.ronalda} in 1v1 Futbol!`: (_winner==='messai'?'Messai':'Ronalda')+` wins ${Math.max(_scores.messai,_scores.ronalda)}-${Math.min(_scores.messai,_scores.ronalda)} in 1v1 Futbol!`; WackyShare.show('1v1 Futbol', res, 'https://wackybrains.com/1v1-futbol/'); }};
+
     // Confetti if someone won
     if (!isDraw) this._confetti();
   }

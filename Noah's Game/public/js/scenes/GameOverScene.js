@@ -42,5 +42,20 @@ class GameOverScene extends Phaser.Scene {
     this.add.text(W / 2, H * 0.88, 'Press ENTER or click to play again', {
       fontSize: '13px', color: '#aaaaaa'
     }).setOrigin(0.5);
+
+    // Share button
+    var winnerName = winner === 'curry' ? 'Chef Curry' : 'Ant-Man';
+    var shareBtn = document.getElementById('wb-noahs-share') || (function(){
+      var b = document.createElement('button');
+      b.id = 'wb-noahs-share';
+      b.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 32px;background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:12px;color:#fff;font-size:1rem;font-weight:800;cursor:pointer;z-index:999;';
+      b.textContent = '⬆ Share Result';
+      document.body.appendChild(b);
+      return b;
+    })();
+    shareBtn.style.display = 'block';
+    shareBtn.onclick = function() {
+      if(window.WackyShare) WackyShare.show("Noah's Game", winnerName + ' wins ' + data.curryScore + '-' + data.edwardsScore + " in Noah's Basketball Game!", 'https://wackybrains.com/Noah%27s%20Game/');
+    };
   }
 }
