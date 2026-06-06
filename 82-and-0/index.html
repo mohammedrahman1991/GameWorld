@@ -242,15 +242,15 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
   <div class="mode-cards">
     <div class="mode-card classic" id="mode-classic">
       <div class="mc-icon">💯</div>
-      <div class="mc-name">Classic</div>
+      <div class="mc-name">Normal Mode</div>
       <div class="mc-desc">Draft with full player stats visible — make informed picks.</div>
-      <button class="mode-play-btn">Play Classic</button>
+      <button class="mode-play-btn">Play Normal</button>
     </div>
     <div class="mode-card hoopiq" id="mode-hoopiq">
       <div class="mc-icon">🧠</div>
-      <div class="mc-name">HoopIQ</div>
+      <div class="mc-name">Genius Mode</div>
       <div class="mc-desc">Stats hidden — draft by memory and test your ball knowledge.</div>
-      <button class="mode-play-btn">Play HoopIQ</button>
+      <button class="mode-play-btn">Play Genius</button>
     </div>
   </div>
 </div>
@@ -394,7 +394,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
             <span class="sc-record-num" id="sm-record">—</span>
             <span class="sc-grade" id="sm-grade"></span>
           </div>
-          <div class="sc-mode-chip" id="sm-mode">CLASSIC MODE</div>
+          <div class="sc-mode-chip" id="sm-mode">NORMAL MODE</div>
         </div>
         <div class="sc-ovr-block">
           <div class="sc-label-sm">Team OVR</div>
@@ -450,7 +450,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 <!-- ════════ RESULTS ════════ -->
 <div class="screen" id="s-results">
   <div class="results-header">
-    <div id="res-mode-badge" style="display:inline-block;border-radius:99px;padding:5px 16px;font-size:.75rem;font-weight:800;letter-spacing:.08em;margin-bottom:12px">💯 CLASSIC MODE</div>
+    <div id="res-mode-badge" style="display:inline-block;border-radius:99px;padding:5px 16px;font-size:.75rem;font-weight:800;letter-spacing:.08em;margin-bottom:12px">💯 NORMAL MODE</div>
     <div class="rh-title">Projected Record</div>
     <div class="record-big">
       <span class="w" id="res-w">—</span>
@@ -1113,7 +1113,7 @@ function showResults(wins, losses, strength){
 
   const modeBadge = $('res-mode-badge');
   if(modeBadge){
-    modeBadge.textContent        = state.mode === 'hoopiq' ? '🧠 HOOP IQ MODE' : '💯 CLASSIC MODE';
+    modeBadge.textContent        = state.mode === 'hoopiq' ? '🧠 GENIUS MODE' : '💯 NORMAL MODE';
     modeBadge.style.background   = state.mode === 'hoopiq' ? 'rgba(124,58,237,.18)' : 'rgba(249,115,22,.15)';
     modeBadge.style.color        = state.mode === 'hoopiq' ? '#a78bfa' : '#f97316';
   }
@@ -1178,7 +1178,7 @@ function openShareModal(){
   $('sm-grade').textContent  = grade.l;
   $('sm-grade').style.color  = grade.color;
   $('sm-ovr').textContent    = r.ovr || '—';
-  $('sm-mode').textContent   = state.mode === 'hoopiq' ? 'HOOP IQ MODE' : 'CLASSIC MODE';
+  $('sm-mode').textContent   = state.mode === 'hoopiq' ? 'GENIUS MODE' : 'NORMAL MODE';
   $('sm-caption-record').textContent = `${r.wins}-${r.losses}`;
 
   const playersEl = $('sm-players');
