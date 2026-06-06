@@ -4,934 +4,751 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Going Balls</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#000;display:flex;align-items:center;justify-content:center;
-     height:100vh;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;user-select:none}
-canvas{display:block}
+body{background:#05001a;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;height:100vh;width:100vw}
+#gl{display:block;position:fixed;inset:0}
+
+/* ── UI overlay ── */
+#ui{position:fixed;inset:0;pointer-events:none;z-index:10}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+        justify-content:center;gap:18px;pointer-events:all;
+        background:linear-gradient(160deg,#05001a 0%,#0e0535 60%,#1a0545 100%)}
+.screen.hidden{display:none}
+
+/* Grid lines */
+.screen::before{content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(120,60,220,0.07) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(120,60,220,0.07) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none}
+
+h1.logo{font-size:clamp(2.8rem,8vw,5.5rem);font-weight:900;letter-spacing:-2px;text-align:center;
+        background:linear-gradient(135deg,#a855f7,#f97316);-webkit-background-clip:text;
+        -webkit-text-fill-color:transparent;background-clip:text;
+        filter:drop-shadow(0 0 30px rgba(168,85,247,0.6))}
+h1.logo span{background:linear-gradient(135deg,#f97316,#fbbf24);-webkit-background-clip:text;background-clip:text}
+
+.subtitle{color:rgba(255,255,255,0.45);font-size:.95rem;letter-spacing:.06em}
+.coin-badge{background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.3);
+            border-radius:99px;padding:8px 22px;color:#fbbf24;font-weight:700;font-size:1rem}
+
+/* Buttons */
+.btn{padding:14px 40px;border:none;border-radius:14px;font-size:1rem;font-weight:800;
+     cursor:pointer;transition:.18s;letter-spacing:.04em;min-width:220px;text-align:center}
+.btn:hover{transform:translateY(-3px);filter:brightness(1.15)}
+.btn:active{transform:scale(.97)}
+.btn-orange{background:linear-gradient(135deg,#f97316,#fbbf24);color:#fff;
+            box-shadow:0 6px 28px rgba(249,115,22,.45)}
+.btn-purple{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;
+            box-shadow:0 6px 28px rgba(124,58,237,.45)}
+.btn-green{background:linear-gradient(135deg,#059669,#10b981);color:#fff;
+           box-shadow:0 6px 28px rgba(16,185,129,.35)}
+.btn-gray{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);color:#fff}
+.btn-sm{padding:11px 28px;font-size:.88rem;min-width:140px}
+
+.btn-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+
+/* Controls hint */
+.controls{color:rgba(255,255,255,0.35);font-size:.8rem;text-align:center;line-height:1.7}
+kbd{background:rgba(255,255,255,.12);border-radius:5px;padding:1px 7px;font-size:.78rem}
+
+/* Level complete */
+.stars{font-size:2.2rem;letter-spacing:6px}
+.result{color:rgba(255,255,255,.7);font-size:1rem;text-align:center;line-height:1.8}
+.result b{color:#fbbf24}
+
+/* Shop */
+#shop-screen{overflow-y:auto;justify-content:flex-start;padding:70px 20px 80px}
+#shop-inner{width:100%;max-width:760px;margin:0 auto}
+#shop-header{text-align:center;margin-bottom:24px}
+#shop-header h2{color:#fff;font-size:1.6rem;font-weight:900;margin-bottom:8px}
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+.ball-card{background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);
+           border-radius:14px;padding:16px 10px 12px;text-align:center;cursor:pointer;
+           transition:.2s;display:flex;flex-direction:column;align-items:center;gap:8px}
+.ball-card:hover{border-color:rgba(168,85,247,.5);background:rgba(168,85,247,.1)}
+.ball-card.owned{border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.08)}
+.ball-card.selected{border-color:#f97316;background:rgba(249,115,22,.15);
+                    box-shadow:0 0 18px rgba(249,115,22,.3)}
+.ball-preview{width:52px;height:52px;border-radius:50%;margin:0 auto}
+.ball-card .bname{font-size:.78rem;font-weight:700;color:#fff}
+.ball-card .bprice{font-size:.72rem;font-weight:600}
+.ball-card .bprice.cant{color:#ef4444}
+.ball-card .bprice.can{color:#fbbf24}
+.ball-card .bprice.own{color:#10b981}
+#shop-back{position:fixed;bottom:18px;left:50%;transform:translateX(-50%)}
+
+/* HUD */
+#hud{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;
+     align-items:center;padding:12px 20px;pointer-events:none}
+#hud-left{background:rgba(0,0,0,.55);border-radius:12px;padding:8px 18px;
+          color:#fff;font-weight:700;font-size:.92rem;backdrop-filter:blur(4px)}
+#progress-bar{position:fixed;bottom:0;left:0;right:0;height:6px;background:rgba(255,255,255,.1)}
+#progress-fill{height:100%;background:linear-gradient(90deg,#7c3aed,#f97316);width:0;transition:.1s}
+#p2-hud{position:fixed;top:0;right:0;background:rgba(0,0,0,.55);border-radius:0 0 0 12px;
+        padding:8px 14px;color:#fff;font-size:.82rem;font-weight:700;display:none}
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
+<canvas id="gl"></canvas>
+
+<!-- ── UI ── -->
+<div id="ui">
+
+  <!-- TITLE -->
+  <div class="screen" id="title-screen">
+    <h1 class="logo">GOING<br><span>BALLS</span></h1>
+    <div class="subtitle">30 LEVELS · 20 BALLS · 1 & 2 PLAYER</div>
+    <div class="coin-badge" id="title-coins">🪙 0 coins</div>
+    <button class="btn btn-orange" id="btn-1p">▶ 1 PLAYER</button>
+    <button class="btn btn-purple" id="btn-2p">👥 2 PLAYERS</button>
+    <button class="btn btn-green btn-sm" id="btn-shop-title">🛒 Ball Shop</button>
+    <div class="controls">
+      Steer Left: <kbd>←</kbd> <kbd>A</kbd> &nbsp;·&nbsp; Steer Right: <kbd>→</kbd> <kbd>D</kbd>
+    </div>
+  </div>
+
+  <!-- LEVEL COMPLETE -->
+  <div class="screen hidden" id="complete-screen">
+    <h1 class="logo" id="result-title" style="font-size:clamp(1.8rem,5vw,3rem)">LEVEL CLEAR!</h1>
+    <div class="stars" id="result-stars">⭐⭐⭐</div>
+    <div class="result" id="result-text"></div>
+    <div class="btn-row">
+      <button class="btn btn-gray btn-sm" id="btn-menu">🏠 Menu</button>
+      <button class="btn btn-green btn-sm" id="btn-shop-done">🛒 Shop</button>
+      <button class="btn btn-orange btn-sm" id="btn-next">Next ▶</button>
+    </div>
+    <div id="level-num" style="color:rgba(255,255,255,.3);font-size:.8rem"></div>
+  </div>
+
+  <!-- SHOP -->
+  <div class="screen hidden" id="shop-screen">
+    <div id="shop-inner">
+      <div id="shop-header">
+        <h2>🛒 Ball Shop</h2>
+        <div class="coin-badge" id="shop-coins">🪙 0 coins</div>
+      </div>
+      <div class="shop-grid" id="shop-grid"></div>
+    </div>
+    <button class="btn btn-gray btn-sm" id="shop-back">← Back</button>
+  </div>
+
+  <!-- HUD (shown while playing) -->
+  <div id="hud" style="display:none">
+    <div id="hud-left">Lv <span id="hud-level">1</span> &nbsp;🪙 <span id="hud-coins">0</span></div>
+  </div>
+  <div id="p2-hud">P2 🪙 <span id="hud-coins2">0</span></div>
+  <div id="progress-bar"><div id="progress-fill"></div></div>
+
+</div>
+
 <script>
 'use strict';
 // ═══════════════════════════════════════════════════════════════
-//  SETUP
+//  SKINS
 // ═══════════════════════════════════════════════════════════════
-const canvas = document.getElementById('c');
-const ctx    = canvas.getContext('2d');
-
-// Canvas fills viewport
-let CW, CH;
-function resize(){
-  CW = Math.min(window.innerWidth,  900);
-  CH = Math.min(window.innerHeight, 700);
-  canvas.width  = CW;
-  canvas.height = CH;
-  canvas.style.width  = CW + 'px';
-  canvas.style.height = CH + 'px';
-}
-resize();
-window.addEventListener('resize', resize);
-
-// ═══════════════════════════════════════════════════════════════
-//  CONSTANTS
-// ═══════════════════════════════════════════════════════════════
-// Perspective anchor points (ratios of CH)
-const HORIZ_R   = 0.18; // horizon y
-const BALLY_R   = 0.80; // ball y on screen
-
-// World units → pixels scale at ball level (depth=0)
-// Path half-width in world units
-const HALF_W_WORLD = 4.5;
-// We want path to appear ~180px wide at bottom, so pixels_per_unit = 180/(2*4.5) = 20
-const PPU = 20; // pixels per world unit at depth 0
-
-const MAX_DEPTH  = 120; // world units visible ahead
-
-// Ball
-const BALL_R     = 22;  // pixels
-
-// ═══════════════════════════════════════════════════════════════
-//  BALL SKINS
-// ═══════════════════════════════════════════════════════════════
-const SKINS = [
-  {name:'Classic',    a:'#e74c3c',b:'#ff9a8e',price:0},
-  {name:'Ocean',      a:'#1565c0',b:'#64b5f6',price:50},
-  {name:'Emerald',    a:'#1b5e20',b:'#66bb6a',price:50},
-  {name:'Sunshine',   a:'#e65100',b:'#ffcc02',price:75},
-  {name:'Grape',      a:'#6a1b9a',b:'#ce93d8',price:100},
-  {name:'Hot Pink',   a:'#ad1457',b:'#f48fb1',price:100},
-  {name:'Ice',        a:'#80deea',b:'#ffffff',price:150},
-  {name:'Shadow',     a:'#212121',b:'#757575',price:150},
-  {name:'Gold',       a:'#c79100',b:'#ffe082',price:200},
-  {name:'Rainbow',    a:'#ff1744',b:'#ff9100',price:200},
-  {name:'Fireball',   a:'#bf360c',b:'#ff6d00',price:250},
-  {name:'Frost',      a:'#29b6f6',b:'#e1f5fe',price:250},
-  {name:'Lava',       a:'#7f0000',b:'#ff3d00',price:300},
-  {name:'Galaxy',     a:'#0a0020',b:'#7c4dff',price:300},
-  {name:'Neon',       a:'#1b5e20',b:'#76ff03',price:300},
-  {name:'Electric',   a:'#01579b',b:'#40c4ff',price:350},
-  {name:'Rose Gold',  a:'#880e4f',b:'#f8bbd0',price:350},
-  {name:'Inferno',    a:'#621a15',b:'#ff7043',price:400},
-  {name:'Diamond',    a:'#b2ebf2',b:'#ffffff',price:450},
-  {name:'Crown',      a:'#f57f17',b:'#fff176',price:500},
+const SKINS=[
+  {name:'Classic',   hex:'#e74c3c',price:0},
+  {name:'Ocean',     hex:'#1565c0',price:50},
+  {name:'Emerald',   hex:'#1b5e20',price:50},
+  {name:'Sunshine',  hex:'#e65100',price:75},
+  {name:'Grape',     hex:'#6a1b9a',price:100},
+  {name:'Hot Pink',  hex:'#ad1457',price:100},
+  {name:'Ice',       hex:'#4fc3f7',price:150},
+  {name:'Shadow',    hex:'#212121',price:150},
+  {name:'Gold',      hex:'#c79100',price:200},
+  {name:'Rainbow',   hex:'#e91e63',price:200},
+  {name:'Fireball',  hex:'#bf360c',price:250},
+  {name:'Frost',     hex:'#80deea',price:250},
+  {name:'Lava',      hex:'#7f0000',price:300},
+  {name:'Galaxy',    hex:'#4a148c',price:300},
+  {name:'Neon',      hex:'#33691e',price:300},
+  {name:'Electric',  hex:'#01579b',price:350},
+  {name:'Rose Gold', hex:'#880e4f',price:350},
+  {name:'Inferno',   hex:'#621a15',price:400},
+  {name:'Diamond',   hex:'#80cbc4',price:450},
+  {name:'Crown',     hex:'#f57f17',price:500},
 ];
 
 // ═══════════════════════════════════════════════════════════════
-//  SAVE / LOAD
+//  SAVE
 // ═══════════════════════════════════════════════════════════════
-let save = (()=>{
-  try{ const s=JSON.parse(localStorage.getItem('gb2')||'{}');
-    return{coins:s.coins||0,owned:s.owned||[0],sel:s.sel||0,best:s.best||1};
-  }catch(e){return{coins:0,owned:[0],sel:0,best:1};}
-})();
-function savePersist(){
-  localStorage.setItem('gb2',JSON.stringify(save));
-}
+let save=(()=>{try{const s=JSON.parse(localStorage.getItem('gb3')||'{}');
+  return{coins:s.coins||0,owned:s.owned||[0],sel:s.sel||0,best:s.best||1};}
+  catch(e){return{coins:0,owned:[0],sel:0,best:1};}})();
+function persist(){localStorage.setItem('gb3',JSON.stringify(save));}
 
 // ═══════════════════════════════════════════════════════════════
-//  LEVEL GENERATOR (seeded random)
+//  THREE.JS SETUP
 // ═══════════════════════════════════════════════════════════════
-function mkRand(seed){
-  let s=seed;
-  return ()=>{s=(s*9301+49297)%233280; return s/233280;};
+const renderer=new THREE.WebGLRenderer({canvas:document.getElementById('gl'),antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.2;
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x05001a);
+scene.fog=new THREE.FogExp2(0x0e0535, 0.018);
+
+const camera=new THREE.PerspectiveCamera(70,1,0.1,400);
+
+// Lights
+const ambient=new THREE.AmbientLight(0x8060ff,1.5);
+scene.add(ambient);
+const sun=new THREE.DirectionalLight(0xffffff,3);
+sun.position.set(10,20,10);
+sun.castShadow=true;
+sun.shadow.mapSize.width=2048;
+sun.shadow.mapSize.height=2048;
+sun.shadow.camera.far=200;
+sun.shadow.camera.left=-60;
+sun.shadow.camera.right=60;
+sun.shadow.camera.top=60;
+sun.shadow.camera.bottom=-60;
+scene.add(sun);
+const hemi=new THREE.HemisphereLight(0x7040ff,0x000020,1.2);
+scene.add(hemi);
+
+function onResize(){
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  camera.aspect=window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
 }
-function genLevel(lvl){
-  const r   = mkRand(lvl*137+11);
-  const d   = (lvl-1)/29;               // 0=easy, 1=hard
-  const spd = 12 + d*10;               // forward speed (world/s)
-  const hw  = HALF_W_WORLD - d*1.4;     // path half-width
-  const nWP = 12 + Math.floor(d*20);    // number of waypoints
-  const turnStr = d * 3;
+onResize();
+window.addEventListener('resize',onResize);
 
-  // Waypoints
-  const wp = [{x:0,z:0}];
-  let cx=0;
-  for(let i=1;i<=nWP;i++){
-    cx += (r()-0.5)*turnStr*8;
-    cx  = Math.max(-10,Math.min(10,cx));
-    wp.push({x:cx, z:i*10});
-  }
-  const totalZ = wp[wp.length-1].z;
+// ═══════════════════════════════════════════════════════════════
+//  LEVEL GENERATOR
+// ═══════════════════════════════════════════════════════════════
+function mkRand(seed){let s=seed;return()=>{s=(s*9301+49297)%233280;return s/233280;};}
 
-  // Coins
-  const nCoins = 8 + Math.floor(d*14);
-  const coins=[];
-  for(let i=0;i<nCoins;i++){
-    const z  = 8 + r()*(totalZ-16);
-    const px = lerp2(wp,z);
-    coins.push({x:px+(r()-0.5)*hw*0.6, z, hit:false, pop:0});
-  }
-
-  // Barrels
-  const nBarrels = 2 + Math.floor(d*14);
-  const barrels=[];
-  for(let i=0;i<nBarrels;i++){
-    const z  = 12 + r()*(totalZ-20);
-    const px = lerp2(wp,z);
-    barrels.push({x:px+(r()-0.5)*hw*0.5, z, hit:false, hitT:0});
-  }
-
-  return {wp, hw, spd, totalZ, coins, barrels, nCoins};
-}
 function lerp2(wp,z){
   for(let i=0;i<wp.length-1;i++){
-    if(z>=wp[i].z && z<=wp[i+1].z){
+    if(z>=wp[i].z&&z<=wp[i+1].z){
       const t=(z-wp[i].z)/(wp[i+1].z-wp[i].z);
-      return wp[i].x + t*(wp[i+1].x-wp[i].x);
+      return wp[i].x+t*(wp[i+1].x-wp[i].x);
     }
   }
   return wp[wp.length-1].x;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  PERSPECTIVE PROJECTION
-//  Projects world point relative to camera (ball) to screen coords
-// ═══════════════════════════════════════════════════════════════
-function proj(relX, depth){
-  // relX  = world X relative to ball's world X
-  // depth = world Z ahead of ball (0 = ball position)
-  const HORIZ_Y  = CH * HORIZ_R;
-  const BALL_Y   = CH * BALLY_R;
-  const cx2      = CW / 2;
+function genLevel(lvl){
+  const r=mkRand(lvl*137+11);
+  const d=(lvl-1)/29;
+  return{
+    spd:14+d*12,
+    hw:3.8-d*1.2,
+    nWP:10+Math.floor(d*18),
+    turnStr:d*3.5,
+    nCoins:8+Math.floor(d*14),
+    nBarrels:2+Math.floor(d*12),
+    d,
+  };
+}
 
-  const t  = Math.max(0, Math.min(depth/MAX_DEPTH, 0.999));
-  const sy = BALL_Y - t*(BALL_Y - HORIZ_Y);
-  const sc = 1 - t;                         // scale factor (1=near, 0=far)
-  const sx = cx2 + relX * sc * PPU * (CW/480);
-  return {sx, sy, sc};
+// ═══════════════════════════════════════════════════════════════
+//  SCENE OBJECTS
+// ═══════════════════════════════════════════════════════════════
+let pathMeshes=[], coinMeshes=[], barrelMeshes=[], trampMesh=null;
+let ballMesh, ball2Mesh;
+let waypoints=[], hw_world=3.8, totalZ=0;
+let levelCfg=null;
+
+const PATH_Y = 0;  // top surface of path tiles
+const BALL_RADIUS = 0.55;
+
+// Reusable materials
+const pathMat = new THREE.MeshStandardMaterial({
+  color:0x2d1b69, emissive:0x1a0a40, emissiveIntensity:0.6,
+  roughness:0.5, metalness:0.4
+});
+const pathEdgeMat = new THREE.MeshStandardMaterial({
+  color:0xa855f7, emissive:0xa855f7, emissiveIntensity:1.5,
+  roughness:0.3
+});
+const coinMat = new THREE.MeshStandardMaterial({
+  color:0xFFD700, emissive:0xffa000, emissiveIntensity:0.8,
+  metalness:0.9, roughness:0.1
+});
+const barrelMat = new THREE.MeshStandardMaterial({color:0x8B4513,roughness:0.8,metalness:0.1});
+const barrelRingMat = new THREE.MeshStandardMaterial({color:0x888888,roughness:0.5,metalness:0.6});
+const trampMat = new THREE.MeshStandardMaterial({
+  color:0xff6f00, emissive:0xff3d00, emissiveIntensity:0.5,
+  roughness:0.4
+});
+
+function clearScene(){
+  [...pathMeshes,...coinMeshes,...barrelMeshes].forEach(m=>scene.remove(m));
+  if(trampMesh) scene.remove(trampMesh);
+  pathMeshes=[]; coinMeshes=[]; barrelMeshes=[]; trampMesh=null;
+}
+
+function makeBallMesh(skinIdx){
+  const col = new THREE.Color(SKINS[skinIdx].hex);
+  const mat = new THREE.MeshStandardMaterial({
+    color:col, emissive:col, emissiveIntensity:0.15,
+    metalness:0.5, roughness:0.25,
+  });
+  const geo = new THREE.SphereGeometry(BALL_RADIUS,32,32);
+  const m   = new THREE.Mesh(geo, mat);
+  m.castShadow=true;
+  return m;
+}
+
+function buildScene(lvl){
+  clearScene();
+  levelCfg=genLevel(lvl);
+  const r=mkRand(lvl*137+11);
+  const {d,nWP,turnStr,nCoins,nBarrels,hw}=levelCfg;
+  hw_world=hw;
+
+  // Waypoints
+  waypoints=[{x:0,z:0}];
+  let cx=0;
+  for(let i=1;i<=nWP;i++){
+    cx+=(r()-0.5)*turnStr*8;
+    cx=Math.max(-12,Math.min(12,cx));
+    waypoints.push({x:cx,z:i*12});
+  }
+  totalZ=waypoints[waypoints.length-1].z;
+
+  // Path tiles — one per waypoint segment
+  for(let i=0;i<waypoints.length-1;i++){
+    const A=waypoints[i], B=waypoints[i+1];
+    const dx=B.x-A.x, dz=B.z-A.z;
+    const len=Math.sqrt(dx*dx+dz*dz);
+    const angle=Math.atan2(dx,dz);
+    const mx=(A.x+B.x)/2, mz=(A.z+B.z)/2;
+
+    // Main surface
+    const geo=new THREE.BoxGeometry(hw*2,0.4,len+0.3);
+    const mesh=new THREE.Mesh(geo, pathMat.clone());
+    // Alternate tile shading
+    if(i%2===0){ mesh.material.emissive.set(0x1a0a50); mesh.material.emissiveIntensity=0.7; }
+    mesh.position.set(mx, PATH_Y-0.2, mz);
+    mesh.rotation.y=-angle;
+    mesh.receiveShadow=true;
+    scene.add(mesh);
+    pathMeshes.push(mesh);
+
+    // Neon edge strips
+    const edgeGeo=new THREE.BoxGeometry(0.12,0.08,len+0.3);
+    [-hw,hw].forEach(ex=>{
+      const em=new THREE.Mesh(edgeGeo,pathEdgeMat);
+      em.position.set(mx+Math.cos(angle)*(-ex),PATH_Y+0.02,mz);
+      // rotate edge
+      const emx=ex*Math.cos(-angle), emz=ex*Math.sin(-angle);
+      em.position.set(mx+emx, PATH_Y+0.02, mz+emz);
+      em.rotation.y=-angle;
+      scene.add(em);
+      pathMeshes.push(em);
+    });
+  }
+
+  // Coins (floating torus rings)
+  const coinGeo=new THREE.TorusGeometry(0.35,0.12,16,24);
+  for(let i=0;i<nCoins;i++){
+    const z=8+r()*(totalZ-16);
+    const px=lerp2(waypoints,z);
+    const x=px+(r()-0.5)*hw*0.6;
+    const mesh=new THREE.Mesh(coinGeo,coinMat.clone());
+    mesh.position.set(x, PATH_Y+1.1, z);
+    mesh.rotation.x=Math.PI/2;
+    mesh.castShadow=false;
+    scene.add(mesh);
+    coinMeshes.push({mesh,x,z,collected:false});
+  }
+
+  // Barrels (cylinders)
+  const bGeo=new THREE.CylinderGeometry(0.5,0.5,1.2,16);
+  const bRing=new THREE.TorusGeometry(0.5,0.07,8,16);
+  for(let i=0;i<nBarrels;i++){
+    const z=15+r()*(totalZ-22);
+    const px=lerp2(waypoints,z);
+    const x=px+(r()-0.5)*hw*0.55;
+    const grp=new THREE.Group();
+    const body=new THREE.Mesh(bGeo,barrelMat.clone());
+    body.castShadow=true;
+    grp.add(body);
+    // Rings
+    [-0.3,0.3].forEach(dy=>{
+      const ring=new THREE.Mesh(bRing,barrelRingMat.clone());
+      ring.position.y=dy;
+      ring.rotation.x=Math.PI/2;
+      grp.add(ring);
+    });
+    grp.position.set(x, PATH_Y+0.6, z);
+    scene.add(grp);
+    barrelMeshes.push({grp,x,z,hit:false,velX:0,velY:0,rotV:0});
+  }
+
+  // Trampoline
+  const trampGeo=new THREE.BoxGeometry(hw*2,0.25,3.5);
+  trampMesh=new THREE.Mesh(trampGeo,trampMat);
+  trampMesh.position.set(lerp2(waypoints,totalZ), PATH_Y+0.12, totalZ);
+  scene.add(trampMesh);
+
+  // Ball(s)
+  if(ballMesh) scene.remove(ballMesh);
+  if(ball2Mesh) scene.remove(ball2Mesh);
+  ballMesh=makeBallMesh(save.sel);
+  ballMesh.position.set(0, PATH_Y+BALL_RADIUS, 0);
+  scene.add(ballMesh);
+  if(numPlayers===2){
+    ball2Mesh=makeBallMesh(save.sel);
+    ball2Mesh.position.set(0, PATH_Y+BALL_RADIUS, 0);
+    scene.add(ball2Mesh);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
 //  KEYS
 // ═══════════════════════════════════════════════════════════════
 const keys={};
-window.addEventListener('keydown', e=>{keys[e.code]=true;  if(['ArrowLeft','ArrowRight','Space'].includes(e.code)) e.preventDefault();});
-window.addEventListener('keyup',   e=>{keys[e.code]=false;});
+window.addEventListener('keydown',e=>{keys[e.code]=true;
+  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space'].includes(e.code))e.preventDefault();});
+window.addEventListener('keyup',e=>{keys[e.code]=false;});
 
 // ═══════════════════════════════════════════════════════════════
 //  GAME STATE
 // ═══════════════════════════════════════════════════════════════
-let screen      = 'title';  // title|playing|complete|shop
-let numPlayers  = 1;
-let curLevel    = 1;
-let levelData   = null;
+let gameScreen='title'; // title|playing|complete|shop
+let numPlayers=1;
+let curLevel=1;
+let shopFrom='title';
 
-// Per-player state
-function mkPlayer(idx){
-  return {
-    idx,
-    camZ:    0,      // how far along path
-    ballX:   0,      // lateral offset from path center (world units)
-    velX:    0,      // lateral velocity
-    alive:   true,
-    done:    false,
-    coins:   0,      // coins collected this level
-    deadTimer: 0,
-    bounceT:  0,     // trampoline bounce animation
-    particles: [],   // coin collect particles
-    trail:   [],     // ball trail
-  };
+function mkPS(idx){
+  return{idx,camZ:0,ballX:0,velX:0,ballY:PATH_Y+BALL_RADIUS,velY:0,
+         grounded:true,alive:true,done:false,coins:0,
+         bounceT:0, deadT:0, spinAngle:0};
 }
-let players = [];
-let doneTimer = 0;
+let ps=[]; // player states
 
 // ═══════════════════════════════════════════════════════════════
-//  BUTTON SYSTEM
+//  UI HELPERS
 // ═══════════════════════════════════════════════════════════════
-let btns = [];
-function clearBtns(){ btns = []; }
-function addBtn(x,y,w,h,fn){ btns.push({x,y,w,h,fn}); }
-
-canvas.addEventListener('click', e=>{
-  const r=canvas.getBoundingClientRect();
-  const mx=(e.clientX-r.left)*(CW/r.width);
-  const my=(e.clientY-r.top)*(CH/r.height);
-  for(const b of btns) if(mx>=b.x&&mx<=b.x+b.w&&my>=b.y&&my<=b.y+b.h) b.fn();
-});
-
-function drawButton(label, cx, cy, w, h, col='#f97316'){
-  const x=cx-w/2, y=cy-h/2;
-  // Glow
-  ctx.save();
-  ctx.shadowColor=col; ctx.shadowBlur=18;
-  // Body
-  const g=ctx.createLinearGradient(x,y,x,y+h);
-  g.addColorStop(0, lighten(col,30));
-  g.addColorStop(1, col);
-  ctx.fillStyle=g;
-  ctx.beginPath();
-  ctx.roundRect(x,y,w,h,h/2);
-  ctx.fill();
-  ctx.shadowBlur=0;
-  // Border
-  ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=1.5;
-  ctx.stroke();
-  // Text
-  ctx.fillStyle='#fff';
-  ctx.font=`bold ${Math.round(h*0.38)}px 'Segoe UI',Arial`;
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText(label, cx, cy+1);
-  ctx.restore();
-  addBtn(x,y,w,h,()=>{});
-  return {x,y,w,h};
+function showScreen(id){
+  ['title-screen','complete-screen','shop-screen'].forEach(s=>{
+    document.getElementById(s).classList.toggle('hidden',s!==id);
+  });
+  document.getElementById('hud').style.display = id===null?'flex':'none';
+  document.getElementById('progress-bar').style.display = id===null?'block':'none';
+  document.getElementById('p2-hud').style.display = (id===null&&numPlayers===2)?'block':'none';
+  if(id===null){ // playing
+    document.getElementById('hud').style.display='flex';
+    document.getElementById('progress-bar').style.display='block';
+  }
 }
-function lighten(hex, pct){
+
+function updateHUD(){
+  if(gameScreen!=='playing') return;
+  const p=ps[0];
+  document.getElementById('hud-level').textContent=curLevel;
+  document.getElementById('hud-coins').textContent=save.coins+p.coins;
+  document.getElementById('progress-fill').style.width=(Math.min(1,p.camZ/totalZ)*100)+'%';
+  if(numPlayers===2){
+    document.getElementById('hud-coins2').textContent=save.coins+(ps[1]?.coins||0);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SHOP UI
+// ═══════════════════════════════════════════════════════════════
+function buildShop(){
+  const grid=document.getElementById('shop-grid');
+  grid.innerHTML='';
+  document.getElementById('shop-coins').textContent=`🪙 ${save.coins} coins`;
+  SKINS.forEach((sk,i)=>{
+    const card=document.createElement('div');
+    card.className='ball-card'+(save.owned.includes(i)?' owned':'')+(save.sel===i?' selected':'');
+    const preview=document.createElement('div');
+    preview.className='ball-preview';
+    preview.style.background=`radial-gradient(circle at 35% 35%,${lightenHex(sk.hex,60)},${sk.hex},#000)`;
+    card.appendChild(preview);
+    const nm=document.createElement('div'); nm.className='bname'; nm.textContent=sk.name;
+    card.appendChild(nm);
+    const pr=document.createElement('div');
+    if(save.sel===i){ pr.className='bprice own'; pr.textContent='✓ SELECTED'; }
+    else if(save.owned.includes(i)){ pr.className='bprice own'; pr.textContent='✓ OWNED'; }
+    else if(save.coins>=sk.price){ pr.className='bprice can'; pr.textContent=`🪙 ${sk.price}`; }
+    else{ pr.className='bprice cant'; pr.textContent=`🪙 ${sk.price}`; }
+    card.appendChild(pr);
+    card.addEventListener('click',()=>{
+      if(save.owned.includes(i)){ save.sel=i; persist(); buildShop(); }
+      else if(save.coins>=sk.price){
+        save.coins-=sk.price; save.owned.push(i); save.sel=i; persist(); buildShop();
+      }
+    });
+    grid.appendChild(card);
+  });
+}
+
+function lightenHex(hex,amt){
   const n=parseInt(hex.slice(1),16);
-  const r=Math.min(255,(n>>16)+pct);
-  const g=Math.min(255,((n>>8)&0xff)+pct);
-  const b=Math.min(255,(n&0xff)+pct);
+  const r=Math.min(255,(n>>16)+amt);
+  const g=Math.min(255,((n>>8)&0xff)+amt);
+  const b=Math.min(255,(n&0xff)+amt);
   return `rgb(${r},${g},${b})`;
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  DRAW HELPERS
+//  BUTTON WIRING
 // ═══════════════════════════════════════════════════════════════
-function drawBall(skin, sx, sy, sc, glowCol){
-  const r   = Math.round(BALL_R * sc * (CW/480));
-  const col = SKINS[skin];
+document.getElementById('btn-1p').onclick=()=>startGame(1);
+document.getElementById('btn-2p').onclick=()=>startGame(2);
+document.getElementById('btn-shop-title').onclick=()=>{shopFrom='title';buildShop();showScreen('shop-screen');gameScreen='shop';};
+document.getElementById('shop-back').onclick=()=>{
+  if(shopFrom==='complete'){ showScreen('complete-screen'); gameScreen='complete'; }
+  else{ showScreen('title-screen'); gameScreen='title'; }
+};
+document.getElementById('btn-menu').onclick=()=>{ showScreen('title-screen'); gameScreen='title'; };
+document.getElementById('btn-shop-done').onclick=()=>{ shopFrom='complete'; buildShop(); showScreen('shop-screen'); gameScreen='shop'; };
+document.getElementById('btn-next').onclick=()=>{
+  const anyDone=ps.some(p=>p.done);
+  if(anyDone&&curLevel<30){ curLevel++; startGame(numPlayers); }
+  else if(anyDone&&curLevel===30){ curLevel=1; showScreen('title-screen'); gameScreen='title'; }
+  else startGame(numPlayers); // retry
+};
 
-  // Glow
-  ctx.save();
-  ctx.shadowColor = glowCol || col.b;
-  ctx.shadowBlur  = 18 * sc;
-
-  // Body
-  const gr = ctx.createRadialGradient(sx-r*0.3,sy-r*0.35,r*0.05, sx,sy,r);
-  gr.addColorStop(0, col.b);
-  gr.addColorStop(0.55, col.a);
-  gr.addColorStop(1, 'rgba(0,0,0,0.75)');
-  ctx.beginPath();
-  ctx.arc(sx,sy,r,0,Math.PI*2);
-  ctx.fillStyle=gr; ctx.fill();
-
-  // Shine
-  const sh=ctx.createRadialGradient(sx-r*0.4,sy-r*0.4,0,sx-r*0.4,sy-r*0.4,r*0.55);
-  sh.addColorStop(0,'rgba(255,255,255,0.65)');
-  sh.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.beginPath(); ctx.arc(sx,sy,r,0,Math.PI*2);
-  ctx.fillStyle=sh; ctx.fill();
-
-  // Shadow beneath
-  ctx.shadowBlur=0;
-  ctx.globalAlpha=0.25;
-  ctx.beginPath();
-  ctx.ellipse(sx, sy+r*0.92, r*0.8, r*0.22, 0, 0, Math.PI*2);
-  ctx.fillStyle='#000'; ctx.fill();
-  ctx.restore();
+// ═══════════════════════════════════════════════════════════════
+//  START GAME
+// ═══════════════════════════════════════════════════════════════
+function startGame(np){
+  numPlayers=np;
+  ps=[];
+  for(let i=0;i<np;i++) ps.push(mkPS(i));
+  buildScene(curLevel);
+  gameScreen='playing';
+  showScreen(null);
+  document.getElementById('title-coins').textContent=`🪙 ${save.coins} coins`;
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  RENDER PLAYER VIEW
+//  LEVEL COMPLETE
 // ═══════════════════════════════════════════════════════════════
-function renderView(p, ox, vw){
-  const BALL_Y  = CH * BALLY_R;
-  const HORIZ_Y = CH * HORIZ_R;
-  const vcx     = ox + vw/2;   // view center x
-  const ld      = levelData;
+function showComplete(){
+  gameScreen='complete';
+  const anyDone=ps.some(p=>p.done);
+  const totalCoins=ps.reduce((s,p)=>s+p.coins,0);
+  const maxCoins=levelCfg.nCoins;
+  const stars=totalCoins>=maxCoins?3:totalCoins>=maxCoins*0.6?2:1;
 
-  ctx.save();
-  ctx.beginPath(); ctx.rect(ox,0,vw,CH); ctx.clip();
+  document.getElementById('result-title').textContent=anyDone?'🎉 LEVEL CLEAR!':'💀 YOU FELL OFF!';
+  document.getElementById('result-stars').textContent=anyDone?'⭐'.repeat(stars)+'☆'.repeat(3-stars):'';
+  document.getElementById('result-text').innerHTML=anyDone
+    ? `Coins: <b>🪙 ${totalCoins} / ${maxCoins}</b><br>Total: <b>🪙 ${save.coins}</b>`
+    : `Better luck next time!<br>Total: <b>🪙 ${save.coins}</b>`;
 
-  // ── Background ──────────────────────────────────────────────
-  // Sky gradient (dark purple/blue — obstacle game style)
-  const sky=ctx.createLinearGradient(ox,0,ox,HORIZ_Y);
-  sky.addColorStop(0,'#0a0015');
-  sky.addColorStop(1,'#1a0535');
-  ctx.fillStyle=sky; ctx.fillRect(ox,0,vw,HORIZ_Y);
+  const btn=document.getElementById('btn-next');
+  if(!anyDone){ btn.textContent='↺ Retry'; }
+  else if(curLevel>=30){ btn.textContent='🏆 Complete!'; }
+  else{ btn.textContent=`Level ${curLevel+1} ▶`; }
 
-  // Stars
-  for(let i=0;i<40;i++){
-    const sx=ox+((i*173+7)%vw);
-    const sy=((i*97+3)%(HORIZ_Y*0.85));
-    const sr=0.5+((i*31)%3)*0.5;
-    const al=0.4+((i*11)%6)*0.1;
-    ctx.fillStyle=`rgba(255,255,255,${al})`;
-    ctx.beginPath(); ctx.arc(sx,sy,sr,0,Math.PI*2); ctx.fill();
-  }
-
-  // Ground (dark)
-  const gnd=ctx.createLinearGradient(ox,HORIZ_Y,ox,CH);
-  gnd.addColorStop(0,'#0e0820');
-  gnd.addColorStop(1,'#030208');
-  ctx.fillStyle=gnd; ctx.fillRect(ox,HORIZ_Y,vw,CH-HORIZ_Y);
-
-  // ── Path ────────────────────────────────────────────────────
-  const STEPS = 55;
-  const ballWorldX = lerp2(ld.wp, p.camZ) + p.ballX;
-
-  for(let i=STEPS; i>=1; i--){
-    const z1 = (i/STEPS)*MAX_DEPTH;
-    const z2 = ((i-1)/STEPS)*MAX_DEPTH;
-    const wz1 = p.camZ + z1;
-    const wz2 = p.camZ + z2;
-    const pc1 = lerp2(ld.wp, wz1) - ballWorldX;
-    const pc2 = lerp2(ld.wp, wz2) - ballWorldX;
-    const hw  = ld.hw;
-
-    const A = proj(pc1-hw, z1);
-    const B = proj(pc1+hw, z1);
-    const C = proj(pc2+hw, z2);
-    const D = proj(pc2-hw, z2);
-
-    // Tile alternation for racing stripe look
-    const tileN = Math.floor((p.camZ+z2)/5);
-    const base  = tileN%2===0 ? 38 : 44;
-    const neon  = tileN%2===0 ? 'rgba(100,60,200,0.25)' : 'rgba(80,40,180,0.2)';
-
-    ctx.beginPath();
-    ctx.moveTo(vcx+(A.sx-CW/2), A.sy);
-    ctx.lineTo(vcx+(B.sx-CW/2), B.sy);
-    ctx.lineTo(vcx+(C.sx-CW/2), C.sy);
-    ctx.lineTo(vcx+(D.sx-CW/2), D.sy);
-    ctx.closePath();
-    ctx.fillStyle=`rgb(${base},${base-4},${base+8})`;
-    ctx.fill();
-    // Neon overlay
-    ctx.fillStyle=neon; ctx.fill();
-
-    // Neon edge lines
-    if(i>3){
-      const al = 0.6*(1-i/STEPS);
-      ctx.strokeStyle=`rgba(150,80,255,${al})`;
-      ctx.lineWidth = Math.max(1, 2*(1-i/STEPS));
-      ctx.beginPath();
-      ctx.moveTo(vcx+(A.sx-CW/2),A.sy); ctx.lineTo(vcx+(D.sx-CW/2),D.sy);
-      ctx.moveTo(vcx+(B.sx-CW/2),B.sy); ctx.lineTo(vcx+(C.sx-CW/2),C.sy);
-      ctx.stroke();
-    }
-  }
-
-  // Center dash
-  for(let d=3; d<MAX_DEPTH; d+=10){
-    const wz=p.camZ+d;
-    if(wz<0||wz>ld.totalZ)continue;
-    const pc=lerp2(ld.wp,wz)-ballWorldX;
-    const A=proj(pc,d);
-    const B=proj(pc,d+5);
-    ctx.strokeStyle=`rgba(180,120,255,${0.35*(1-d/MAX_DEPTH)})`;
-    ctx.lineWidth=Math.max(1,2*(1-d/MAX_DEPTH));
-    ctx.beginPath();
-    ctx.moveTo(vcx+(A.sx-CW/2),A.sy);
-    ctx.lineTo(vcx+(B.sx-CW/2),B.sy);
-    ctx.stroke();
-  }
-
-  // ── Coins ────────────────────────────────────────────────────
-  for(const c of ld.coins){
-    if(c.hit) continue;
-    const depth = c.z - p.camZ;
-    if(depth<0.5||depth>MAX_DEPTH) continue;
-    const relX  = c.x - ballWorldX;
-    const pp    = proj(relX, depth);
-    const r     = Math.max(3, 10*pp.sc*(CW/480));
-    const sx    = vcx+(pp.sx-CW/2);
-
-    ctx.save();
-    ctx.shadowColor='#FFD700'; ctx.shadowBlur=12;
-    const cg=ctx.createRadialGradient(sx-r*0.3,pp.sy-r*0.3,0,sx,pp.sy,r);
-    cg.addColorStop(0,'#fffde7');
-    cg.addColorStop(0.5,'#FFD700');
-    cg.addColorStop(1,'#e65100');
-    ctx.beginPath(); ctx.arc(sx,pp.sy,r,0,Math.PI*2);
-    ctx.fillStyle=cg; ctx.fill();
-    if(r>5){
-      ctx.fillStyle='rgba(0,0,0,0.5)';
-      ctx.font=`bold ${r*1.2}px Arial`;
-      ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText('$',sx,pp.sy);
-    }
-    ctx.restore();
-  }
-
-  // ── Barrels ──────────────────────────────────────────────────
-  for(const b of ld.barrels){
-    if(b.hit&&b.hitT>1) continue;
-    const depth = b.z - p.camZ;
-    if(depth<0.5||depth>MAX_DEPTH) continue;
-    const relX  = b.x - ballWorldX + (b.hit ? Math.sin(b.hitT*20)*1.5 : 0);
-    const pp    = proj(relX, depth);
-    const sc2   = pp.sc*(CW/480);
-    const bw    = 16*sc2;
-    const bh    = 24*sc2;
-    const sx    = vcx+(pp.sx-CW/2);
-    const sy    = pp.sy;
-    const al    = b.hit ? Math.max(0,1-b.hitT) : 1;
-
-    ctx.save();
-    ctx.globalAlpha=al;
-    ctx.shadowColor='#ff6600'; ctx.shadowBlur=8*sc2;
-    // Body
-    const bg=ctx.createLinearGradient(sx-bw,sy,sx+bw,sy);
-    bg.addColorStop(0,'#4a1a00'); bg.addColorStop(0.5,'#8B4513'); bg.addColorStop(1,'#4a1a00');
-    ctx.beginPath(); ctx.ellipse(sx,sy-bh*0.05,bw,bh*0.5,0,0,Math.PI*2);
-    ctx.fillStyle=bg; ctx.fill();
-    // Top
-    ctx.beginPath(); ctx.ellipse(sx,sy-bh*0.52,bw,bh*0.18,0,0,Math.PI*2);
-    ctx.fillStyle='#c68642'; ctx.fill();
-    // Rings
-    ctx.shadowBlur=0;
-    [-bh*0.22,bh*0.05,bh*0.28].forEach(dy=>{
-      ctx.beginPath(); ctx.ellipse(sx,sy+dy-bh*0.08,bw*0.9,bh*0.1,0,0,Math.PI*2);
-      ctx.strokeStyle='#888'; ctx.lineWidth=Math.max(1,2*sc2); ctx.stroke();
-    });
-    ctx.restore();
-  }
-
-  // ── Trampoline ───────────────────────────────────────────────
-  {
-    const depth = ld.totalZ - p.camZ;
-    if(depth>0 && depth<MAX_DEPTH){
-      const relX = lerp2(ld.wp, ld.totalZ) - ballWorldX;
-      const pp   = proj(relX, depth);
-      const sc2  = pp.sc*(CW/480);
-      const tw   = ld.hw*sc2*PPU*1.2;
-      const th   = tw*0.25;
-      const sx   = vcx+(pp.sx-CW/2);
-      const sy   = pp.sy;
-
-      ctx.save();
-      ctx.shadowColor='#ff0'; ctx.shadowBlur=20*sc2;
-      // Frame
-      ctx.strokeStyle='#d32f2f'; ctx.lineWidth=Math.max(2,4*sc2);
-      ctx.beginPath(); ctx.moveTo(sx-tw,sy-th); ctx.lineTo(sx-tw,sy+th*0.8); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(sx+tw,sy-th); ctx.lineTo(sx+tw,sy+th*0.8); ctx.stroke();
-      // Bed
-      const tg=ctx.createLinearGradient(sx-tw,sy,sx+tw,sy+th);
-      tg.addColorStop(0,'#ffca28'); tg.addColorStop(0.5,'#ff6f00'); tg.addColorStop(1,'#e53935');
-      ctx.beginPath(); ctx.ellipse(sx,sy,tw,th,0,0,Math.PI*2);
-      ctx.fillStyle=tg; ctx.fill();
-      ctx.strokeStyle='#fff'; ctx.lineWidth=Math.max(1,1.5*sc2); ctx.stroke();
-      ctx.restore();
-    }
-  }
-
-  // ── Ball trail ───────────────────────────────────────────────
-  for(let i=p.trail.length-1;i>=0;i--){
-    const tr=p.trail[i];
-    tr.life-=1;
-    if(tr.life<=0){ p.trail.splice(i,1); continue; }
-    const al=tr.life/12*0.35;
-    const r2=BALL_R*(CW/480)*tr.life/12;
-    ctx.save();
-    ctx.globalAlpha=al;
-    ctx.beginPath(); ctx.arc(vcx+tr.x,tr.y,r2,0,Math.PI*2);
-    ctx.fillStyle=SKINS[save.sel].b; ctx.fill();
-    ctx.restore();
-  }
-
-  // ── Ball ─────────────────────────────────────────────────────
-  if(p.alive && !p.done){
-    // Ball moves visibly left/right on screen
-    const ballSX = vcx + p.ballX * PPU * (CW/480);
-    const ballSY = BALL_Y;
-    drawBall(save.sel, ballSX, ballSY, 1.0);
-
-    // Add trail
-    p.trail.push({x:p.ballX*PPU*(CW/480), y:ballSY+BALL_R*(CW/480), life:12});
-    if(p.trail.length>15) p.trail.shift();
-  }
-
-  // ── Bounce animation ─────────────────────────────────────────
-  if(p.bounceT>0){
-    const ballSX = vcx + p.ballX * PPU * (CW/480);
-    const bounceY= Math.sin(p.bounceT*Math.PI)*CH*0.4;
-    drawBall(save.sel, ballSX, BALL_Y-bounceY, 1.0+bounceY/CH*0.5);
-  }
-
-  // ── Dead fall ─────────────────────────────────────────────────
-  if(!p.alive){
-    const ballSX = vcx + p.ballX * PPU * (CW/480);
-    const fallY  = BALL_Y + p.deadTimer*200;
-    if(fallY < CH+60){
-      ctx.save();
-      ctx.globalAlpha = Math.max(0, 1 - p.deadTimer*2);
-      drawBall(save.sel, ballSX+p.deadTimer*80*(p.velX>0?1:-1), fallY, 0.9);
-      ctx.restore();
-    }
-  }
-
-  // ── Coin particles ────────────────────────────────────────────
-  for(let i=p.particles.length-1;i>=0;i--){
-    const pt=p.particles[i];
-    pt.y -= 2.5; pt.life-=1;
-    if(pt.life<=0){ p.particles.splice(i,1); continue; }
-    ctx.save();
-    ctx.globalAlpha=pt.life/25;
-    ctx.fillStyle='#FFD700';
-    ctx.font=`bold ${16*(CW/480)}px Arial`;
-    ctx.textAlign='center';
-    ctx.fillText('+1', vcx+pt.x, pt.y);
-    ctx.restore();
-  }
-
-  // ── HUD ──────────────────────────────────────────────────────
-  // Top bar
-  ctx.fillStyle='rgba(0,0,0,0.55)';
-  ctx.beginPath(); ctx.roundRect(ox+8,8,180*(CW/480),38*(CW/480),8); ctx.fill();
-  ctx.fillStyle='#fff';
-  ctx.font=`bold ${15*(CW/480)}px 'Segoe UI',Arial`;
-  ctx.textAlign='left'; ctx.textBaseline='middle';
-  ctx.fillText(`Lv ${curLevel}  🪙${save.coins + p.coins}`, ox+18, 27*(CW/480));
-
-  // Progress bar
-  const prog = Math.min(1, p.camZ / ld.totalZ);
-  const pbW  = vw - 24, pbH = 7*(CW/480);
-  const pbX  = ox+12, pbY = CH-20*(CW/480);
-  ctx.fillStyle='rgba(255,255,255,0.1)';
-  ctx.beginPath(); ctx.roundRect(pbX,pbY,pbW,pbH,pbH/2); ctx.fill();
-  ctx.shadowColor='#a855f7'; ctx.shadowBlur=8;
-  const pf=ctx.createLinearGradient(pbX,0,pbX+pbW*prog,0);
-  pf.addColorStop(0,'#7c3aed'); pf.addColorStop(1,'#f97316');
-  ctx.fillStyle=pf;
-  ctx.beginPath(); ctx.roundRect(pbX,pbY,pbW*prog,pbH,pbH/2); ctx.fill();
-  ctx.shadowBlur=0;
-  ctx.fillStyle='#fff'; ctx.font=`${12*(CW/480)}px Arial`; ctx.textAlign='right'; ctx.textBaseline='middle';
-  ctx.fillText('🏁', ox+vw-8, pbY+pbH/2);
-
-  // 2P label
-  if(numPlayers===2){
-    ctx.fillStyle='rgba(255,255,255,0.7)';
-    ctx.font=`bold ${13*(CW/480)}px Arial`;
-    ctx.textAlign='center'; ctx.textBaseline='top';
-    ctx.fillText(`P${p.idx+1}  ←${p.idx===0?'A/D':'◄►'}→`, vcx, 12);
-  }
-
-  // Divider
-  if(numPlayers===2 && p.idx===0){
-    ctx.strokeStyle='rgba(150,80,255,0.5)'; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(ox+vw,0); ctx.lineTo(ox+vw,CH); ctx.stroke();
-  }
-
-  ctx.restore();
+  document.getElementById('level-num').textContent=`Level ${curLevel} / 30  ·  Best: ${save.best}`;
+  showScreen('complete-screen');
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  UPDATE PLAYER
+//  PLAYER UPDATE
 // ═══════════════════════════════════════════════════════════════
-function updatePlayer(p, dt){
-  const ld = levelData;
-  if(!p.alive || p.done) return;
+function updatePS(p, dt, mesh){
+  if(!p.alive&&!p.done) { p.deadT+=dt; return; }
+  if(p.done) { p.bounceT+=dt*2; return; }
 
-  // Forward movement
-  p.camZ += ld.spd * dt;
+  // Forward
+  p.camZ += levelCfg.spd * dt;
 
-  // Steering — responsive, visible movement
-  const ACCEL   = 80 * dt;   // world units/s^2 → per frame
-  const MAX_VEL = 18;        // world units/s
-  const FRICTION= 0.75;
+  // Steer
+  const left  = numPlayers===1?(keys['ArrowLeft']||keys['KeyA']) : p.idx===0?keys['KeyA']:keys['ArrowLeft'];
+  const right = numPlayers===1?(keys['ArrowRight']||keys['KeyD']): p.idx===0?keys['KeyD']:keys['ArrowRight'];
+  const ACCEL=90*dt, MAX_VEL=20, FRIC=0.72;
+  if(left)  p.velX-=ACCEL;
+  if(right) p.velX+=ACCEL;
+  p.velX*=FRIC;
+  p.velX=Math.max(-MAX_VEL,Math.min(MAX_VEL,p.velX));
+  p.ballX+=p.velX*dt;
 
-  let left  = p.idx===0 ? (keys['ArrowLeft']||keys['KeyA']) : keys['ArrowLeft'];
-  let right = p.idx===0 ? (keys['ArrowRight']||keys['KeyD']): keys['ArrowRight'];
-  if(numPlayers===1){ left=keys['ArrowLeft']||keys['KeyA']; right=keys['ArrowRight']||keys['KeyD']; }
+  // Spin ball visually
+  p.spinAngle+=levelCfg.spd*dt*1.5;
+  if(mesh){ mesh.rotation.x=-p.spinAngle; mesh.rotation.z=-p.velX*0.05; }
 
-  if(left)  p.velX -= ACCEL;
-  if(right) p.velX += ACCEL;
-  p.velX *= FRICTION;
-  p.velX  = Math.max(-MAX_VEL, Math.min(MAX_VEL, p.velX));
-  p.ballX += p.velX * dt;
+  // Path tracking
+  const pathCx=lerp2(waypoints,p.camZ);
+  const worldX=pathCx+p.ballX;
 
-  // Boundary check
-  if(Math.abs(p.ballX) > ld.hw + 0.5){
-    p.alive = false;
-    p.deadTimer = 0;
-    return;
+  // Gravity + grounded
+  if(p.grounded){
+    p.ballY=PATH_Y+BALL_RADIUS;
+    p.velY=0;
+  } else {
+    p.velY-=25*dt;
+    p.ballY+=p.velY*dt;
   }
-  // Soft wall push
-  if(Math.abs(p.ballX) > ld.hw * 0.8){
-    p.velX -= Math.sign(p.ballX) * 5 * dt;
+
+  // Check if on path
+  if(Math.abs(p.ballX)>hw_world+0.6){
+    p.grounded=false;
+    if(!p.alive) return;
+    if(p.ballY < PATH_Y-8){
+      p.alive=false;
+      save.coins+=p.coins;
+      persist();
+    }
+  } else {
+    p.grounded=true;
+  }
+
+  // Soft push from edges
+  if(Math.abs(p.ballX)>hw_world*0.82) p.velX-=Math.sign(p.ballX)*12*dt;
+
+  // Mesh position
+  if(mesh){
+    mesh.position.set(worldX, p.ballY, p.camZ);
   }
 
   // Coin collection
-  const ballWorldX = lerp2(ld.wp, p.camZ) + p.ballX;
-  for(const c of ld.coins){
-    if(c.hit) continue;
-    if(Math.abs(c.z - p.camZ)<2.5 && Math.abs(c.x - ballWorldX)<2.5){
-      c.hit = true;
+  for(const c of coinMeshes){
+    if(c.collected) continue;
+    const dx=c.x-worldX, dz=c.z-p.camZ;
+    if(Math.abs(dx)<1.5&&Math.abs(dz)<2){
+      c.collected=true;
+      c.mesh.visible=false;
       p.coins++;
-      p.particles.push({x:(p.ballX)*PPU*(CW/480), y:CH*BALLY_R-30, life:25});
     }
   }
 
   // Barrel collision
-  for(const b of ld.barrels){
+  for(const b of barrelMeshes){
     if(b.hit) continue;
-    if(Math.abs(b.z - p.camZ)<2.8 && Math.abs(b.x - ballWorldX)<2.8){
-      b.hit = true; b.hitT = 0;
-      p.velX *= -0.5; // bounce back
+    const dx=b.x-worldX, dz=b.z-p.camZ;
+    if(Math.abs(dx)<1.5&&Math.abs(dz)<2){
+      b.hit=true;
+      b.velX=(p.ballX>0?1:-1)*8;
+      b.velY=6;
+      b.rotV=(Math.random()-0.5)*10;
+      p.velX*=-0.4;
     }
   }
-  for(const b of ld.barrels) if(b.hit) b.hitT += dt*2;
+  // Animate hit barrels
+  for(const b of barrelMeshes){
+    if(!b.hit) continue;
+    b.velY-=20*dt;
+    b.grp.position.x+=b.velX*dt;
+    b.grp.position.y+=b.velY*dt;
+    b.grp.rotation.z+=b.rotV*dt;
+  }
 
   // Trampoline
-  if(p.camZ >= ld.totalZ - 5 && !p.done){
-    p.done = true;
-    p.bounceT = 0.01;
-    save.coins += p.coins;
-    if(curLevel > save.best) save.best = curLevel;
-    savePersist();
-  }
-
-  // Bounce animation
-  if(p.bounceT > 0){
-    p.bounceT += dt * 2;
-    if(p.bounceT >= 1){
-      p.bounceT = 0;
-      checkAllDone();
-    }
-  }
-}
-
-function checkAllDone(){
-  if(players.every(p=>p.done||!p.alive)){
-    setTimeout(()=>{ screen='complete'; clearBtns(); }, 300);
+  if(p.camZ>=totalZ-4&&!p.done){
+    p.done=true;
+    save.coins+=p.coins;
+    if(curLevel>save.best){ save.best=curLevel; }
+    persist();
+    p.velX=0;
   }
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  SCREENS
+//  CAMERA
 // ═══════════════════════════════════════════════════════════════
+function updateCamera(dt){
+  if(!ps.length) return;
+  const p=ps[0];
+  const pathCx=lerp2(waypoints,p.camZ);
+  const worldX=pathCx+p.ballX;
 
-// ── TITLE ──────────────────────────────────────────────────────
-function drawTitle(){
-  clearBtns();
-  const cx = CW/2;
+  // Camera follows: behind+above ball
+  const CAM_DIST=8, CAM_HEIGHT=5, CAM_LOOK=6;
+  const tX=worldX-p.velX*0.08;  // slight lag for feel
+  const tY=p.ballY+CAM_HEIGHT;
+  const tZ=p.camZ-CAM_DIST;
+  // Smooth lerp
+  camera.position.x+=(tX-camera.position.x)*Math.min(1,dt*8);
+  camera.position.y+=(tY-camera.position.y)*Math.min(1,dt*6);
+  camera.position.z+=(tZ-camera.position.z)*Math.min(1,dt*8);
+  camera.lookAt(worldX, p.ballY+0.5, p.camZ+CAM_LOOK);
 
-  // Dark BG
-  const bg=ctx.createLinearGradient(0,0,0,CH);
-  bg.addColorStop(0,'#050010'); bg.addColorStop(1,'#0e0525');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,CW,CH);
-
-  // Grid lines
-  ctx.strokeStyle='rgba(120,60,220,0.08)'; ctx.lineWidth=1;
-  for(let x=0;x<CW;x+=40){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,CH); ctx.stroke(); }
-  for(let y=0;y<CH;y+=40){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(CW,y); ctx.stroke(); }
-
-  // Title
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.font=`900 ${60*(CW/480)}px 'Segoe UI',Arial`;
-  ctx.shadowColor='#a855f7'; ctx.shadowBlur=40;
-  ctx.fillStyle='#fff';
-  ctx.fillText('GOING', cx, CH*0.18);
-  ctx.shadowColor='#f97316'; ctx.shadowBlur=40;
-  ctx.fillStyle='#f97316';
-  ctx.fillText('BALLS', cx, CH*0.18+64*(CW/480));
-  ctx.shadowBlur=0;
-
-  // Preview balls
-  const bY = CH*0.42;
-  [0,1,4,9,14,19].forEach((s,i)=>{
-    const bx = cx + (i-2.5)*55*(CW/480);
-    drawBall(s, bx, bY, 0.75);
-  });
-
-  // Coins
-  ctx.fillStyle='rgba(255,255,255,0.12)';
-  ctx.beginPath(); ctx.roundRect(cx-90*(CW/480), CH*0.52, 180*(CW/480), 34*(CW/480), 17); ctx.fill();
-  ctx.fillStyle='#FFD700'; ctx.font=`bold ${17*(CW/480)}px Arial`;
-  ctx.fillText(`🪙 ${save.coins} coins`, cx, CH*0.52+17*(CW/480));
-
-  // Level indicator
-  ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font=`${13*(CW/480)}px Arial`;
-  ctx.fillText(`Level ${curLevel} / 30  ·  Best: ${save.best}`, cx, CH*0.60);
-
-  // Buttons
-  const bw=200*(CW/480), bh=52*(CW/480);
-  const b1=drawButton('▶ 1 PLAYER', cx, CH*0.70, bw, bh, '#f97316');
-  addBtn(b1.x,b1.y,b1.w,b1.h, ()=>startGame(1));
-
-  const b2=drawButton('👥 2 PLAYERS', cx, CH*0.80, bw, bh, '#7c3aed');
-  addBtn(b2.x,b2.y,b2.w,b2.h, ()=>startGame(2));
-
-  const b3=drawButton('🛒 SHOP', cx, CH*0.90, bw*0.65, bh*0.8, '#059669');
-  addBtn(b3.x,b3.y,b3.w,b3.h, ()=>{ screen='shop'; clearBtns(); });
+  // Move sun with camera
+  sun.position.set(camera.position.x+10, camera.position.y+20, camera.position.z+10);
+  sun.target.position.set(worldX,0,p.camZ);
+  sun.target.updateMatrixWorld();
 }
 
-// ── START GAME ─────────────────────────────────────────────────
-function startGame(np){
-  numPlayers = np;
-  levelData  = genLevel(curLevel);
-  players    = [];
-  doneTimer  = 0;
-  for(let i=0;i<np;i++) players.push(mkPlayer(i));
-  screen = 'playing';
-  clearBtns();
-}
+// ═══════════════════════════════════════════════════════════════
+//  ANIMATE SCENE
+// ═══════════════════════════════════════════════════════════════
+const clock=new THREE.Clock();
+let doneCheckT=0;
 
-// ── LEVEL COMPLETE ─────────────────────────────────────────────
-function drawComplete(){
-  clearBtns();
-  const cx=CW/2;
+function animate(){
+  requestAnimationFrame(animate);
+  const dt=Math.min(clock.getDelta(),0.05);
 
-  const bg=ctx.createLinearGradient(0,0,0,CH);
-  bg.addColorStop(0,'#050010'); bg.addColorStop(1,'#0e0525');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,CW,CH);
+  // Rotate coins
+  coinMeshes.forEach(c=>{ if(!c.collected) c.mesh.rotation.z+=dt*2.5; });
 
-  // Confetti
-  for(let i=0;i<35;i++){
-    const t=Date.now()*0.001;
-    const x=((i*173.3+t*50)%CW);
-    const y=((i*97.7+t*30)%CH*0.7)+20;
-    const cols=['#f97316','#fbbf24','#10b981','#7c3aed','#ec4899','#06b6d4'];
-    ctx.fillStyle=cols[i%cols.length];
-    ctx.save(); ctx.translate(x,y); ctx.rotate(t+i);
-    ctx.fillRect(-4,-6,8,12);
-    ctx.restore();
+  // Trampoline pulse
+  if(trampMesh){
+    const t=performance.now()*0.003;
+    trampMesh.material.emissiveIntensity=0.4+Math.sin(t*3)*0.3;
   }
 
-  const anyDone = players.some(p=>p.done);
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.shadowColor='#f97316'; ctx.shadowBlur=30;
+  if(gameScreen==='playing'){
+    updatePS(ps[0], dt, ballMesh);
+    if(numPlayers===2) updatePS(ps[1], dt, ball2Mesh);
+    updateCamera(dt);
+    updateHUD();
 
-  if(anyDone){
-    ctx.font=`900 ${44*(CW/480)}px 'Segoe UI',Arial`;
-    ctx.fillStyle='#fbbf24';
-    ctx.fillText('🎉 LEVEL CLEAR!', cx, CH*0.14);
-    ctx.shadowBlur=0;
-
-    // Stars
-    const coinsGot = players.reduce((s,p)=>s+p.coins,0);
-    const maxC     = levelData.nCoins;
-    const stars    = coinsGot>=maxC ? 3 : coinsGot>=maxC*0.6 ? 2 : 1;
-    ctx.font=`${36*(CW/480)}px serif`;
-    ctx.fillText('⭐'.repeat(stars)+'☆'.repeat(3-stars), cx, CH*0.25);
-
-    ctx.fillStyle='rgba(255,255,255,0.85)'; ctx.font=`${17*(CW/480)}px Arial`;
-    ctx.fillText(`Coins this level: 🪙 ${coinsGot} / ${maxC}`, cx, CH*0.35);
-    ctx.fillText(`Total coins: 🪙 ${save.coins}`, cx, CH*0.43);
-
-    if(numPlayers===2){
-      const w=players.find(p=>p.done);
-      if(w) ctx.fillText(`Player ${w.idx+1} wins! 🏆`, cx, CH*0.51);
+    // Bounce animation for done players
+    if(ps[0].done && ps[0].bounceT>0 && ps[0].bounceT<1 && ballMesh){
+      const by=Math.sin(ps[0].bounceT*Math.PI)*8;
+      ballMesh.position.y=PATH_Y+BALL_RADIUS+by;
     }
-  } else {
-    ctx.font=`900 ${44*(CW/480)}px 'Segoe UI',Arial`;
-    ctx.fillStyle='#ef4444';
-    ctx.fillText('💀 YOU FELL OFF!', cx, CH*0.18);
-    ctx.shadowBlur=0;
-    ctx.fillStyle='rgba(255,255,255,0.65)'; ctx.font=`${17*(CW/480)}px Arial`;
-    ctx.fillText('Try again!', cx, CH*0.30);
-  }
-  ctx.shadowBlur=0;
 
-  // Three buttons: Main Menu | Shop | Next/Retry
-  const bw=140*(CW/480), bh=52*(CW/480), gap=14*(CW/480);
-  const totalW = bw*3+gap*2;
-  const bx1    = cx - totalW/2 + bw/2;
-  const by     = CH*0.72;
-
-  const b1=drawButton('🏠 Menu',  bx1,      by, bw, bh, '#374151');
-  addBtn(b1.x,b1.y,b1.w,b1.h, ()=>{ numPlayers=1; screen='title'; clearBtns(); });
-
-  const b2=drawButton('🛒 Shop',  bx1+bw+gap,      by, bw, bh, '#059669');
-  addBtn(b2.x,b2.y,b2.w,b2.h, ()=>{ screen='shop'; clearBtns(); });
-
-  let nl='↺ Retry', nc='#7c3aed', nf=()=>startGame(numPlayers);
-  if(anyDone){
-    if(curLevel<30){ nl='Next ▶'; nc='#f97316'; nf=()=>{ curLevel++; startGame(numPlayers); }; }
-    else           { nl='🏆 Win!'; nc='#fbbf24'; nf=()=>{ curLevel=1; screen='title'; clearBtns(); }; }
-  }
-  const b3=drawButton(nl, bx1+(bw+gap)*2, by, bw, bh, nc);
-  addBtn(b3.x,b3.y,b3.w,b3.h, nf);
-
-  ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.font=`${12*(CW/480)}px Arial`;
-  ctx.fillText(`Level ${curLevel} / 30`, cx, CH*0.88);
-}
-
-// ── SHOP ───────────────────────────────────────────────────────
-let shopOY=0;
-function drawShop(){
-  clearBtns();
-  const cx=CW/2;
-
-  const bg=ctx.createLinearGradient(0,0,0,CH);
-  bg.addColorStop(0,'#050010'); bg.addColorStop(1,'#0e0525');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,CW,CH);
-
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.font=`900 ${28*(CW/480)}px 'Segoe UI',Arial`;
-  ctx.fillStyle='#fff'; ctx.shadowColor='#a855f7'; ctx.shadowBlur=20;
-  ctx.fillText('🛒 BALL SHOP', cx, 32*(CW/480));
-  ctx.shadowBlur=0;
-  ctx.fillStyle='#FFD700'; ctx.font=`bold ${16*(CW/480)}px Arial`;
-  ctx.fillText(`🪙 ${save.coins} coins`, cx, 58*(CW/480));
-
-  const cols=4;
-  const pad=16*(CW/480);
-  const cw=(CW-pad*2)/cols;
-  const ch=108*(CW/480);
-  const startY=80*(CW/480);
-
-  ctx.save();
-  ctx.beginPath(); ctx.rect(0,startY,CW,CH-startY-56*(CW/480)); ctx.clip();
-
-  for(let i=0;i<SKINS.length;i++){
-    const skin=SKINS[i];
-    const col=i%cols, row=Math.floor(i/cols);
-    const bx=pad+col*cw+cw/2;
-    const by=startY+row*ch+ch/2-shopOY;
-    if(by+ch/2<startY||by-ch/2>CH) continue;
-
-    const owned   = save.owned.includes(i);
-    const sel     = save.sel===i;
-    const afford  = save.coins>=skin.price;
-
-    ctx.fillStyle  = sel?'rgba(249,115,22,0.2)':owned?'rgba(255,255,255,0.07)':'rgba(255,255,255,0.03)';
-    ctx.strokeStyle= sel?'#f97316':owned?'rgba(255,255,255,0.25)':'rgba(255,255,255,0.1)';
-    ctx.lineWidth  = sel?2.5:1.5;
-    if(sel){ctx.shadowColor='#f97316'; ctx.shadowBlur=12;}
-    ctx.beginPath(); ctx.roundRect(bx-cw/2+4,by-ch/2+4,cw-8,ch-8,10); ctx.fill(); ctx.stroke();
-    ctx.shadowBlur=0;
-
-    drawBall(i, bx, by-12*(CW/480), 0.6);
-
-    ctx.fillStyle='#fff'; ctx.font=`${10*(CW/480)}px Arial`; ctx.textAlign='center'; ctx.textBaseline='top';
-    ctx.fillText(skin.name, bx, by+14*(CW/480));
-    if(owned){
-      ctx.fillStyle=sel?'#f97316':'#10b981'; ctx.font=`bold ${10*(CW/480)}px Arial`;
-      ctx.fillText(sel?'✓ SELECTED':'✓ OWNED', bx, by+27*(CW/480));
+    // Check if all over
+    const allOver=ps.every(p=>p.done||(p.deadT>1.8));
+    if(allOver){
+      doneCheckT+=dt;
+      if(doneCheckT>0.6){ doneCheckT=0; showComplete(); }
     } else {
-      ctx.fillStyle=afford?'#FFD700':'#ef4444';
-      ctx.fillText(`🪙 ${skin.price}`, bx, by+27*(CW/480));
+      doneCheckT=0;
     }
 
-    addBtn(bx-cw/2+4, by-ch/2+4+shopOY, cw-8, ch-8, ()=>{
-      if(owned){ save.sel=i; savePersist(); }
-      else if(afford){ save.coins-=skin.price; save.owned.push(i); save.sel=i; savePersist(); }
-    });
+    // Dead fall
+    if(!ps[0].alive && ballMesh){
+      ballMesh.position.y=ps[0].ballY;
+    }
   }
-  ctx.restore();
 
-  const bb=drawButton('← Back', cx, CH-28*(CW/480), 160*(CW/480), 44*(CW/480), '#374151');
-  addBtn(bb.x,bb.y,bb.w,bb.h, ()=>{ screen=players.length?'complete':'title'; clearBtns(); });
+  renderer.render(scene,camera);
 }
 
-canvas.addEventListener('wheel',e=>{
-  if(screen==='shop') shopOY=Math.max(0,Math.min(320*(CW/480),shopOY+e.deltaY*0.4));
-});
-let tsy=0;
-canvas.addEventListener('touchstart',e=>{tsy=e.touches[0].clientY;},{passive:true});
-canvas.addEventListener('touchmove',e=>{
-  if(screen==='shop'){
-    shopOY=Math.max(0,Math.min(320*(CW/480),shopOY+(tsy-e.touches[0].clientY)*0.5));
-    tsy=e.touches[0].clientY;
-  }
-},{passive:true});
-
 // ═══════════════════════════════════════════════════════════════
-//  MAIN LOOP
+//  INIT
 // ═══════════════════════════════════════════════════════════════
-let lastT=0;
-function loop(ts){
-  requestAnimationFrame(loop);
-  const dt = Math.min((ts-lastT)/1000, 0.05);
-  lastT = ts;
-
-  ctx.clearRect(0,0,CW,CH);
-
-  if(screen==='title')    { drawTitle(); return; }
-  if(screen==='complete') { drawComplete(); return; }
-  if(screen==='shop')     { drawShop(); return; }
-
-  if(screen==='playing'){
-    for(const p of players){
-      updatePlayer(p, dt);
-      if(!p.alive) p.deadTimer += dt;
-    }
-
-    if(numPlayers===1){
-      renderView(players[0], 0, CW);
-
-      // Dead flash overlay
-      if(!players[0].alive && players[0].deadTimer<2){
-        ctx.fillStyle=`rgba(220,0,0,${Math.max(0,0.35-players[0].deadTimer*0.25)})`;
-        ctx.fillRect(0,0,CW,CH);
-        ctx.fillStyle='#fff';
-        ctx.font=`bold ${30*(CW/480)}px Arial`;
-        ctx.textAlign='center'; ctx.textBaseline='middle';
-        ctx.fillText('💀 YOU FELL OFF!', CW/2, CH/2);
-        ctx.font=`${16*(CW/480)}px Arial`;
-        ctx.fillStyle='rgba(255,255,255,0.6)';
-        ctx.fillText('Restarting…', CW/2, CH/2+40*(CW/480));
-      }
-      if(!players[0].alive && players[0].deadTimer>2.2){
-        screen='complete'; clearBtns();
-      }
-    } else {
-      const hw=CW/2;
-      renderView(players[0], 0, hw);
-      renderView(players[1], hw, hw);
-      // Auto-end if all over
-      if(players.every(p=>p.done||(!p.alive&&p.deadTimer>2))){
-        doneTimer += dt;
-        if(doneTimer>0.5){ screen='complete'; clearBtns(); }
-      }
-    }
+document.getElementById('title-coins').textContent=`🪙 ${save.coins} coins`;
+showScreen('title-screen');
+gameScreen='title';
+camera.position.set(0,5,-10);
+camera.lookAt(0,0,5);
+// Render title scene with an empty scene + slowly rotating ball
+const titleBall=makeBallMesh(save.sel);
+titleBall.position.set(0,1,8);
+scene.add(titleBall);
+function titleLoop(){
+  if(gameScreen!=='title'&&gameScreen!=='shop'&&gameScreen!=='complete'){
+    scene.remove(titleBall); return;
   }
+  requestAnimationFrame(titleLoop);
+  titleBall.rotation.y+=0.01;
+  titleBall.rotation.x+=0.008;
+  renderer.render(scene,camera);
 }
-
-requestAnimationFrame(loop);
+titleLoop();
+animate();
 </script>
 </body>
 </html>
