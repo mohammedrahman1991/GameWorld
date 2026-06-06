@@ -547,6 +547,16 @@
       </div>
     </div>
 
+    <div class="card" data-game="82-and-0">
+      <div class="card-thumb g4">🏀</div>
+      <div class="card-body">
+        <h2>82 &amp; 0 Simulation</h2>
+        <p>Pick any NBA team + era, build your 5-man roster from classic legends, then simulate a full 82-game season. Can you go 82-0?</p>
+        <span class="badge badge-live">Live</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
     <div class="card" data-game="find-word">
       <div class="card-thumb g2">🔤</div>
       <div class="card-body">
@@ -1029,6 +1039,21 @@
         ['Multiplayer', 'Enter player names then take turns'],
       ]
     },
+    '82-and-0': {
+      title:'82 & 0 Simulation', emoji:'🏀', grad:'g4',
+      href:'82-and-0/index.html',
+      cat:'Sports · Strategy', dev:'Wacky Brains',
+      players:'1 Player', platform:'Desktop & Mobile', age:'0+', rating:4.8,
+      tags:['NBA','basketball','simulation','classic','roster','strategy','browser'],
+      about:'Pick any of the 30 NBA franchises and a decade (1960s–2010s), then build your 5-man roster by searching for legendary players from that era. Place a PG, SG, SF, PF, and C — then simulate a full 82-game season. The game projects your team\'s win-loss record based on real historical player ratings. Can you go 82-0?',
+      controls:[
+        ['SPIN','Randomly assign a team + era'],
+        ['Click position slot','Select a position to fill'],
+        ['Type name','Search for players from that era'],
+        ['Click player','Add them to your roster'],
+        ['Simulate 82 Games','Run the full season simulation'],
+      ]
+    },
     'find-word': {
       title: 'Find the Word', emoji: '🔤', grad: 'g2',
       href: 'find-the-word/index.html',
@@ -1170,7 +1195,7 @@
     'packaging':'explore','farming':'explore','hide-seek':'explore',
     'goofy-house':'explore','resell':'explore',
     'blackjack':'cards','tictactoe':'cards',
-    'braincrate':'grid','spelling':'words','find-word':'words',
+    'braincrate':'grid','spelling':'words','find-word':'words','82-and-0':'blobs',
   };
 
   // Inject canvas into every card-thumb

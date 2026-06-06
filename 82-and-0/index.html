@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>82 & 0 Simulation — Wacky Brains</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8332361685144393" crossorigin="anonymous"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--card:#161b27;--border:#1f2d40;
+  --accent:#f97316;--purple:#7c3aed;--gold:#fbbf24;
+  --text:#f1f5f9;--muted:#64748b;--green:#22c55e;--red:#ef4444;
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+
+/* ── NAV ── */
+.nav{background:rgba(13,17,23,.97);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-weight:900;font-size:1.15rem;background:linear-gradient(135deg,#f97316,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-decoration:none}
+.nav-home{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .2s}
+.nav-home:hover{color:var(--text)}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:calc(100vh - 52px)}
+.screen.active{display:flex;flex-direction:column;align-items:center}
+
+/* ════════ SETUP SCREEN ════════ */
+#s-setup{justify-content:center;gap:28px;padding:40px 20px;text-align:center}
+.setup-title{font-size:2.8rem;font-weight:900;letter-spacing:-1px}
+.setup-title span{background:linear-gradient(135deg,#f97316,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.setup-sub{color:var(--muted);font-size:1rem}
+.cards-row{display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
+.sel-card{background:var(--card);border-radius:14px;padding:20px 28px;min-width:160px;cursor:pointer;transition:.2s;user-select:none}
+.sel-card.team-card{border:3px solid var(--gold)}
+.sel-card.era-card{border:3px solid var(--purple)}
+.sel-card .sc-label{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+.sel-card.team-card .sc-label{color:var(--gold)}
+.sel-card.era-card .sc-label{color:#a78bfa}
+.sel-card .sc-value{font-size:2.2rem;font-weight:900;letter-spacing:-1px}
+.sel-card.spinning .sc-value{animation:spinVal .06s steps(1) infinite}
+@keyframes spinVal{0%{opacity:1}50%{opacity:.3}100%{opacity:1}}
+.card-caption{color:var(--muted);font-size:.8rem;margin-top:6px}
+.spin-btn{background:var(--accent);border:none;border-radius:12px;color:#fff;cursor:pointer;font-size:1.1rem;font-weight:800;padding:14px 44px;letter-spacing:.04em;transition:.18s;box-shadow:0 4px 20px rgba(249,115,22,.35)}
+.spin-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(249,115,22,.5)}
+.spin-btn:active{transform:scale(.97)}
+.build-btn{background:linear-gradient(135deg,#7c3aed,#4f46e5);border:none;border-radius:12px;color:#fff;cursor:pointer;font-size:1rem;font-weight:700;padding:13px 36px;transition:.18s;opacity:.4;pointer-events:none}
+.build-btn.ready{opacity:1;pointer-events:auto}
+.build-btn.ready:hover{transform:translateY(-2px)}
+
+/* ════════ COURT SCREEN ════════ */
+#s-court{flex-direction:row;align-items:flex-start;justify-content:center;padding:24px 20px;gap:24px;flex-wrap:wrap}
+.court-left{display:flex;flex-direction:column;gap:16px;min-width:260px;max-width:300px;width:100%}
+.team-header{background:var(--card);border-radius:14px;padding:16px 18px;border:1px solid var(--border)}
+.th-team{font-size:1.5rem;font-weight:900}
+.th-era{color:var(--muted);font-size:.88rem;margin-top:3px}
+.position-selector{display:flex;flex-direction:column;gap:8px}
+.pos-pill{background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.18s}
+.pos-pill:hover:not(.filled){border-color:#f97316;color:#f97316}
+.pos-pill.active{border-color:#f97316;background:rgba(249,115,22,.1)}
+.pos-pill.filled{border-color:var(--green);background:rgba(34,197,94,.08);cursor:default}
+.pos-pill.filled .pos-badge{background:var(--green)}
+.pos-badge{width:34px;height:34px;border-radius:8px;background:var(--muted);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#fff;flex-shrink:0}
+.pos-name{flex:1;font-weight:600;font-size:.92rem}
+.pos-player{color:var(--green);font-size:.82rem;font-weight:700}
+.search-box{background:var(--card);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;display:none}
+.search-box.active{display:block}
+.search-input{width:100%;background:none;border:none;color:var(--text);font-size:.95rem;padding:12px 14px;outline:none}
+.search-input::placeholder{color:var(--muted)}
+.search-results{max-height:220px;overflow-y:auto}
+.search-item{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);transition:background .15s}
+.search-item:hover{background:rgba(249,115,22,.08)}
+.si-badge{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#fff;flex-shrink:0}
+.si-info{}
+.si-name{font-size:.88rem;font-weight:700}
+.si-meta{color:var(--muted);font-size:.74rem;margin-top:1px}
+.sim-btn{background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:12px;color:#fff;cursor:pointer;font-size:1rem;font-weight:800;padding:13px;width:100%;transition:.18s;opacity:.4;pointer-events:none}
+.sim-btn.ready{opacity:1;pointer-events:auto}
+.sim-btn.ready:hover{transform:translateY(-2px)}
+
+/* ── COURT ── */
+.court-wrap{flex:1;min-width:300px;max-width:480px}
+.court{background:#0d1825;border:1px solid var(--border);border-radius:16px;position:relative;overflow:hidden;aspect-ratio:10/8;width:100%}
+.court-svg{position:absolute;inset:0;width:100%;height:100%}
+/* position slots on court */
+.court-slot{position:absolute;width:13%;aspect-ratio:1;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:.2s}
+.slot-box{width:100%;height:100%;border:2px dashed rgba(255,255,255,.25);border-radius:10px;background:rgba(255,255,255,.04);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:rgba(255,255,255,.4);gap:3px;transition:.2s}
+.court-slot.active .slot-box{border-color:var(--accent);background:rgba(249,115,22,.12);color:var(--accent)}
+.court-slot.filled .slot-box{border-color:var(--green);background:rgba(34,197,94,.1);color:var(--green)}
+.slot-initials{font-size:1rem;font-weight:900;line-height:1}
+.slot-pos{font-size:.55rem;font-weight:700;letter-spacing:.05em}
+
+/* ════════ SIMULATION SCREEN ════════ */
+#s-sim{justify-content:center;gap:24px;padding:40px 20px;text-align:center}
+.sim-title{font-size:1.6rem;font-weight:800}
+.sim-sub{color:var(--muted)}
+.sim-court-mini{width:160px;height:120px;background:#0d1825;border:1px solid var(--border);border-radius:12px;margin:0 auto;position:relative;overflow:hidden}
+.sim-bar-wrap{width:100%;max-width:400px}
+.sim-bar-track{background:rgba(255,255,255,.08);border-radius:99px;height:8px;overflow:hidden}
+.sim-bar-fill{height:100%;background:linear-gradient(90deg,#f97316,#fbbf24);border-radius:99px;width:0%;transition:width .05s linear}
+.sim-record{font-size:3rem;font-weight:900;letter-spacing:-2px;display:flex;align-items:center;gap:16px}
+.sim-record .dash{font-size:1.5rem;color:var(--muted)}
+.win-count{color:var(--green)}
+.loss-count{color:var(--red)}
+
+/* ════════ RESULTS SCREEN ════════ */
+#s-results{padding:32px 20px 60px;gap:20px;max-width:760px;margin:0 auto;width:100%}
+.results-header{text-align:center}
+.rh-title{font-size:1.1rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
+.record-big{display:flex;align-items:center;justify-content:center;gap:20px;font-size:5rem;font-weight:900;letter-spacing:-3px;line-height:1}
+.record-big .w{color:var(--green)}
+.record-big .l{color:var(--red)}
+.record-big .em{font-size:2rem;color:var(--muted)}
+.grade-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:16px}
+.grade-letter{font-size:1.8rem;font-weight:900}
+.grade-name{font-size:1rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.grade-pts{color:var(--muted);font-size:.9rem}
+.result-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-share{background:var(--accent);border:none;border-radius:12px;color:#fff;cursor:pointer;font-size:.95rem;font-weight:700;padding:12px 28px;transition:.18s;display:flex;align-items:center;gap:8px}
+.btn-share:hover{transform:translateY(-2px)}
+.btn-again{background:var(--card);border:1.5px solid var(--border);border-radius:12px;color:var(--text);cursor:pointer;font-size:.95rem;font-weight:700;padding:12px 28px;transition:.18s}
+.btn-again:hover{border-color:var(--accent);color:var(--accent)}
+.player-cards{display:flex;flex-direction:column;gap:10px;width:100%}
+.player-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:16px;border-left:4px solid transparent}
+.pc-badge{width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pc-initials{font-size:.95rem;font-weight:900;color:#fff}
+.pc-pos{font-size:.58rem;font-weight:800;color:rgba(255,255,255,.7);margin-top:1px}
+.pc-info{flex:1;min-width:0}
+.pc-name{font-size:1rem;font-weight:700}
+.pc-meta{color:var(--muted);font-size:.78rem;margin-top:2px}
+.pc-stats{display:flex;gap:18px;flex-wrap:wrap}
+.pc-stat{text-align:center}
+.pc-stat-val{font-size:.95rem;font-weight:800}
+.pc-stat-lbl{color:var(--muted);font-size:.65rem;margin-top:1px}
+.totals-row{background:rgba(249,115,22,.07);border:1px solid rgba(249,115,22,.2);border-radius:14px;padding:16px 18px;display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
+.total-stat{text-align:center}
+.total-val{font-size:1.2rem;font-weight:800;color:var(--accent)}
+.total-lbl{color:var(--muted);font-size:.65rem;margin-top:2px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-logo">82 &amp; 0 Simulation</a>
+  <a href="/" class="nav-home">← All Games</a>
+</nav>
+
+<!-- ════════ SETUP ════════ -->
+<div class="screen active" id="s-setup">
+  <div class="setup-title">Can you go <span>82-0?</span></div>
+  <div class="setup-sub">Pick a team + era, build your roster, simulate the season.</div>
+
+  <div class="cards-row">
+    <div>
+      <div class="sel-card team-card" id="team-card">
+        <div class="sc-label">Team</div>
+        <div class="sc-value" id="team-val">—</div>
+      </div>
+      <div class="card-caption">Team</div>
+    </div>
+    <div>
+      <div class="sel-card era-card" id="era-card">
+        <div class="sc-label">Era</div>
+        <div class="sc-value" id="era-val">—</div>
+      </div>
+      <div class="card-caption">Decade</div>
+    </div>
+  </div>
+
+  <button class="spin-btn" id="spin-btn">SPIN</button>
+  <button class="build-btn" id="build-btn">Build Roster →</button>
+</div>
+
+<!-- ════════ COURT ════════ -->
+<div class="screen" id="s-court">
+  <div class="court-left">
+    <div class="team-header">
+      <div class="th-team" id="ct-team">—</div>
+      <div class="th-era" id="ct-era">—</div>
+    </div>
+
+    <div class="position-selector" id="pos-list"></div>
+
+    <div class="search-box" id="search-box">
+      <input type="text" class="search-input" id="search-input" placeholder="Search player…" autocomplete="off"/>
+      <div class="search-results" id="search-results"></div>
+    </div>
+
+    <button class="sim-btn" id="sim-btn">Simulate 82 Games →</button>
+  </div>
+
+  <div class="court-wrap">
+    <div class="court" id="court">
+      <!-- SVG court lines -->
+      <svg class="court-svg" viewBox="0 0 480 384" xmlns="http://www.w3.org/2000/svg">
+        <!-- floor tint -->
+        <rect width="480" height="384" fill="#0d1825"/>
+        <!-- half-court line -->
+        <line x1="0" y1="192" x2="480" y2="192" stroke="rgba(255,255,255,.12)" stroke-width="1.5" stroke-dasharray="8,6"/>
+        <!-- center circle -->
+        <circle cx="240" cy="192" r="48" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1.5" stroke-dasharray="8,6"/>
+        <!-- three-point arc (top half) -->
+        <path d="M 60 384 A 200 200 0 0 1 420 384" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1.5" stroke-dasharray="8,6"/>
+        <!-- paint box -->
+        <rect x="160" y="0" width="160" height="170" fill="rgba(249,115,22,.06)" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>
+        <!-- free throw circle -->
+        <circle cx="240" cy="170" r="60" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1.5" stroke-dasharray="8,6"/>
+        <!-- restricted arc -->
+        <path d="M 210 30 A 30 30 0 0 1 270 30" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1.5"/>
+        <!-- backboard -->
+        <rect x="215" y="12" width="50" height="6" rx="2" fill="rgba(255,255,255,.3)"/>
+        <!-- basket circle -->
+        <circle cx="240" cy="28" r="14" fill="none" stroke="rgba(249,115,22,.7)" stroke-width="2"/>
+        <circle cx="240" cy="28" r="4" fill="rgba(249,115,22,.5)"/>
+      </svg>
+
+      <!-- Position slots overlaid on court -->
+      <!-- C: paint center -->
+      <div class="court-slot" data-pos="C" style="left:50%;top:25%">
+        <div class="slot-box" id="slot-C">
+          <span class="slot-initials"></span>
+          <span class="slot-pos">C</span>
+        </div>
+      </div>
+      <!-- PF: right block -->
+      <div class="court-slot" data-pos="PF" style="left:72%;top:28%">
+        <div class="slot-box" id="slot-PF">
+          <span class="slot-initials"></span>
+          <span class="slot-pos">PF</span>
+        </div>
+      </div>
+      <!-- SF: left wing -->
+      <div class="court-slot" data-pos="SF" style="left:18%;top:56%">
+        <div class="slot-box" id="slot-SF">
+          <span class="slot-initials"></span>
+          <span class="slot-pos">SF</span>
+        </div>
+      </div>
+      <!-- SG: right wing -->
+      <div class="court-slot" data-pos="SG" style="left:82%;top:56%">
+        <div class="slot-box" id="slot-SG">
+          <span class="slot-initials"></span>
+          <span class="slot-pos">SG</span>
+        </div>
+      </div>
+      <!-- PG: top of key -->
+      <div class="court-slot" data-pos="PG" style="left:50%;top:80%">
+        <div class="slot-box" id="slot-PG">
+          <span class="slot-initials"></span>
+          <span class="slot-pos">PG</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ SIMULATION ════════ -->
+<div class="screen" id="s-sim">
+  <div class="sim-title">Simulating 82 Games…</div>
+  <div class="sim-sub">Running your roster through a full season</div>
+  <div class="sim-record">
+    <span class="win-count" id="sim-w">0</span>
+    <span class="dash">—</span>
+    <span class="loss-count" id="sim-l">0</span>
+  </div>
+  <div class="sim-bar-wrap">
+    <div class="sim-bar-track">
+      <div class="sim-bar-fill" id="sim-bar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ RESULTS ════════ -->
+<div class="screen" id="s-results">
+  <div class="results-header">
+    <div class="rh-title">Projected Record</div>
+    <div class="record-big">
+      <span class="w" id="res-w">—</span>
+      <span class="em">—</span>
+      <span class="l" id="res-l">—</span>
+    </div>
+    <div class="grade-row">
+      <span class="grade-letter" id="grade-letter"></span>
+      <span class="grade-name" id="grade-name"></span>
+      <span class="grade-pts" id="grade-pts"></span>
+    </div>
+  </div>
+  <div class="result-actions">
+    <button class="btn-share" id="share-btn">⬆ Share</button>
+    <button class="btn-again" id="again-btn">Build Another</button>
+  </div>
+  <div class="player-cards" id="player-cards"></div>
+  <div class="totals-row" id="totals-row"></div>
+</div>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════
+   TEAM DATABASE
+═══════════════════════════════════════════ */
+const TEAMS = [
+  {id:'ATL',name:'Atlanta Hawks',color:'#E03A3E'},
+  {id:'BOS',name:'Boston Celtics',color:'#007A33'},
+  {id:'BKN',name:'Brooklyn Nets',color:'#777777'},
+  {id:'CHA',name:'Charlotte Hornets',color:'#1D1160'},
+  {id:'CHI',name:'Chicago Bulls',color:'#CE1141'},
+  {id:'CLE',name:'Cleveland Cavaliers',color:'#860038'},
+  {id:'DAL',name:'Dallas Mavericks',color:'#00538C'},
+  {id:'DEN',name:'Denver Nuggets',color:'#0E2240'},
+  {id:'DET',name:'Detroit Pistons',color:'#C8102E'},
+  {id:'GSW',name:'Golden State Warriors',color:'#1D428A'},
+  {id:'HOU',name:'Houston Rockets',color:'#CE1141'},
+  {id:'IND',name:'Indiana Pacers',color:'#002D62'},
+  {id:'LAC',name:'L.A. Clippers',color:'#C8102E'},
+  {id:'LAL',name:'L.A. Lakers',color:'#552583'},
+  {id:'MEM',name:'Memphis Grizzlies',color:'#5D76A9'},
+  {id:'MIA',name:'Miami Heat',color:'#98002E'},
+  {id:'MIL',name:'Milwaukee Bucks',color:'#00471B'},
+  {id:'MIN',name:'Minnesota T-Wolves',color:'#0C2340'},
+  {id:'NOP',name:'New Orleans Pelicans',color:'#0C2340'},
+  {id:'NYK',name:'New York Knicks',color:'#006BB6'},
+  {id:'OKC',name:'Oklahoma City Thunder',color:'#007AC1'},
+  {id:'ORL',name:'Orlando Magic',color:'#0077C0'},
+  {id:'PHI',name:'Philadelphia 76ers',color:'#006BB6'},
+  {id:'PHX',name:'Phoenix Suns',color:'#1D1160'},
+  {id:'POR',name:'Portland Trail Blazers',color:'#E03A3E'},
+  {id:'SAC',name:'Sacramento Kings',color:'#5A2D81'},
+  {id:'SAS',name:'San Antonio Spurs',color:'#C4CED4'},
+  {id:'TOR',name:'Toronto Raptors',color:'#CE1141'},
+  {id:'UTA',name:'Utah Jazz',color:'#002B5C'},
+  {id:'WAS',name:'Washington Wizards',color:'#002B5C'},
+];
+const ERAS = ['1960s','1970s','1980s','1990s','2000s','2010s'];
+
+/* ═══════════════════════════════════════════
+   PLAYER DATABASE
+   { n, p, t[], e, s:{pp,rp,ap,sp,bp}, r }
+═══════════════════════════════════════════ */
+const PLAYERS = [
+/* ── CENTERS ── */
+{n:'Kareem Abdul-Jabbar',p:'C',t:['MIL','LAL'],e:'1970s',s:{pp:24.6,rp:11.2,ap:3.6,sp:0.9,bp:3.1},r:99},
+{n:'Wilt Chamberlain',p:'C',t:['PHI','LAL','GSW'],e:'1960s',s:{pp:30.1,rp:22.9,ap:4.4,sp:0.5,bp:0.0},r:100},
+{n:'Bill Russell',p:'C',t:['BOS'],e:'1960s',s:{pp:15.1,rp:22.5,ap:4.3,sp:0.0,bp:0.0},r:99},
+{n:'Shaquille O\'Neal',p:'C',t:['ORL','LAL','MIA','PHX','CLE'],e:'1990s',s:{pp:23.7,rp:10.9,ap:2.5,sp:0.6,bp:2.3},r:98},
+{n:'Hakeem Olajuwon',p:'C',t:['HOU','TOR'],e:'1990s',s:{pp:21.8,rp:11.1,ap:2.5,sp:1.7,bp:3.1},r:97},
+{n:'David Robinson',p:'C',t:['SAS'],e:'1990s',s:{pp:21.1,rp:10.6,ap:2.5,sp:1.4,bp:3.0},r:95},
+{n:'Patrick Ewing',p:'C',t:['NYK','ORL','IND'],e:'1990s',s:{pp:21.0,rp:9.8,ap:1.9,sp:1.0,bp:2.4},r:93},
+{n:'Tim Duncan',p:'C',t:['SAS'],e:'2000s',s:{pp:19.0,rp:10.8,ap:3.0,sp:0.7,bp:2.2},r:97},
+{n:'Nate Thurmond',p:'C',t:['GSW','CHI','CLE'],e:'1970s',s:{pp:15.0,rp:15.0,ap:2.7,sp:0.0,bp:0.0},r:90},
+{n:'Dave Cowens',p:'C',t:['BOS','MIL'],e:'1970s',s:{pp:17.6,rp:13.6,ap:3.8,sp:0.0,bp:0.0},r:87},
+{n:'Robert Parish',p:'C',t:['GSW','BOS','CHI'],e:'1980s',s:{pp:16.5,rp:9.1,ap:1.8,sp:0.7,bp:1.5},r:86},
+{n:'Alonzo Mourning',p:'C',t:['CHA','MIA','NOP'],e:'1990s',s:{pp:17.1,rp:8.5,ap:1.5,sp:0.9,bp:2.9},r:89},
+{n:'Dikembe Mutombo',p:'C',t:['DEN','ATL','PHI','NYK','HOU'],e:'1990s',s:{pp:9.8,rp:10.3,ap:0.8,sp:0.3,bp:3.3},r:84},
+{n:'Bob Lanier',p:'C',t:['DET','MIL'],e:'1970s',s:{pp:20.1,rp:10.1,ap:3.1,sp:0.5,bp:0.9},r:88},
+{n:'Willis Reed',p:'C',t:['NYK'],e:'1970s',s:{pp:18.7,rp:12.9,ap:1.8,sp:0.0,bp:0.0},r:88},
+{n:'Wes Unseld',p:'C',t:['WAS'],e:'1970s',s:{pp:10.8,rp:14.0,ap:3.9,sp:0.0,bp:0.0},r:87},
+{n:'Elvin Hayes',p:'C',t:['HOU','WAS'],e:'1970s',s:{pp:21.0,rp:12.5,ap:1.8,sp:0.7,bp:1.9},r:90},
+{n:'Artis Gilmore',p:'C',t:['CHI','SAS','BOS'],e:'1980s',s:{pp:17.1,rp:10.1,ap:1.9,sp:0.9,bp:2.1},r:87},
+{n:'Mark Eaton',p:'C',t:['UTA'],e:'1980s',s:{pp:6.0,rp:7.9,ap:0.8,sp:0.3,bp:3.5},r:75},
+{n:'Brad Daugherty',p:'C',t:['CLE'],e:'1990s',s:{pp:19.0,rp:9.5,ap:3.7,sp:0.7,bp:0.8},r:83},
+{n:'Rik Smits',p:'C',t:['IND'],e:'1990s',s:{pp:14.9,rp:6.1,ap:1.4,sp:0.5,bp:1.2},r:78},
+{n:'Vlade Divac',p:'C',t:['LAL','CHA','SAC'],e:'1990s',s:{pp:11.8,rp:8.2,ap:3.8,sp:1.3,bp:1.3},r:80},
+{n:'Marcus Camby',p:'C',t:['TOR','NYK','DEN','LAC'],e:'2000s',s:{pp:8.1,rp:9.8,ap:1.1,sp:0.5,bp:2.7},r:80},
+{n:'Bob McAdoo',p:'C',t:['LAC','NYK','LAL','BOS'],e:'1970s',s:{pp:22.1,rp:9.4,ap:2.1,sp:1.2,bp:0.8},r:88},
+{n:'Dan Issel',p:'C',t:['DEN'],e:'1970s',s:{pp:22.6,rp:8.1,ap:2.8,sp:0.8,bp:0.9},r:85},
+{n:'Rony Seikaly',p:'C',t:['MIA','ORL','GSW'],e:'1990s',s:{pp:14.7,rp:9.5,ap:1.3,sp:0.8,bp:1.2},r:74},
+{n:'Jack Sikma',p:'C',t:['OKC','MIL'],e:'1980s',s:{pp:15.6,rp:9.8,ap:3.8,sp:1.0,bp:0.8},r:81},
+{n:'Mel Daniels',p:'C',t:['IND'],e:'1970s',s:{pp:18.7,rp:13.4,ap:2.5,sp:0.0,bp:0.0},r:85},
+{n:'Chris Bosh',p:'C',t:['TOR','MIA'],e:'2000s',s:{pp:19.2,rp:8.5,ap:2.0,sp:0.7,bp:1.0},r:85},
+{n:'Pau Gasol',p:'C',t:['MEM','LAL','CHI','SAS'],e:'2000s',s:{pp:17.8,rp:8.9,ap:3.4,sp:0.6,bp:1.6},r:88},
+
+/* ── POWER FORWARDS ── */
+{n:'Karl Malone',p:'PF',t:['UTA','LAL'],e:'1990s',s:{pp:25.0,rp:10.1,ap:3.6,sp:1.4,bp:0.8},r:97},
+{n:'Kevin Garnett',p:'PF',t:['MIN','BOS','BKN'],e:'2000s',s:{pp:17.8,rp:10.0,ap:4.3,sp:1.4,bp:1.5},r:93},
+{n:'Charles Barkley',p:'PF',t:['PHI','PHX','HOU'],e:'1990s',s:{pp:22.1,rp:11.7,ap:3.9,sp:1.5,bp:0.8},r:94},
+{n:'Dennis Rodman',p:'PF',t:['DET','SAS','CHI'],e:'1990s',s:{pp:7.3,rp:13.1,ap:2.5,sp:0.7,bp:0.5},r:86},
+{n:'Bob Pettit',p:'PF',t:['ATL'],e:'1960s',s:{pp:26.4,rp:16.2,ap:3.0,sp:0.0,bp:0.0},r:93},
+{n:'Elgin Baylor',p:'PF',t:['LAL'],e:'1960s',s:{pp:27.4,rp:13.5,ap:4.3,sp:0.0,bp:0.0},r:95},
+{n:'Dirk Nowitzki',p:'PF',t:['DAL'],e:'2000s',s:{pp:23.5,rp:8.7,ap:2.7,sp:0.7,bp:0.8},r:96},
+{n:'Chris Webber',p:'PF',t:['GSW','WAS','SAC','PHI','DET'],e:'2000s',s:{pp:20.7,rp:9.8,ap:4.2,sp:1.4,bp:1.4},r:87},
+{n:'Spencer Haywood',p:'PF',t:['OKC','NYK','LAL','WAS'],e:'1970s',s:{pp:21.1,rp:11.9,ap:2.2,sp:0.0,bp:0.0},r:85},
+{n:'Dave DeBusschere',p:'PF',t:['DET','NYK'],e:'1970s',s:{pp:16.1,rp:11.0,ap:2.9,sp:0.0,bp:0.0},r:82},
+{n:'Gus Johnson',p:'PF',t:['WAS','PHX'],e:'1970s',s:{pp:16.6,rp:11.7,ap:2.2,sp:0.0,bp:0.0},r:82},
+{n:'Larry Johnson',p:'PF',t:['CHA','NYK'],e:'1990s',s:{pp:16.2,rp:7.1,ap:3.7,sp:0.8,bp:0.4},r:80},
+{n:'Terry Cummings',p:'PF',t:['MIL','SAS','LAC'],e:'1980s',s:{pp:17.8,rp:7.5,ap:2.4,sp:0.8,bp:0.5},r:80},
+{n:'Antawn Jamison',p:'PF',t:['GSW','DAL','WAS','CLE'],e:'2000s',s:{pp:19.3,rp:8.6,ap:1.9,sp:0.9,bp:0.5},r:79},
+{n:'Buck Williams',p:'PF',t:['BKN','POR','NYK'],e:'1980s',s:{pp:13.9,rp:10.0,ap:1.5,sp:0.7,bp:0.7},r:80},
+{n:'Tom Gugliotta',p:'PF',t:['WAS','MIN','PHX'],e:'1990s',s:{pp:13.7,rp:7.4,ap:4.1,sp:1.1,bp:0.8},r:76},
+{n:'Vin Baker',p:'PF',t:['MIL','OKC','BOS'],e:'1990s',s:{pp:14.4,rp:7.4,ap:2.1,sp:0.7,bp:1.0},r:78},
+{n:'Kevin Love',p:'PF',t:['MIN','CLE'],e:'2010s',s:{pp:19.0,rp:12.2,ap:2.5,sp:0.7,bp:0.5},r:83},
+{n:'Sam Perkins',p:'PF',t:['DAL','LAL','OKC','IND'],e:'1990s',s:{pp:11.0,rp:6.8,ap:1.8,sp:0.8,bp:0.6},r:75},
+{n:'Horace Grant',p:'PF',t:['CHI','ORL','LAL','CLE'],e:'1990s',s:{pp:10.6,rp:7.3,ap:2.2,sp:0.8,bp:0.7},r:77},
+{n:'Dale Davis',p:'PF',t:['IND','POR'],e:'1990s',s:{pp:8.2,rp:9.6,ap:0.9,sp:0.9,bp:1.1},r:73},
+{n:'David West',p:'PF',t:['NOP','IND','SAS'],e:'2000s',s:{pp:15.2,rp:7.7,ap:2.2,sp:0.9,bp:0.8},r:78},
+{n:'Mark Aguirre',p:'PF',t:['DAL','DET'],e:'1980s',s:{pp:20.0,rp:6.0,ap:3.7,sp:0.8,bp:0.4},r:81},
+{n:'Larry Nance',p:'PF',t:['PHX','CLE'],e:'1990s',s:{pp:15.0,rp:8.0,ap:2.2,sp:1.0,bp:1.9},r:79},
+{n:'Tom Chambers',p:'PF',t:['OKC','PHX','UTA'],e:'1990s',s:{pp:18.1,rp:7.1,ap:2.5,sp:0.8,bp:0.6},r:80},
+{n:'Bob Dandridge',p:'PF',t:['MIL','WAS'],e:'1970s',s:{pp:18.5,rp:7.0,ap:3.9,sp:1.5,bp:0.7},r:80},
+{n:'Maurice Lucas',p:'PF',t:['POR','BKN','NYK'],e:'1980s',s:{pp:14.5,rp:8.3,ap:2.2,sp:0.9,bp:0.6},r:78},
+{n:'Hot Rod Williams',p:'PF',t:['CLE','PHX','DAL'],e:'1990s',s:{pp:11.0,rp:7.0,ap:1.7,sp:0.8,bp:1.5},r:73},
+{n:'Shareef Abdur-Rahim',p:'PF',t:['MEM','ATL','POR','SAC'],e:'2000s',s:{pp:18.0,rp:7.6,ap:2.3,sp:0.8,bp:0.7},r:79},
+{n:'Cliff Robinson',p:'PF',t:['POR','PHX','DET'],e:'1990s',s:{pp:15.8,rp:5.5,ap:2.7,sp:1.3,bp:1.1},r:78},
+
+/* ── SMALL FORWARDS ── */
+{n:'Larry Bird',p:'SF',t:['BOS'],e:'1980s',s:{pp:24.3,rp:10.0,ap:6.3,sp:1.7,bp:0.8},r:98},
+{n:'Julius Erving',p:'SF',t:['PHI'],e:'1980s',s:{pp:22.0,rp:6.7,ap:3.9,sp:2.0,bp:1.7},r:96},
+{n:'Scottie Pippen',p:'SF',t:['CHI','HOU','POR'],e:'1990s',s:{pp:16.1,rp:6.7,ap:5.2,sp:2.0,bp:0.8},r:91},
+{n:'Dominique Wilkins',p:'SF',t:['ATL','LAC','BOS'],e:'1990s',s:{pp:24.8,rp:6.7,ap:2.5,sp:1.3,bp:0.5},r:90},
+{n:'Rick Barry',p:'SF',t:['GSW','HOU'],e:'1970s',s:{pp:23.2,rp:6.7,ap:4.9,sp:2.2,bp:0.9},r:89},
+{n:'Connie Hawkins',p:'SF',t:['PHX','LAL','ATL'],e:'1970s',s:{pp:18.8,rp:10.3,ap:4.2,sp:0.0,bp:0.0},r:85},
+{n:'James Worthy',p:'SF',t:['LAL'],e:'1980s',s:{pp:17.6,rp:5.1,ap:3.0,sp:1.5,bp:0.7},r:84},
+{n:'Chet Walker',p:'SF',t:['PHI','CHI'],e:'1970s',s:{pp:18.2,rp:7.1,ap:2.8,sp:0.0,bp:0.0},r:81},
+{n:'Alex English',p:'SF',t:['MIL','IND','DEN','DAL'],e:'1980s',s:{pp:21.5,rp:5.5,ap:3.8,sp:0.9,bp:0.4},r:83},
+{n:'Billy Cunningham',p:'SF',t:['PHI'],e:'1970s',s:{pp:20.8,rp:10.4,ap:4.3,sp:0.0,bp:0.0},r:85},
+{n:'Rudy Tomjanovich',p:'SF',t:['HOU'],e:'1970s',s:{pp:17.4,rp:8.1,ap:2.3,sp:0.0,bp:0.0},r:78},
+{n:'Tom Heinsohn',p:'SF',t:['BOS'],e:'1960s',s:{pp:18.6,rp:8.8,ap:2.8,sp:0.0,bp:0.0},r:78},
+{n:'Marques Johnson',p:'SF',t:['MIL','LAC','GSW'],e:'1980s',s:{pp:20.1,rp:7.5,ap:4.5,sp:1.2,bp:0.8},r:82},
+{n:'Vince Carter',p:'SF',t:['TOR','BKN','ORL','DAL','MEM','SAC'],e:'2000s',s:{pp:20.8,rp:4.9,ap:3.8,sp:1.1,bp:0.5},r:88},
+{n:'Paul Pierce',p:'SF',t:['BOS','BKN','WAS','LAC'],e:'2000s',s:{pp:21.8,rp:5.6,ap:4.0,sp:1.4,bp:0.5},r:88},
+{n:'Grant Hill',p:'SF',t:['DET','ORL','PHX'],e:'2000s',s:{pp:21.6,rp:7.9,ap:6.3,sp:1.5,bp:0.7},r:86},
+{n:'Tracy McGrady',p:'SF',t:['TOR','ORL','HOU'],e:'2000s',s:{pp:23.9,rp:6.2,ap:4.9,sp:1.4,bp:0.9},r:91},
+{n:'Kiki Vandeweghe',p:'SF',t:['DEN','POR','NYK','LAC'],e:'1980s',s:{pp:19.7,rp:5.6,ap:2.3,sp:0.8,bp:0.5},r:79},
+{n:'Bernard King',p:'SF',t:['BKN','UTA','GSW','NYK','WAS'],e:'1980s',s:{pp:22.5,rp:5.4,ap:3.8,sp:0.9,bp:0.3},r:84},
+{n:'Jalen Rose',p:'SF',t:['IND','CHI','TOR','NYK'],e:'2000s',s:{pp:14.3,rp:4.2,ap:3.7,sp:0.8,bp:0.3},r:76},
+{n:'Glen Rice',p:'SF',t:['MIA','CHA','LAL','NYK'],e:'1990s',s:{pp:18.7,rp:4.3,ap:2.0,sp:1.0,bp:0.3},r:80},
+{n:'Bob Love',p:'SF',t:['CHI'],e:'1970s',s:{pp:21.3,rp:6.8,ap:1.6,sp:1.4,bp:0.5},r:80},
+{n:'John Havlicek',p:'SF',t:['BOS'],e:'1970s',s:{pp:20.8,rp:6.3,ap:4.8,sp:0.0,bp:0.0},r:92},
+{n:'Rudy Gay',p:'SF',t:['MEM','TOR','SAC','SAS'],e:'2010s',s:{pp:18.9,rp:5.7,ap:2.4,sp:1.3,bp:0.6},r:80},
+{n:'Detlef Schrempf',p:'SF',t:['DAL','IND','OKC','POR'],e:'1990s',s:{pp:14.5,rp:7.2,ap:3.6,sp:0.8,bp:0.4},r:78},
+{n:'Walter Davis',p:'SF',t:['PHX','DEN'],e:'1980s',s:{pp:18.9,rp:4.1,ap:3.3,sp:0.8,bp:0.3},r:79},
+{n:'Jamal Mashburn',p:'SF',t:['DAL','MIA','CHA','NOP'],e:'2000s',s:{pp:18.2,rp:5.1,ap:4.0,sp:1.3,bp:0.3},r:79},
+{n:'George Gervin',p:'SF',t:['SAS','CHI'],e:'1980s',s:{pp:26.2,rp:5.0,ap:2.7,sp:0.9,bp:0.7},r:90},
+{n:'Jack Twyman',p:'SF',t:['SAC'],e:'1960s',s:{pp:19.2,rp:6.6,ap:2.4,sp:0.0,bp:0.0},r:79},
+{n:'David Thompson',p:'SF',t:['DEN','OKC'],e:'1970s',s:{pp:22.1,rp:4.1,ap:3.5,sp:1.2,bp:0.5},r:85},
+
+/* ── SHOOTING GUARDS ── */
+{n:'Michael Jordan',p:'SG',t:['CHI','WAS'],e:'1990s',s:{pp:30.1,rp:6.2,ap:5.3,sp:2.3,bp:0.8},r:100},
+{n:'Kobe Bryant',p:'SG',t:['LAL'],e:'2000s',s:{pp:25.0,rp:5.2,ap:4.7,sp:1.4,bp:0.5},r:97},
+{n:'Dwyane Wade',p:'SG',t:['MIA','CHI','CLE'],e:'2000s',s:{pp:22.0,rp:4.7,ap:5.4,sp:1.6,bp:0.8},r:93},
+{n:'Clyde Drexler',p:'SG',t:['POR','HOU'],e:'1990s',s:{pp:20.4,rp:6.1,ap:5.6,sp:2.0,bp:0.7},r:90},
+{n:'Reggie Miller',p:'SG',t:['IND'],e:'1990s',s:{pp:18.2,rp:3.0,ap:3.0,sp:1.1,bp:0.2},r:86},
+{n:'Allen Iverson',p:'SG',t:['PHI','DEN','DET','MEM'],e:'2000s',s:{pp:26.7,rp:3.7,ap:6.2,sp:2.2,bp:0.2},r:91},
+{n:'Jerry West',p:'SG',t:['LAL'],e:'1970s',s:{pp:27.0,rp:5.8,ap:6.7,sp:0.0,bp:0.0},r:96},
+{n:'Oscar Robertson',p:'SG',t:['SAC','MIL'],e:'1960s',s:{pp:25.7,rp:7.5,ap:9.5,sp:0.0,bp:0.0},r:98},
+{n:'Mitch Richmond',p:'SG',t:['GSW','SAC','WAS','LAL'],e:'1990s',s:{pp:21.3,rp:3.8,ap:3.2,sp:1.2,bp:0.3},r:84},
+{n:'Joe Dumars',p:'SG',t:['DET'],e:'1990s',s:{pp:16.1,rp:3.5,ap:4.4,sp:1.0,bp:0.2},r:82},
+{n:'Sam Jones',p:'SG',t:['BOS'],e:'1960s',s:{pp:17.7,rp:4.6,ap:2.5,sp:0.0,bp:0.0},r:84},
+{n:'Earl Monroe',p:'SG',t:['WAS','NYK'],e:'1970s',s:{pp:18.8,rp:4.3,ap:3.9,sp:0.0,bp:0.0},r:85},
+{n:'Hal Greer',p:'SG',t:['PHI'],e:'1960s',s:{pp:19.2,rp:5.0,ap:4.0,sp:0.0,bp:0.0},r:85},
+{n:'Sidney Moncrief',p:'SG',t:['MIL'],e:'1980s',s:{pp:15.6,rp:4.1,ap:3.5,sp:1.6,bp:0.3},r:82},
+{n:'World B. Free',p:'SG',t:['PHI','LAC','GSW','CLE','HOU'],e:'1980s',s:{pp:20.3,rp:3.1,ap:4.1,sp:1.6,bp:0.2},r:80},
+{n:'John Starks',p:'SG',t:['NYK','GSW','UTA'],e:'1990s',s:{pp:14.7,rp:2.7,ap:3.4,sp:1.3,bp:0.2},r:76},
+{n:'Dan Majerle',p:'SG',t:['PHX','MIA','CLE'],e:'1990s',s:{pp:14.1,rp:4.3,ap:3.6,sp:1.3,bp:0.3},r:78},
+{n:'Lou Hudson',p:'SG',t:['ATL','LAL'],e:'1970s',s:{pp:20.2,rp:5.0,ap:2.9,sp:0.0,bp:0.0},r:82},
+{n:'Rolando Blackman',p:'SG',t:['DAL','NYK'],e:'1980s',s:{pp:17.6,rp:3.7,ap:3.2,sp:0.9,bp:0.2},r:79},
+{n:'Gail Goodrich',p:'SG',t:['LAL','PHX','NOP','UTA'],e:'1970s',s:{pp:18.6,rp:3.3,ap:4.5,sp:0.0,bp:0.0},r:81},
+{n:'Phil Chenier',p:'SG',t:['WAS'],e:'1970s',s:{pp:18.4,rp:3.2,ap:4.1,sp:0.0,bp:0.0},r:78},
+{n:'Nick Anderson',p:'SG',t:['ORL','SAC','MEM'],e:'1990s',s:{pp:15.7,rp:5.2,ap:2.7,sp:1.7,bp:0.4},r:76},
+{n:'Steve Smith',p:'SG',t:['MIA','ATL','POR','SAS'],e:'1990s',s:{pp:14.1,rp:3.5,ap:3.7,sp:0.9,bp:0.2},r:74},
+{n:'Dell Curry',p:'SG',t:['UTA','CLE','CHA','MIL','TOR'],e:'1990s',s:{pp:11.9,rp:2.0,ap:1.8,sp:0.7,bp:0.1},r:72},
+{n:'Hersey Hawkins',p:'SG',t:['PHI','CHA','OKC'],e:'1990s',s:{pp:14.5,rp:3.6,ap:2.7,sp:1.9,bp:0.2},r:76},
+{n:'Rex Chapman',p:'SG',t:['CHA','WAS','PHX','MIA'],e:'1990s',s:{pp:12.9,rp:2.8,ap:2.7,sp:1.0,bp:0.2},r:72},
+{n:'Dave Bing',p:'SG',t:['DET','WAS','BOS'],e:'1970s',s:{pp:20.3,rp:4.2,ap:6.0,sp:0.0,bp:0.0},r:84},
+{n:'Paul Westphal',p:'SG',t:['BOS','PHX','OKC','NYK'],e:'1970s',s:{pp:20.5,rp:2.5,ap:5.7,sp:0.0,bp:0.0},r:83},
+{n:'Vinnie Johnson',p:'SG',t:['OKC','DET','SAS'],e:'1980s',s:{pp:12.0,rp:2.5,ap:2.8,sp:0.7,bp:0.2},r:75},
+{n:'Glen Rice',p:'SG',t:['MIA','CHA','LAL','NYK'],e:'1990s',s:{pp:18.7,rp:4.3,ap:2.0,sp:1.0,bp:0.3},r:80},
+
+/* ── POINT GUARDS ── */
+{n:'Magic Johnson',p:'PG',t:['LAL'],e:'1980s',s:{pp:19.5,rp:7.2,ap:11.2,sp:1.9,bp:0.4},r:99},
+{n:'John Stockton',p:'PG',t:['UTA'],e:'1990s',s:{pp:13.1,rp:2.7,ap:10.5,sp:2.2,bp:0.2},r:96},
+{n:'Isiah Thomas',p:'PG',t:['DET'],e:'1980s',s:{pp:19.2,rp:3.6,ap:9.3,sp:1.9,bp:0.3},r:94},
+{n:'Bob Cousy',p:'PG',t:['BOS','SAC'],e:'1960s',s:{pp:18.4,rp:5.2,ap:7.5,sp:0.0,bp:0.0},r:93},
+{n:'Walt Frazier',p:'PG',t:['NYK','CLE'],e:'1970s',s:{pp:19.3,rp:6.1,ap:6.9,sp:0.0,bp:0.0},r:91},
+{n:'Nate Archibald',p:'PG',t:['SAC','BOS','BKN'],e:'1970s',s:{pp:18.8,rp:2.8,ap:7.4,sp:0.0,bp:0.0},r:88},
+{n:'Kevin Johnson',p:'PG',t:['CLE','PHX'],e:'1990s',s:{pp:19.8,rp:3.8,ap:9.9,sp:2.0,bp:0.2},r:87},
+{n:'Mark Price',p:'PG',t:['CLE','WAS','GSW','ORL'],e:'1990s',s:{pp:15.2,rp:3.0,ap:7.4,sp:1.4,bp:0.1},r:84},
+{n:'Tim Hardaway',p:'PG',t:['GSW','MIA','DAL','IND'],e:'1990s',s:{pp:17.8,rp:3.3,ap:8.6,sp:1.8,bp:0.1},r:83},
+{n:'Penny Hardaway',p:'PG',t:['ORL','PHX','NYK','MIA'],e:'1990s',s:{pp:19.8,rp:5.7,ap:7.4,sp:2.0,bp:0.6},r:86},
+{n:'Jason Kidd',p:'PG',t:['DAL','PHX','BKN','NYK'],e:'2000s',s:{pp:12.6,rp:6.3,ap:8.7,sp:1.9,bp:0.3},r:89},
+{n:'Chauncey Billups',p:'PG',t:['BOS','TOR','DET','DEN','NYK','LAC'],e:'2000s',s:{pp:15.6,rp:3.0,ap:5.7,sp:1.3,bp:0.2},r:84},
+{n:'Muggsy Bogues',p:'PG',t:['WAS','CHA','GSW','TOR'],e:'1990s',s:{pp:7.7,rp:3.0,ap:7.6,sp:1.5,bp:0.0},r:74},
+{n:'Lenny Wilkens',p:'PG',t:['ATL','OKC','CLE','POR'],e:'1960s',s:{pp:16.5,rp:5.7,ap:6.7,sp:0.0,bp:0.0},r:85},
+{n:'Dennis Johnson',p:'PG',t:['OKC','PHX','BOS'],e:'1980s',s:{pp:14.1,rp:3.9,ap:5.0,sp:1.4,bp:0.3},r:82},
+{n:'Fat Lever',p:'PG',t:['POR','DEN','DAL'],e:'1980s',s:{pp:14.0,rp:6.0,ap:6.7,sp:2.7,bp:0.2},r:82},
+{n:'Baron Davis',p:'PG',t:['CHA','NOP','GSW','LAC','CLE','NYK'],e:'2000s',s:{pp:17.0,rp:4.0,ap:8.0,sp:1.9,bp:0.4},r:83},
+{n:'Stephon Marbury',p:'PG',t:['MIN','BKN','PHX','NYK'],e:'2000s',s:{pp:19.3,rp:3.3,ap:7.6,sp:1.5,bp:0.1},r:82},
+{n:'Mookie Blaylock',p:'PG',t:['BKN','ATL','GSW'],e:'1990s',s:{pp:12.4,rp:4.4,ap:6.5,sp:2.5,bp:0.2},r:79},
+{n:'Derek Harper',p:'PG',t:['DAL','NYK','ORL','LAL'],e:'1990s',s:{pp:14.5,rp:3.0,ap:5.9,sp:1.6,bp:0.2},r:79},
+{n:'Pete Maravich',p:'PG',t:['ATL','NOP','UTA','BOS'],e:'1970s',s:{pp:24.2,rp:4.2,ap:5.4,sp:0.0,bp:0.0},r:90},
+{n:'Terry Porter',p:'PG',t:['POR','MIN','SAS','MIA','DET'],e:'1990s',s:{pp:13.2,rp:3.5,ap:6.7,sp:1.5,bp:0.2},r:80},
+{n:'Mike Bibby',p:'PG',t:['MEM','SAC','ATL','MIA','WAS','NYK'],e:'2000s',s:{pp:14.0,rp:3.2,ap:5.6,sp:1.1,bp:0.1},r:78},
+{n:'Norm Nixon',p:'PG',t:['LAL','LAC'],e:'1980s',s:{pp:14.8,rp:3.5,ap:7.9,sp:1.3,bp:0.1},r:79},
+{n:'Avery Johnson',p:'PG',t:['SAS','HOU','GSW','OKC','DAL'],e:'1990s',s:{pp:10.1,rp:2.3,ap:6.7,sp:1.1,bp:0.2},r:73},
+{n:'Rod Strickland',p:'PG',t:['NYK','SAS','POR','WAS'],e:'1990s',s:{pp:14.4,rp:4.3,ap:8.9,sp:1.3,bp:0.1},r:79},
+{n:'Jason Williams',p:'PG',t:['SAC','MEM','MIA','ORL'],e:'2000s',s:{pp:9.3,rp:2.4,ap:5.5,sp:1.0,bp:0.1},r:72},
+{n:'Kenny Anderson',p:'PG',t:['BKN','CHA','POR','BOS','OKC','IND'],e:'1990s',s:{pp:11.9,rp:3.5,ap:6.5,sp:1.4,bp:0.1},r:77},
+{n:'Geoff Petrie',p:'PG',t:['POR'],e:'1970s',s:{pp:19.5,rp:3.2,ap:3.3,sp:0.0,bp:0.0},r:78},
+{n:'Kevin Porter',p:'PG',t:['WAS','DET','BKN','HOU'],e:'1970s',s:{pp:13.0,rp:3.8,ap:8.5,sp:0.0,bp:0.0},r:78},
+{n:'Lionel Hollins',p:'PG',t:['POR','PHI','DET','HOU'],e:'1970s',s:{pp:12.2,rp:3.4,ap:5.3,sp:0.0,bp:0.0},r:75},
+];
+
+/* ═══════════════════════════════════════════
+   GAME STATE
+═══════════════════════════════════════════ */
+let state = {
+  team: null,   // team object
+  era: null,    // era string
+  roster: { PG:null, SG:null, SF:null, PF:null, C:null },
+  activePos: null,
+};
+
+const POSITIONS = ['C','PF','SF','SG','PG'];
+
+/* ═══════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════ */
+function $(id){ return document.getElementById(id); }
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+function initials(name){
+  return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+}
+function badgeColor(teamId){
+  const t = TEAMS.find(x=>x.id===teamId);
+  return t ? t.color : '#666';
+}
+function teamName(id){
+  const t = TEAMS.find(x=>x.id===id);
+  return t ? t.name : id;
+}
+
+/* ═══════════════════════════════════════════
+   SPIN LOGIC
+═══════════════════════════════════════════ */
+let spinInterval = null;
+$('spin-btn').addEventListener('click', doSpin);
+
+function doSpin(){
+  const btn = $('spin-btn');
+  btn.disabled = true;
+  const teamCard = $('team-card');
+  const eraCard  = $('era-card');
+  teamCard.classList.add('spinning');
+  eraCard.classList.add('spinning');
+
+  let ticks = 0;
+  const maxTicks = 28;
+  clearInterval(spinInterval);
+  spinInterval = setInterval(()=>{
+    $('team-val').textContent = TEAMS[Math.floor(Math.random()*TEAMS.length)].id;
+    $('era-val').textContent  = ERAS[Math.floor(Math.random()*ERAS.length)];
+    ticks++;
+    if(ticks >= maxTicks){
+      clearInterval(spinInterval);
+      // Land on final values
+      const chosenTeam = TEAMS[Math.floor(Math.random()*TEAMS.length)];
+      const chosenEra  = ERAS[Math.floor(Math.random()*ERAS.length)];
+      state.team = chosenTeam;
+      state.era  = chosenEra;
+      $('team-val').textContent = chosenTeam.id;
+      $('era-val').textContent  = chosenEra;
+      teamCard.classList.remove('spinning');
+      eraCard.classList.remove('spinning');
+      // Flash
+      teamCard.style.borderColor = '#fbbf24';
+      eraCard.style.borderColor  = '#a78bfa';
+      $('build-btn').classList.add('ready');
+      btn.disabled = false;
+    }
+  }, 80);
+}
+
+$('build-btn').addEventListener('click', ()=>{
+  if(!state.team || !state.era) return;
+  state.roster = { PG:null, SG:null, SF:null, PF:null, C:null };
+  state.activePos = null;
+  buildCourtScreen();
+  showScreen('s-court');
+});
+
+/* ═══════════════════════════════════════════
+   COURT SCREEN
+═══════════════════════════════════════════ */
+function buildCourtScreen(){
+  $('ct-team').textContent = teamName(state.team.id);
+  $('ct-era').textContent  = state.era + ' · ' + state.team.id;
+
+  const list = $('pos-list');
+  list.innerHTML = '';
+  POSITIONS.forEach(pos=>{
+    const pill = document.createElement('div');
+    pill.className = 'pos-pill';
+    pill.dataset.pos = pos;
+    pill.innerHTML = `<div class="pos-badge" style="background:${state.team.color}">${pos}</div>
+      <div class="pos-name">${pos}</div>
+      <div class="pos-player" id="ppval-${pos}">—</div>`;
+    pill.addEventListener('click', ()=>selectPos(pos));
+    list.appendChild(pill);
+  });
+  updateCourtSlots();
+}
+
+function selectPos(pos){
+  if(state.roster[pos]) return; // already filled
+  state.activePos = pos;
+  document.querySelectorAll('.pos-pill').forEach(p=>{
+    p.classList.toggle('active', p.dataset.pos === pos);
+  });
+  document.querySelectorAll('.court-slot').forEach(s=>{
+    s.classList.toggle('active', s.dataset.pos === pos);
+  });
+  $('search-box').classList.add('active');
+  $('search-input').value = '';
+  $('search-results').innerHTML = '';
+  $('search-input').focus();
+  renderSearch('');
+}
+
+// Court slot clicks
+document.querySelectorAll('.court-slot').forEach(slot=>{
+  slot.addEventListener('click', ()=>{
+    const pos = slot.dataset.pos;
+    if(!state.roster[pos]) selectPos(pos);
+  });
+});
+
+// Search
+$('search-input').addEventListener('input', e=>{
+  renderSearch(e.target.value.trim());
+});
+
+function renderSearch(query){
+  if(!state.team || !state.era || !state.activePos) return;
+  const q = query.toLowerCase();
+  const results = PLAYERS.filter(p=>{
+    const matchesTeam = p.t.includes(state.team.id);
+    const matchesEra  = p.e === state.era;
+    const matchesName = q.length < 2 || p.n.toLowerCase().includes(q);
+    const notUsed     = !Object.values(state.roster).some(r=>r&&r.n===p.n);
+    return matchesTeam && matchesEra && matchesName && notUsed;
+  }).slice(0, 8);
+
+  const div = $('search-results');
+  if(results.length === 0){
+    div.innerHTML = `<div style="padding:12px 14px;color:var(--muted);font-size:.85rem">No players found</div>`;
+    return;
+  }
+  div.innerHTML = results.map(p=>{
+    const col = badgeColor(state.team.id);
+    return `<div class="search-item" data-name="${p.n}">
+      <div class="si-badge" style="background:${col}">${initials(p.n)}</div>
+      <div class="si-info">
+        <div class="si-name">${p.n}</div>
+        <div class="si-meta">${state.team.id} · ${p.e} · ${p.p}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  div.querySelectorAll('.search-item').forEach(item=>{
+    item.addEventListener('click', ()=>{
+      const player = PLAYERS.find(p=>p.n===item.dataset.name);
+      if(player) placePlayer(player);
+    });
+  });
+}
+
+function placePlayer(player){
+  if(!state.activePos) return;
+  state.roster[state.activePos] = player;
+  state.activePos = null;
+  $('search-box').classList.remove('active');
+  $('search-input').value = '';
+  updateCourtSlots();
+  updatePosPills();
+  // Check if all filled
+  const filled = POSITIONS.every(p=>state.roster[p]);
+  $('sim-btn').classList.toggle('ready', filled);
+}
+
+function updateCourtSlots(){
+  POSITIONS.forEach(pos=>{
+    const slot = document.querySelector(`.court-slot[data-pos="${pos}"]`);
+    const box  = $(`slot-${pos}`);
+    const player = state.roster[pos];
+    if(player){
+      slot.classList.add('filled'); slot.classList.remove('active');
+      box.querySelector('.slot-initials').textContent = initials(player.n);
+      box.querySelector('.slot-pos').textContent = pos;
+      box.style.borderColor = 'var(--green)';
+    } else {
+      slot.classList.remove('filled');
+      box.querySelector('.slot-initials').textContent = '';
+      box.style.borderColor = '';
+    }
+  });
+}
+
+function updatePosPills(){
+  POSITIONS.forEach(pos=>{
+    const pill  = document.querySelector(`.pos-pill[data-pos="${pos}"]`);
+    const val   = $(`ppval-${pos}`);
+    const player = state.roster[pos];
+    if(player){
+      pill.classList.add('filled'); pill.classList.remove('active');
+      val.textContent = player.n.split(' ').slice(-1)[0]; // last name
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════
+   SEASON SIMULATION
+═══════════════════════════════════════════ */
+$('sim-btn').addEventListener('click', startSimulation);
+
+function startSimulation(){
+  showScreen('s-sim');
+  $('sim-w').textContent = '0';
+  $('sim-l').textContent = '0';
+  $('sim-bar').style.width = '0%';
+
+  // Compute team strength
+  const ratings = POSITIONS.map(p=>state.roster[p]?.r || 60);
+  const avg = ratings.reduce((a,b)=>a+b,0)/5;
+  const stars = ratings.filter(r=>r>=90).length;
+  const strength = Math.min(99, avg + stars*3);
+
+  // Map strength → projected wins (0-82)
+  // strength 50 → ~20W, 70 → ~40W, 85 → ~58W, 95 → ~72W, 99 → ~78W
+  const targetW = Math.round(Math.max(5, Math.min(82,
+    (strength - 45) * 1.45 + (Math.random() - 0.5) * 8
+  )));
+  const targetL = 82 - targetW;
+
+  // Animate over ~3 seconds
+  let gamesPlayed = 0;
+  const totalGames = 82;
+  const msPerGame = 3000 / totalGames;
+  let wins = 0, losses = 0;
+  const winProb = targetW / 82;
+
+  const interval = setInterval(()=>{
+    gamesPlayed++;
+    if(Math.random() < winProb) wins++; else losses++;
+    $('sim-w').textContent = wins;
+    $('sim-l').textContent = losses;
+    $('sim-bar').style.width = ((gamesPlayed/totalGames)*100)+'%';
+    if(gamesPlayed >= totalGames){
+      clearInterval(interval);
+      // Adjust to exact target for cleanliness
+      wins = targetW; losses = targetL;
+      $('sim-w').textContent = wins;
+      $('sim-l').textContent = losses;
+      setTimeout(()=>showResults(wins, losses, strength), 600);
+    }
+  }, msPerGame);
+}
+
+/* ═══════════════════════════════════════════
+   RESULTS
+═══════════════════════════════════════════ */
+function gradeFromWins(w){
+  if(w >= 70) return {l:'A+', name:'DYNASTY',      color:'#22c55e'};
+  if(w >= 60) return {l:'A',  name:'CONTENDER',    color:'#22c55e'};
+  if(w >= 50) return {l:'B+', name:'TITLE THREAT', color:'#84cc16'};
+  if(w >= 45) return {l:'B',  name:'PLAYOFF TEAM', color:'#a3e635'};
+  if(w >= 38) return {l:'C',  name:'BUBBLE TEAM',  color:'#fbbf24'};
+  if(w >= 28) return {l:'D',  name:'REBUILDING',   color:'#f97316'};
+  return               {l:'F',  name:'TANKING',       color:'#ef4444'};
+}
+
+function showResults(wins, losses, strength){
+  const grade = gradeFromWins(wins);
+  const pts   = Math.round(strength * 0.95 + Math.random()*4);
+
+  $('res-w').textContent = wins;
+  $('res-l').textContent = losses;
+  $('grade-letter').textContent = grade.l;
+  $('grade-letter').style.color = grade.color;
+  $('grade-name').textContent = grade.name;
+  $('grade-name').style.color = grade.color;
+  $('grade-pts').textContent  = `· ${pts} pts`;
+
+  // Player cards
+  const cards = $('player-cards');
+  cards.innerHTML = '';
+  let totPP=0,totRP=0,totAP=0,totSP=0,totBP=0;
+  POSITIONS.forEach(pos=>{
+    const p = state.roster[pos];
+    if(!p) return;
+    const col = badgeColor(state.team.id);
+    totPP+=p.s.pp; totRP+=p.s.rp; totAP+=p.s.ap; totSP+=p.s.sp; totBP+=p.s.bp;
+    const card = document.createElement('div');
+    card.className = 'player-card';
+    card.style.borderLeftColor = col;
+    card.innerHTML = `
+      <div class="pc-badge" style="background:${col}">
+        <div>
+          <div class="pc-initials">${initials(p.n)}</div>
+          <div class="pc-pos">${pos}</div>
+        </div>
+      </div>
+      <div class="pc-info">
+        <div class="pc-name">${p.n}</div>
+        <div class="pc-meta">${state.team.id} · ${p.e}</div>
+      </div>
+      <div class="pc-stats">
+        ${[['PPG',p.s.pp],['RPG',p.s.rp],['APG',p.s.ap],['SPG',p.s.sp],['BPG',p.s.bp]]
+          .map(([l,v])=>`<div class="pc-stat"><div class="pc-stat-val">${v.toFixed(1)}</div><div class="pc-stat-lbl">${l}</div></div>`).join('')}
+      </div>`;
+    cards.appendChild(card);
+  });
+
+  // Totals
+  $('totals-row').innerHTML = [['PPG',totPP],['RPG',totRP],['APG',totAP],['SPG',totSP],['BPG',totBP]]
+    .map(([l,v])=>`<div class="total-stat"><div class="total-val">${v.toFixed(1)}</div><div class="total-lbl">${l}</div></div>`).join('');
+
+  showScreen('s-results');
+}
+
+// Share
+$('share-btn').addEventListener('click', ()=>{
+  const wins = $('res-w').textContent;
+  const losses = $('res-l').textContent;
+  const grade = $('grade-name').textContent;
+  const roster = POSITIONS.map(p=>`${p}: ${state.roster[p]?.n||'?'}`).join('\n');
+  const text = `🏀 82 & 0 Simulation\n${state.team.name} · ${state.era}\nProjected: ${wins}-${losses} (${grade})\n\n${roster}\n\nPlay at wackybrains.com`;
+  if(navigator.share){ navigator.share({text}); }
+  else if(navigator.clipboard){ navigator.clipboard.writeText(text).then(()=>alert('Copied!')); }
+});
+
+// Build Another
+$('again-btn').addEventListener('click', ()=>{
+  state.roster={PG:null,SG:null,SF:null,PF:null,C:null};
+  state.activePos=null;
+  showScreen('s-setup');
+});
+</script>
+</body>
+</html>
