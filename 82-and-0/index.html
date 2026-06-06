@@ -24,6 +24,25 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .screen{display:none;min-height:calc(100vh - 52px)}
 .screen.active{display:flex;flex-direction:column;align-items:center}
 
+/* ════════ MODE SCREEN ════════ */
+#s-mode{justify-content:center;gap:28px;padding:40px 20px;text-align:center}
+.mode-logo{font-size:5rem;line-height:1}
+.mode-title{font-size:2.4rem;font-weight:900;letter-spacing:-1px}
+.mode-sub{color:var(--muted);font-size:1rem;max-width:400px}
+.mode-heading{font-size:1.3rem;font-weight:800;color:var(--text)}
+.mode-cards{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;width:100%;max-width:720px}
+.mode-card{background:var(--card);border:2px solid var(--border);border-radius:18px;padding:36px 28px 24px;flex:1;min-width:240px;max-width:320px;display:flex;flex-direction:column;gap:14px;cursor:pointer;transition:.22s;text-align:center}
+.mode-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 10px 32px rgba(249,115,22,.18)}
+.mode-card.hoopiq{border-color:var(--purple)}
+.mode-card.hoopiq:hover{border-color:#a78bfa;box-shadow:0 10px 32px rgba(124,58,237,.25)}
+.mode-card .mc-icon{font-size:2.2rem;line-height:1}
+.mode-card .mc-name{font-size:1.4rem;font-weight:900;color:var(--accent)}
+.mode-card.hoopiq .mc-name{color:#a78bfa}
+.mode-card .mc-desc{color:var(--muted);font-size:.9rem;line-height:1.55;flex:1}
+.mode-play-btn{width:100%;padding:13px;border:none;border-radius:11px;font-size:.95rem;font-weight:800;cursor:pointer;transition:.18s;background:var(--accent);color:#fff}
+.mode-card.hoopiq .mode-play-btn{background:var(--purple)}
+.mode-play-btn:hover{opacity:.88}
+
 /* ════════ SETUP SCREEN ════════ */
 #s-setup{justify-content:center;gap:28px;padding:40px 20px;text-align:center}
 .setup-title{font-size:2.8rem;font-weight:900;letter-spacing:-1px}
@@ -144,8 +163,30 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
   <a href="/" class="nav-home">← All Games</a>
 </nav>
 
+<!-- ════════ MODE SELECT ════════ -->
+<div class="screen active" id="s-mode">
+  <div class="mode-logo">🏀</div>
+  <div class="mode-title">Can you go 82-0?</div>
+  <div class="mode-sub">How do you want to build your all-time team?</div>
+  <div class="mode-heading">Choose Your Mode</div>
+  <div class="mode-cards">
+    <div class="mode-card classic" id="mode-classic">
+      <div class="mc-icon">💯</div>
+      <div class="mc-name">Classic</div>
+      <div class="mc-desc">Draft with full player stats visible — make informed picks.</div>
+      <button class="mode-play-btn">Play Classic</button>
+    </div>
+    <div class="mode-card hoopiq" id="mode-hoopiq">
+      <div class="mc-icon">🧠</div>
+      <div class="mc-name">HoopIQ</div>
+      <div class="mc-desc">Stats hidden — draft by memory and test your ball knowledge.</div>
+      <button class="mode-play-btn">Play HoopIQ</button>
+    </div>
+  </div>
+</div>
+
 <!-- ════════ SETUP ════════ -->
-<div class="screen active" id="s-setup">
+<div class="screen" id="s-setup">
   <div class="setup-title">Can you go <span>82-0?</span></div>
   <div class="setup-sub">Pick a team + era, build your roster, simulate the season.</div>
 
@@ -272,6 +313,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 <!-- ════════ RESULTS ════════ -->
 <div class="screen" id="s-results">
   <div class="results-header">
+    <div id="res-mode-badge" style="display:inline-block;border-radius:99px;padding:5px 16px;font-size:.75rem;font-weight:800;letter-spacing:.08em;margin-bottom:12px">💯 CLASSIC MODE</div>
     <div class="rh-title">Projected Record</div>
     <div class="record-big">
       <span class="w" id="res-w">—</span>
@@ -503,10 +545,11 @@ const PLAYERS = [
    GAME STATE
 ═══════════════════════════════════════════ */
 let state = {
-  team: null,   // team object
-  era: null,    // era string
+  team: null,
+  era: null,
   roster: { PG:null, SG:null, SF:null, PF:null, C:null },
   activePos: null,
+  mode: 'classic',  // 'classic' | 'hoopiq'
 };
 
 const POSITIONS = ['C','PF','SF','SG','PG'];
@@ -530,6 +573,16 @@ function teamName(id){
   const t = TEAMS.find(x=>x.id===id);
   return t ? t.name : id;
 }
+
+/* ═══════════════════════════════════════════
+   MODE SELECTION
+═══════════════════════════════════════════ */
+function pickMode(mode){
+  state.mode = mode;
+  showScreen('s-setup');
+}
+$('mode-classic').addEventListener('click', ()=>pickMode('classic'));
+$('mode-hoopiq').addEventListener('click',  ()=>pickMode('hoopiq'));
 
 /* ═══════════════════════════════════════════
    SPIN LOGIC
@@ -647,12 +700,15 @@ function renderSearch(query){
     div.innerHTML = `<div style="padding:12px 14px;color:var(--muted);font-size:.85rem">No players found</div>`;
     return;
   }
+  const isHoopIQ = state.mode === 'hoopiq';
   div.innerHTML = results.map(p=>{
     const col = badgeColor(state.team.id);
+    const statLine = isHoopIQ ? '' :
+      `<span style="color:var(--muted);font-size:.7rem;margin-left:6px">${p.s.pp} PPG · ${p.s.rp} RPG · ${p.s.ap} APG</span>`;
     return `<div class="search-item" data-name="${p.n}">
       <div class="si-badge" style="background:${col}">${initials(p.n)}</div>
       <div class="si-info">
-        <div class="si-name">${p.n}</div>
+        <div class="si-name">${p.n}${statLine}</div>
         <div class="si-meta">${state.team.id} · ${p.e} · ${p.p}</div>
       </div>
     </div>`;
@@ -781,6 +837,13 @@ function showResults(wins, losses, strength){
   $('grade-name').textContent = grade.name;
   $('grade-name').style.color = grade.color;
   $('grade-pts').textContent  = `· ${pts} pts`;
+  // Show mode badge
+  const modeBadge = document.getElementById('res-mode-badge');
+  if(modeBadge){
+    modeBadge.textContent = state.mode === 'hoopiq' ? '🧠 HOOP IQ MODE' : '💯 CLASSIC MODE';
+    modeBadge.style.background = state.mode === 'hoopiq' ? 'rgba(124,58,237,.18)' : 'rgba(249,115,22,.15)';
+    modeBadge.style.color = state.mode === 'hoopiq' ? '#a78bfa' : '#f97316';
+  }
 
   // Player cards
   const cards = $('player-cards');
@@ -834,7 +897,7 @@ $('share-btn').addEventListener('click', ()=>{
 $('again-btn').addEventListener('click', ()=>{
   state.roster={PG:null,SG:null,SF:null,PF:null,C:null};
   state.activePos=null;
-  showScreen('s-setup');
+  showScreen('s-mode');
 });
 </script>
 </body>
