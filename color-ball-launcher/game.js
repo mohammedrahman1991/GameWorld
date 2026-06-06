@@ -578,9 +578,10 @@ function renderGameOver() {
   drawBtn('⌂  MAIN MENU', CW/2-115,475,230,52, mnuH);
 
   if (mclick) {
-    if (retH) { loadLevel(level); gameState='playing'; }
-    if (mnuH) gameState='title';
+    if (retH) { loadLevel(level); gameState='playing'; document.getElementById('wb-share-btn').style.display='none'; }
+    if (mnuH) { gameState='title'; document.getElementById('wb-share-btn').style.display='none'; }
   }
+  const sb=document.getElementById('wb-share-btn'); if(sb){sb.style.display='block';sb.onclick=()=>WackyShare.show('Color Ball Launcher',`I scored ${score} on level ${level} in Color Ball Launcher!`,'https://wackybrains.com/color-ball-launcher/');}
 }
 
 // ================================================================
@@ -610,7 +611,8 @@ function renderVictory() {
   const pyH = hov(CW/2-115,390,230,58);
   drawBtn('▶  PLAY AGAIN', CW/2-115,390,230,58, pyH);
 
-  if (mclick && pyH) { level=1; score=0; loadLevel(1); gameState='playing'; }
+  if (mclick && pyH) { level=1; score=0; loadLevel(1); gameState='playing'; document.getElementById('wb-share-btn').style.display='none'; }
+  const sb=document.getElementById('wb-share-btn'); if(sb){sb.style.display='block';sb.onclick=()=>WackyShare.show('Color Ball Launcher',`I cleared all 50 levels with score ${score} in Color Ball Launcher!`,'https://wackybrains.com/color-ball-launcher/');}
 }
 
 // ================================================================

@@ -152,6 +152,7 @@
       <p id="over-sub"></p>
       <br>
       <button class="wbtn" id="btn-retry" onclick="restartGame()" style="background:linear-gradient(135deg,#CC2222,#AA1111);color:#fff;display:inline-block;margin-top:10px;padding:14px 30px;font:bold 17px monospace;border:none;border-radius:12px;cursor:pointer;">🔄 Try Again</button>
+      <button class="wbtn" style="background:linear-gradient(135deg,#f97316,#fbbf24);color:#fff;display:inline-block;margin-top:10px;padding:14px 30px;font:bold 17px monospace;border:none;border-radius:12px;cursor:pointer;" onclick="WackyShare.show('Obstacle Game','I collected '+document.getElementById('coins-hud').textContent+' in Obstacle Game!','https://wackybrains.com/obstacle-game/')">⬆ Share</button>
     </div>
   </div>
 
@@ -164,6 +165,7 @@
       <br>
       <button class="wbtn" id="btn-stay" onclick="stayAtEnd()">🏝 Stay Here</button>
       <button class="wbtn" id="btn-restart" onclick="restartGame()">🔄 Restart</button>
+      <button class="wbtn" style="background:linear-gradient(135deg,#f97316,#fbbf24);color:#fff;" onclick="WackyShare.show('Obstacle Game','I completed the Obstacle Course and collected '+document.getElementById('coins-hud').textContent+'!','https://wackybrains.com/obstacle-game/')">⬆ Share</button>
     </div>
   </div>
 
@@ -201,5 +203,6 @@
   <div id="ctrl-hint">P1: WASD + Space to jump &nbsp;|&nbsp; P2: Arrow keys + Enter to jump</div>
 
   <script src="game.js"></script>
+  <script src="/share-widget.js"></script>
 </body>
 </html>

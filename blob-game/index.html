@@ -143,11 +143,13 @@
       <div class="over-btns">
         <button class="obtn" id="btn-again" onclick="restartGame()">✅ Yes, Start Over</button>
         <button class="obtn" id="btn-home" onclick="goHome()">🏠 Home</button>
+        <button class="obtn" style="background:linear-gradient(135deg,#f97316,#fbbf24);color:#fff;" onclick="WackyShare.show('Blob Game','I scored '+document.getElementById('over-score').textContent+' and got '+document.getElementById('over-kills').textContent+' kills in Blob Game!','https://wackybrains.com/blob-game/')">⬆ Share</button>
       </div>
       <p style="color:#555;font-size:12px;margin-top:14px;">Press R to restart quickly</p>
     </div>
   </div>
 
   <script src="game.js"></script>
+  <script src="/share-widget.js"></script>
 </body>
 </html>

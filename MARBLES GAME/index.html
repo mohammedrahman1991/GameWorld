@@ -122,6 +122,7 @@
 
 <canvas id="c" width="820" height="530"></canvas>
 <div id="footer">Knock marbles out of the ring to score &nbsp;·&nbsp; Score a marble and take another turn!</div>
+<button id="wb-marbles-share" style="display:none;margin-top:10px;padding:10px 28px;background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:10px;color:#fff;font-weight:800;cursor:pointer;">⬆ Share Result</button>
 
 <script>
 // ── Setup ────────────────────────────────────────────────────────────────────
@@ -658,6 +659,13 @@ function refreshUI() {
 
   tl.textContent  = gs === 'over'  ? 'Game Over!'       : `Player ${cp + 1}`;
   tl.style.color  = gs === 'over'  ? '#f1c40f'          : cp === 0 ? '#ff7070' : '#70b8ff';
+  if(gs === 'over'){
+    const _sb = document.getElementById('wb-marbles-share');
+    if(_sb){
+      const _w = scores[0]>scores[1]?'P1':scores[1]>scores[0]?'P2':'Tie';
+      _sb.style.display='inline-block'; _sb.onclick=()=>WackyShare.show('Marbles Game',`${_w} wins ${scores[0]}-${scores[1]} in Marbles!`,'https://wackybrains.com/MARBLES%20GAME/');
+    }
+  } else { const _sb=document.getElementById('wb-marbles-share'); if(_sb)_sb.style.display='none'; }
   ah.textContent  = gs === 'over'  ? 'Click to restart' :
                     gs === 'shoot' ? 'Shooting…'         :
                     gs === 'pause' ? 'Nice shot!'        : 'Drag to aim & shoot';
@@ -679,5 +687,6 @@ function loop() {
 initGame();
 loop();
 </script>
+<script src="/share-widget.js"></script>
 </body>
 </html>

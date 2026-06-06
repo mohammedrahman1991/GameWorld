@@ -428,6 +428,7 @@
     <button class="btn btn-stand" id="btn-stand" onclick="doStand()"  disabled>Stand</button>
     <button class="btn btn-deal"  id="btn-deal"  onclick="deal()">Deal</button>
     <button class="btn btn-reset" onclick="resetGame()">Reset Scores</button>
+    <button class="btn" id="wb-bj-share" style="display:none;background:linear-gradient(135deg,#f97316,#fbbf24);color:#fff;">⬆ Share</button>
   </div>
 
 <script>
@@ -691,6 +692,12 @@ function endRound() {
 
   setTurn('');
   updateScoreboard(winner);
+  // Show share button
+  const _sb = document.getElementById('wb-bj-share');
+  if(_sb){
+    const _res = winner==='tie' ? `It's a tie! Scores: P1 ${tally.p1} — P2 ${tally.p2} in Blackjack!` : `Player ${winner+1} wins! Scores: P1 ${tally.p1} — P2 ${tally.p2} in Blackjack!`;
+    _sb.style.display='inline-block'; _sb.onclick=()=>WackyShare.show('Blackjack',_res,'https://wackybrains.com/BLACK%20JACK%20GAME/');
+  }
 }
 
 function updateScoreboard(winner) {
@@ -740,6 +747,7 @@ function resetGame() {
 players = [0, 1].map(() => ({ hand: [], stood: false, bust: false, blackjack: false, result: '' }));
 updateButtons();
 </script>
+<script src="/share-widget.js"></script>
 
 </body>
 </html>

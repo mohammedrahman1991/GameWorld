@@ -690,6 +690,7 @@
   <div class="res-btns">
     <button class="res-btn rb-next"  id="btn-next"  onclick="nextLevel()">Next Level →</button>
     <button class="res-btn rb-retry" onclick="retryLevel()">↩ Retry</button>
+    <button class="res-btn" style="background:linear-gradient(135deg,#f97316,#fbbf24);color:#fff;" onclick="WackyShare.show('Memory Box','I scored '+document.getElementById('sc-score').textContent+' in Memory Box!','https://wackybrains.com/memory-box/')">⬆ Share</button>
     <button class="res-btn rb-home"  onclick="goHome()">🏠 Home</button>
   </div>
 </div>
@@ -713,5 +714,6 @@
 </div>
 
 <script src="game.js"></script>
+<script src="/share-widget.js"></script>
 </body>
 </html>

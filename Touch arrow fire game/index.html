@@ -625,6 +625,7 @@
     <div id="overlay-title">READY!</div>
     <div id="overlay-body">Player 1 goes first.<br>Tap the screen to fire arrows!</div>
     <button id="overlay-btn">START GAME</button>
+    <button id="wb-taf-share" style="display:none;margin-top:10px;padding:10px 24px;background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:10px;color:#fff;font-weight:800;cursor:pointer;">⬆ Share Result</button>
   </div>
 </div>
 
@@ -1211,9 +1212,13 @@ function showGameOver() {
   }
 
   showOverlay(title, body, `PLAY AGAIN (Game ${state.gameCount + 1})`);
+  const _shareResult = title.includes('1') ? `I won ${state.p1Score}-${state.p2Score} in Touch Arrow Fire!` : title.includes('2') ? `Player 2 won ${state.p2Score}-${state.p1Score} in Touch Arrow Fire!` : `It was a tie ${state.p1Score}-${state.p2Score} in Touch Arrow Fire!`;
+  const _sb = document.getElementById('wb-taf-share');
+  if(_sb){ _sb.style.display='inline-block'; _sb.onclick=()=>WackyShare.show('Touch Arrow Fire',_shareResult,'https://wackybrains.com/touch%20arrow%20fire%20game/'); }
   overlayBtn.onclick = () => {
     resetGame();
     hideOverlay();
+    if(_sb) _sb.style.display='none';
   };
 }
 
@@ -1305,5 +1310,6 @@ overlayBtn.onclick = () => {
   hideOverlay();
 };
 </script>
+<script src="/share-widget.js"></script>
 </body>
 </html>

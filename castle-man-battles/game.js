@@ -76,40 +76,8 @@ const TIE_LINES = [
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-// Cache the best voice once loaded
-let _bestVoice = null;
-function getBestVoice() {
-  if (_bestVoice) return _bestVoice;
-  const voices = window.speechSynthesis.getVoices();
-  // Priority: natural-sounding named voices > non-Google en-US > any English
-  _bestVoice =
-    voices.find(v => /samantha|karen|daniel|moira|fiona|tom|reed|evan|aaron|zoe|nicky/i.test(v.name)) ||
-    voices.find(v => /en[-_]US/i.test(v.lang) && !/google/i.test(v.name)) ||
-    voices.find(v => /en[-_]GB/i.test(v.lang) && !/google/i.test(v.name)) ||
-    voices.find(v => /en/i.test(v.lang) && !/google/i.test(v.name)) ||
-    voices.find(v => /en/i.test(v.lang)) ||
-    null;
-  return _bestVoice;
-}
-
-function speak(text) {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u  = new SpeechSynthesisUtterance(text);
-  u.volume = 1;
-  // Natural conversational tone: normal pitch, slightly varied rate
-  u.pitch  = 1.08;
-  u.rate   = 0.96 + Math.random() * 0.1; // tiny rate variation each call
-  const v  = getBestVoice();
-  if (v) u.voice = v;
-  window.speechSynthesis.speak(u);
-}
-
-if (window.speechSynthesis) {
-  // Voices load asynchronously — bust cache on change
-  window.speechSynthesis.addEventListener('voiceschanged', () => { _bestVoice = null; getBestVoice(); });
-  getBestVoice();
-}
+// Speech disabled
+function speak() {}  // no-op
 
 // ================================================================
 // PIXEL ART — 10x14 character sprite (0 = transparent)
@@ -1647,9 +1615,12 @@ function drawGameOver() {
   const mH  = hover(bx-110, by+100, 220, 48); btn('⌂  MAIN MENU', bx-110, by+100, 220, 48, mH);
 
   if (mclick) {
-    if (paH) gameMode === 'battle' ? initBattle() : initZombie(players.length);
-    if (mH)  { gameState = 'title'; gameMode = null; }
+    if (paH) { gameMode === 'battle' ? initBattle() : initZombie(players.length); const _s=document.getElementById('wb-cmb-share'); if(_s)_s.style.display='none'; }
+    if (mH)  { gameState = 'title'; gameMode = null; const _s=document.getElementById('wb-cmb-share'); if(_s)_s.style.display='none'; }
   }
+  // Show share button
+  const _sb = document.getElementById('wb-cmb-share');
+  if(_sb && _sb.style.display==='none'){ _sb.style.display='block'; _sb.onclick=()=>WackyShare.show('Castle Man Battles', goMessage+' — Play at wackybrains.com!', 'https://wackybrains.com/castle-man-battles/'); }
 }
 
 // ================================================================

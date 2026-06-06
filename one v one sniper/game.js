@@ -315,7 +315,11 @@ function updateWeaponSelect(_dt) {
 }
 
 function updateWin(_dt) {
+  // Show share button when win screen is active
+  const _sb = document.getElementById('wb-sniper-share');
+  if(_sb && _sb.style.display==='none') { _sb.style.display='block'; _sb.onclick=()=>WackyShare.show('1v1 Sniper',`Player ${winner+1} wins ${roundWins[winner]}-${roundWins[1-winner]} in 1v1 Sniper!`,'https://wackybrains.com/one%20v%20one%20sniper/'); }
   if (keys['Enter']||keys['Escape']) {
+    if(_sb) _sb.style.display='none';
     roundWins[0]=0;roundWins[1]=0;currentRound=1;winner=-1;
     currentScreen=SCREEN.WEAPON_SELECT; initRound(); clearKeys();
   }

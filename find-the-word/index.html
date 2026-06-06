@@ -225,7 +225,10 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
     <div class="stat-pill"><div class="sv" id="res-acc">0%</div><div class="sl">Accuracy</div></div>
   </div>
   <div class="results-list" id="results-list"></div>
-  <button class="next-btn" id="results-next-btn">Next →</button>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+    <button class="next-btn" id="results-next-btn">Next →</button>
+    <button class="next-btn" style="background:linear-gradient(135deg,#f97316,#fbbf24);" onclick="WackyShare.show('Find the Word','I scored '+document.getElementById('res-score').textContent+' points in Find the Word!','https://wackybrains.com/find-the-word/')">⬆ Share</button>
+  </div>
 </div>
 
 <!-- ═══════════════ LEADERBOARD SCREEN ═══════════════ -->
@@ -245,5 +248,6 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 </div>
 
 <script src="game.js"></script>
+<script src="/share-widget.js"></script>
 </body>
 </html>

@@ -498,8 +498,10 @@ function showDead() {
   overlay.innerHTML = `
     <h1>SHIP DESTROYED</h1>
     <p>Level ${level} — Score: ${score}</p>
-    <button id="startBtn">RETRY LEVEL ${level}</button>`;
+    <button id="startBtn">RETRY LEVEL ${level}</button>
+    <button id="shareBtn" style="margin-top:10px;padding:10px 24px;background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:10px;color:#fff;font-weight:800;cursor:pointer;">⬆ Share</button>`;
   document.getElementById('startBtn').onclick = restartLevel;
+  document.getElementById('shareBtn').onclick = () => WackyShare.show('Space Invasion', `I scored ${score} on level ${level} in Space Invasion!`, 'https://wackybrains.com/space%20invasion/');
 }
 
 function advanceLevel() {
@@ -517,8 +519,10 @@ function showWin() {
   overlay.innerHTML = `
     <h1>VICTORY!</h1>
     <p>You conquered all 15 levels!<br>Final Score: ${score}</p>
-    <button id="startBtn">PLAY AGAIN</button>`;
+    <button id="startBtn">PLAY AGAIN</button>
+    <button id="shareBtn" style="margin-top:10px;padding:10px 24px;background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:10px;color:#fff;font-weight:800;cursor:pointer;">⬆ Share</button>`;
   document.getElementById('startBtn').onclick = () => { level = 1; score = 0; lives = 3; startGame(); };
+  document.getElementById('shareBtn').onclick = () => WackyShare.show('Space Invasion', `I conquered all 15 levels with score ${score} in Space Invasion!`, 'https://wackybrains.com/space%20invasion/');
 }
 
 // ── Draw ───────────────────────────────────────────────────────────────────
@@ -749,5 +753,6 @@ startBtn.onclick = startGame;
 // Start the loop (draws nothing while in menu)
 requestAnimationFrame(ts => { lastTime = ts; requestAnimationFrame(update); });
 </script>
+<script src="/share-widget.js"></script>
 </body>
 </html>

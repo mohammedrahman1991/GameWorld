@@ -31,6 +31,11 @@
       display:flex;align-items:center;justify-content:center;
       font:bold 12px monospace;color:#4488FF;cursor:pointer;z-index:10;
       user-select:none;touch-action:none;}
+    #b-run{position:fixed;bottom:206px;right:18px;width:68px;height:68px;
+      background:rgba(255,140,0,0.35);border:3px solid #FF8C00;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font:bold 11px monospace;color:#FF8C00;cursor:pointer;z-index:10;
+      user-select:none;touch-action:none;}
 
     /* HUD */
     #score-hud{position:fixed;top:14px;left:18px;background:rgba(0,0,0,0.55);
@@ -93,6 +98,7 @@
   </div>
   <div id="b-jump">JUMP</div>
   <div id="b-slide">SLIDE</div>
+  <div id="b-run">🔥 RUN</div>
 
   <!-- Start -->
   <div id="start-overlay">
@@ -114,9 +120,10 @@
       <p id="lvl-score" style="color:#FFD700;font:bold 18px monospace;margin:8px 0;">Score: 0</p>
       <p id="lvl-coins" style="color:#adf;font:15px monospace;">Coins: 0</p>
       <p id="lvl-next-name" style="color:#88FFAA;font:13px monospace;margin-top:8px;"></p>
-      <div style="display:flex;gap:14px;justify-content:center;margin-top:18px;">
+      <div style="display:flex;gap:14px;justify-content:center;margin-top:18px;flex-wrap:wrap;">
         <button class="obtn" style="background:linear-gradient(135deg,#1a2a8a,#3366cc);color:#fff;" onclick="restartLevel()">🔄 Restart</button>
         <button class="obtn" id="btn-next-lvl" style="background:linear-gradient(135deg,#226622,#44AA44);color:#fff;" onclick="goNextLevel()">▶ Next Level</button>
+        <button class="obtn" style="background:linear-gradient(135deg,#f97316,#fbbf24);color:#fff;" onclick="WackyShare.show('Parkour Game',document.getElementById('lvl-score').textContent+' — can you beat me?','https://wackybrains.com/parkour-game/')">⬆ Share</button>
       </div>
     </div>
   </div>
@@ -133,5 +140,6 @@
   </div>
 
   <script src="game.js"></script>
+  <script src="/share-widget.js"></script>
 </body>
 </html>

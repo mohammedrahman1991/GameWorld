@@ -784,6 +784,8 @@ function renderPlaying(dt) {
                                 : bikes.some(b => b.finished);
   if (done) {
     state = 'finish';
+    const sb = document.getElementById('wb-share-btn');
+    if (sb) { sb.style.display = 'block'; sb.onclick = () => WackyShare.show('Bike Rider', numPlayers===1 ? 'I finished the track in Bike Rider!' : (bikes[0].finished && (!bikes[1].finished||bikes[0].finishTime<=bikes[1].finishTime) ? 'Player 1 won in Bike Rider!' : 'Player 2 won in Bike Rider!'), 'https://wackybrains.com/bike-rider/'); }
   }
 }
 

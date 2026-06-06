@@ -417,6 +417,8 @@ function endGame(winner) {
   document.getElementById('over-title').textContent  = label;
   document.getElementById('over-winner').textContent = sub;
   el.style.display = 'flex';
+  const sb = document.getElementById('wb-fa-share');
+  if(sb) sb.onclick = ()=>WackyShare.show('Fight Arrows', `${sub} ${score[0]}-${score[1]} in Fight Arrows!`, 'https://wackybrains.com/fight-arrows/');
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────

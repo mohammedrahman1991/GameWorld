@@ -146,6 +146,12 @@ class WinScene extends Phaser.Scene {
             });
         });
 
+        // Share button
+        if (window.WackyShare) {
+            const _sb = document.getElementById('wb-mt-share') || (() => { const b=document.createElement('button'); b.id='wb-mt-share'; b.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 32px;background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:12px;color:#fff;font-size:1rem;font-weight:800;cursor:pointer;z-index:999;'; b.textContent='⬆ Share Result'; document.body.appendChild(b); return b; })();
+            _sb.style.display='block'; _sb.onclick=()=>WackyShare.show('Monster Truck Mayhem',`I completed all 10 levels with score ${this.score.toLocaleString()} in Monster Truck!`,'https://wackybrains.com/Monster%20truck/');
+        }
+
         // Pulse play again
         this.time.delayedCall(2000, () => {
             this.tweens.add({

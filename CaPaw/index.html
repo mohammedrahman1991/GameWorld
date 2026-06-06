@@ -1029,6 +1029,13 @@ class WinScene extends Phaser.Scene {
       });
     }
 
+    // Share button
+    const _winLabel = this.winner === 'p1' ? 'Player 1' : 'Player 2';
+    const _existingSb = document.getElementById('wb-capaw-share');
+    const _sb = _existingSb || document.createElement('button');
+    if(!_existingSb){ _sb.id='wb-capaw-share'; _sb.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);padding:12px 32px;background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:12px;color:#fff;font-size:1rem;font-weight:800;cursor:pointer;z-index:999;'; _sb.textContent='⬆ Share Result'; document.body.appendChild(_sb); }
+    _sb.style.display='block'; _sb.onclick=()=>WackyShare.show('CaPaw',`${_winLabel} wins in CaPaw!`,'https://wackybrains.com/CaPaw/');
+
     this.selected = 0;
     this.options = [
       this.add.text(W/2, 390, '▶  PLAY AGAIN',    { fontSize: '22px', fontFamily: 'monospace' }).setOrigin(0.5),
@@ -1075,5 +1082,6 @@ new Phaser.Game({
 });
 
 </script>
+<script src="/share-widget.js"></script>
 </body>
 </html>

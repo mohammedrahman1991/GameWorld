@@ -251,6 +251,7 @@
   </div>
 
   <button class="reset-btn" id="resetBtn">Reset Scores</button>
+  <button id="wb-ttt-share" style="display:none;margin-top:12px;padding:10px 28px;background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:10px;color:#fff;font-weight:800;font-size:.95rem;cursor:pointer;">⬆ Share Result</button>
 </div>
 
 <script>
@@ -337,9 +338,12 @@ function handleClick(i) {
     winLine.forEach(idx => cells[idx].classList.add('win-cell'));
     scores[current]++;
     updateScores();
-    setStatus(`Player ${current === 'O' ? '0' : current} Wins! 🎉`, 'winner');
+    const winner = current === 'O' ? '0' : current;
+    setStatus(`Player ${winner} Wins! 🎉`, 'winner');
     gameOver = true;
-    setTimeout(newGame, 2200);
+    const _sb = document.getElementById('wb-ttt-share');
+    if(_sb){ _sb.style.display='inline-block'; _sb.onclick=()=>WackyShare.show('Tic Tac Toe',`Player ${winner} won ${scores[current]}-${scores[current==='X'?'O':'X']} in Tic Tac Toe!`,'https://wackybrains.com/Tiktaktoe/'); }
+    setTimeout(()=>{ if(_sb)_sb.style.display='none'; newGame(); }, 2200);
   } else if (board.every(Boolean)) {
     // Draw — auto restart
     setStatus('Draw!', 'draw');
@@ -390,5 +394,6 @@ resetBtn.addEventListener('click', () => {
   newGame();
 });
 </script>
+<script src="/share-widget.js"></script>
 </body>
 </html>
