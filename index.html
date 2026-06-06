@@ -73,6 +73,18 @@
     .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.88rem; transition: color .2s; }
     .nav-links a:hover { color: var(--text); }
 
+    /* Featured hero */
+    .featured-hero { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #1e3a5f 100%); border: 2px solid rgba(167,139,250,0.4); border-radius: 24px; padding: 48px 40px; margin-bottom: 48px; display: flex; gap: 40px; align-items: center; flex-wrap: wrap; }
+    .fh-badge { display: inline-block; background: linear-gradient(135deg,#f59e0b,#f97316); color: #fff; font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; padding: 4px 12px; border-radius: 99px; margin-bottom: 14px; }
+    .fh-emoji { font-size: 5rem; line-height: 1; flex-shrink: 0; }
+    .fh-content { flex: 1; min-width: 220px; }
+    .fh-title { font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; letter-spacing: -1px; background: linear-gradient(135deg, #c4b5fd, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px; }
+    .fh-desc { color: #cbd5e1; font-size: 1rem; line-height: 1.65; margin-bottom: 20px; max-width: 560px; }
+    .fh-meta { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+    .fh-tag { background: rgba(255,255,255,.08); border-radius: 99px; padding: 4px 14px; font-size: .78rem; color: #a5b4fc; font-weight: 600; }
+    .fh-play { display: inline-block; padding: 16px 48px; background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #fff; font-size: 1.1rem; font-weight: 800; border-radius: 14px; text-decoration: none; transition: .2s; box-shadow: 0 8px 32px rgba(124,58,237,.45); }
+    .fh-play:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(124,58,237,.6); }
+
     .about-section { background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(6,182,212,0.06)); border: 1px solid rgba(255,255,255,0.07); border-radius: 20px; padding: 36px 40px; margin-bottom: 48px; }
     .about-section h2 { font-size: 1.35rem; font-weight: 800; color: var(--text); margin-bottom: 14px; }
     .about-section p { color: #cbd5e1; font-size: 0.95rem; line-height: 1.75; margin-bottom: 12px; }
@@ -151,6 +163,24 @@
 
 <main>
 
+  <!-- BrainCrate Featured Hero -->
+  <div class="featured-hero">
+    <div class="fh-emoji">📦</div>
+    <div class="fh-content">
+      <div class="fh-badge">⭐ Featured Game</div>
+      <div class="fh-title">BrainCrate</div>
+      <p class="fh-desc">A 3D memory challenge for the whole family — study every object packed inside the crate, then recall as many as you can. 10 difficulty levels, 1–4 player multiplayer, and a leaderboard. Perfect for all ages!</p>
+      <div class="fh-meta">
+        <span class="fh-tag">🧠 Memory</span>
+        <span class="fh-tag">👨‍👩‍👧‍👦 Family</span>
+        <span class="fh-tag">1–4 Players</span>
+        <span class="fh-tag">Ages 0+</span>
+        <span class="fh-tag">Free</span>
+      </div>
+      <a class="fh-play" href="memory-box/index.html">▶ Play BrainCrate Now</a>
+    </div>
+  </div>
+
   <div class="about-section">
     <h2>🎮 What is Wacky Brains?</h2>
     <p>Wacky Brains is a free online gaming platform with 25+ original browser games you can play instantly — no downloads, no sign-ups, no paywalls. Every game here was designed and built from scratch, spanning action battles, sports competitions, adventure simulations, and brain-teasing puzzles.</p>
@@ -166,6 +196,16 @@
 
   <p class="section-label">⭐ Featured Games</p>
   <div class="grid">
+
+    <div class="card" data-game="braincrate">
+      <div class="card-thumb g6">📦</div>
+      <div class="card-body">
+        <h2>BrainCrate</h2>
+        <p>3D memory challenge for the whole family. Study the crate, recall the items!</p>
+        <span class="badge badge-live">Featured</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
 
     <div class="card" data-game="buckman">
       <div class="card-thumb g1">🦇</div>
