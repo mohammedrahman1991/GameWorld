@@ -100,7 +100,7 @@ function mkRand(seed){
 function genLevel(lvl){
   const r   = mkRand(lvl*137+11);
   const d   = (lvl-1)/29;               // 0=easy, 1=hard
-  const spd = 3 + d*4.5;                // forward speed (world/s)
+  const spd = 12 + d*10;               // forward speed (world/s)
   const hw  = HALF_W_WORLD - d*1.4;     // path half-width
   const nWP = 12 + Math.floor(d*20);    // number of waypoints
   const turnStr = d * 3;
@@ -578,9 +578,9 @@ function updatePlayer(p, dt){
   p.camZ += ld.spd * dt;
 
   // Steering — responsive, visible movement
-  const ACCEL   = 28 * dt;   // world units/s^2 → per frame
-  const MAX_VEL = 8;         // world units/s
-  const FRICTION= 0.80;
+  const ACCEL   = 80 * dt;   // world units/s^2 → per frame
+  const MAX_VEL = 18;        // world units/s
+  const FRICTION= 0.75;
 
   let left  = p.idx===0 ? (keys['ArrowLeft']||keys['KeyA']) : keys['ArrowLeft'];
   let right = p.idx===0 ? (keys['ArrowRight']||keys['KeyD']): keys['ArrowRight'];
