@@ -100,6 +100,8 @@
     }
     .how-card p { color: #94a3b8; font-size: 0.88rem; line-height: 1.7; }
     .how-card strong { color: var(--text); }
+    .btn-share-start{background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:12px;color:#fff;cursor:pointer;font-size:.95rem;font-weight:700;padding:12px 32px;margin-top:18px;display:flex;align-items:center;gap:8px;transition:.18s}
+    .btn-share-start:hover{transform:translateY(-2px);filter:brightness(1.08)}
 
     /* ── Memorize Screen ───────────────────────────────────────────────────── */
     #screen-memorize { padding-top: 0; justify-content: flex-start; }
@@ -593,6 +595,7 @@
   <div class="how-card">
     <p>🧠 <strong>How to play:</strong> A crate opens showing everyday items — batteries, flashlights, tools, household supplies, and more. You have limited time to <strong>memorize everything</strong> inside. When the box slams shut, type as many items as you can remember! Correct answers turn green.</p>
   </div>
+  <button class="btn-share-start" onclick="WackyShare.show('BrainCrate','Can you beat my memory? Play BrainCrate free!','https://wackybrains.com/memory-box/')">⬆ Share Game</button>
 </div>
 
 <!-- ═══ MEMORIZE ══════════════════════════════════════════════════════════ -->
