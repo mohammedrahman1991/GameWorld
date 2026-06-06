@@ -67,46 +67,105 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .build-btn.ready:hover{transform:translateY(-2px)}
 
 /* ════════ COURT SCREEN ════════ */
-#s-court{flex-direction:row;align-items:flex-start;justify-content:center;padding:24px 20px;gap:24px;flex-wrap:wrap}
-.court-left{display:flex;flex-direction:column;gap:16px;min-width:260px;max-width:300px;width:100%}
-.team-header{background:var(--card);border-radius:14px;padding:16px 18px;border:1px solid var(--border)}
-.th-team{font-size:1.5rem;font-weight:900}
-.th-era{color:var(--muted);font-size:.88rem;margin-top:3px}
-.position-selector{display:flex;flex-direction:column;gap:8px}
-.pos-pill{background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.18s}
-.pos-pill:hover:not(.filled){border-color:#f97316;color:#f97316}
-.pos-pill.active{border-color:#f97316;background:rgba(249,115,22,.1)}
-.pos-pill.filled{border-color:var(--green);background:rgba(34,197,94,.08);cursor:default}
-.pos-pill.filled .pos-badge{background:var(--green)}
-.pos-badge{width:34px;height:34px;border-radius:8px;background:var(--muted);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#fff;flex-shrink:0}
-.pos-name{flex:1;font-weight:600;font-size:.92rem}
-.pos-player{color:var(--green);font-size:.82rem;font-weight:700}
-.search-box{background:var(--card);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;display:none}
-.search-box.active{display:block}
-.search-input{width:100%;background:none;border:none;color:var(--text);font-size:.95rem;padding:12px 14px;outline:none}
-.search-input::placeholder{color:var(--muted)}
-.search-results{max-height:220px;overflow-y:auto}
-.search-item{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);transition:background .15s}
-.search-item:hover{background:rgba(249,115,22,.08)}
-.si-badge{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#fff;flex-shrink:0}
-.si-info{}
-.si-name{font-size:.88rem;font-weight:700}
-.si-meta{color:var(--muted);font-size:.74rem;margin-top:1px}
-.sim-btn{background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:12px;color:#fff;cursor:pointer;font-size:1rem;font-weight:800;padding:13px;width:100%;transition:.18s;opacity:.4;pointer-events:none}
+#s-court{flex-direction:column;padding:0;align-items:stretch;min-height:calc(100vh - 52px)}
+/* Round bar */
+.round-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);flex-wrap:wrap;gap:10px}
+.rb-left{display:flex;align-items:center;gap:12px}
+.rb-round{font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.team-pill{background:var(--accent);border-radius:99px;padding:5px 16px;font-weight:900;font-size:.95rem;color:#fff}
+.era-pill{background:#92400e;border-radius:99px;padding:5px 16px;font-weight:900;font-size:.95rem;color:#fff}
+.rb-right{display:flex;align-items:center;gap:8px}
+.respin-btn{background:none;border:1.5px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-size:.82rem;font-weight:700;padding:6px 14px;transition:.15s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.respin-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.respin-btn:disabled{opacity:.3;cursor:default}
+.respin-btn.used{opacity:.3;cursor:default;text-decoration:line-through}
+/* Main two-column layout */
+.court-main{display:flex;flex:1;overflow:hidden;min-height:0}
+/* Player list panel */
+.player-panel{width:420px;min-width:300px;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.filter-row{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.pos-filters{display:flex;gap:4px}
+.pf-btn{background:none;border:none;border-radius:8px;color:var(--muted);cursor:pointer;font-size:.85rem;font-weight:700;padding:6px 12px;transition:.15s}
+.pf-btn.active{background:var(--accent);color:#fff}
+.pl-search{flex:1;min-width:80px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.85rem;padding:6px 10px;outline:none}
+.pl-search::placeholder{color:var(--muted)}
+.sort-sel{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.82rem;padding:6px 8px;outline:none;cursor:pointer}
+.pl-info-bar{display:flex;justify-content:space-between;align-items:center;padding:7px 14px;font-size:.75rem;color:var(--muted);border-bottom:1px solid var(--border)}
+.pl-hint{color:var(--accent);font-weight:600}
+.player-list{flex:1;overflow-y:auto}
+.pl-row{padding:11px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);transition:background .12s}
+.pl-row:hover{background:rgba(255,255,255,.04)}
+.pl-row.selected{background:rgba(249,115,22,.12);border-left:3px solid var(--accent)}
+.pl-badge{width:40px;height:40px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.65rem;font-weight:900;color:#fff;flex-shrink:0;line-height:1.1}
+.pl-badge .bi{font-size:.75rem}
+.pl-badge .bp{font-size:.55rem;opacity:.8}
+.pl-info{flex:1;min-width:0}
+.pl-name{font-size:.9rem;font-weight:700}
+.pl-pos-label{font-size:.7rem;font-weight:700;color:var(--accent)}
+.pl-meta-line{color:var(--muted);font-size:.7rem}
+.pl-stats-row{display:flex;gap:10px;flex-shrink:0}
+.ps{text-align:center}
+.ps-v{font-size:.82rem;font-weight:700}
+.ps-l{color:var(--muted);font-size:.55rem}
+/* Court side */
+.court-side{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:14px}
+.court{background:#0d1825;border:1px solid var(--border);border-radius:16px;position:relative;overflow:hidden;aspect-ratio:10/8;width:100%;max-width:500px}
+.court-svg{position:absolute;inset:0;width:100%;height:100%}
+.court-slot{position:absolute;width:14%;aspect-ratio:1;transform:translate(-50%,-50%);cursor:pointer;transition:.2s}
+.slot-box{width:100%;height:100%;border:2px dashed rgba(255,255,255,.25);border-radius:10px;background:rgba(255,255,255,.04);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:rgba(255,255,255,.35);gap:2px;transition:.2s}
+.court-slot.ready .slot-box{border-color:var(--accent);border-style:solid;background:rgba(249,115,22,.1);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,.4)}50%{box-shadow:0 0 0 6px rgba(249,115,22,0)}}
+.court-slot.filled .slot-box{border-style:solid;border-color:var(--green);background:rgba(34,197,94,.1);color:var(--green);animation:none}
+.slot-initials{font-size:.95rem;font-weight:900;line-height:1}
+.slot-pos{font-size:.5rem;font-weight:800;letter-spacing:.05em}
+.sim-btn{background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:12px;color:#fff;cursor:pointer;font-size:1rem;font-weight:800;padding:13px 36px;transition:.18s;opacity:.4;pointer-events:none;width:100%;max-width:500px}
 .sim-btn.ready{opacity:1;pointer-events:auto}
 .sim-btn.ready:hover{transform:translateY(-2px)}
+/* Placing status bar */
+.placing-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(13,17,23,.95);border-top:1px solid rgba(249,115,22,.3);padding:12px 24px;text-align:center;font-size:.9rem;font-weight:700;color:var(--accent);z-index:100}
+.placing-bar.active{display:block}
 
-/* ── COURT ── */
-.court-wrap{flex:1;min-width:300px;max-width:480px}
-.court{background:#0d1825;border:1px solid var(--border);border-radius:16px;position:relative;overflow:hidden;aspect-ratio:10/8;width:100%}
-.court-svg{position:absolute;inset:0;width:100%;height:100%}
-/* position slots on court */
-.court-slot{position:absolute;width:13%;aspect-ratio:1;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:.2s}
-.slot-box{width:100%;height:100%;border:2px dashed rgba(255,255,255,.25);border-radius:10px;background:rgba(255,255,255,.04);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:rgba(255,255,255,.4);gap:3px;transition:.2s}
-.court-slot.active .slot-box{border-color:var(--accent);background:rgba(249,115,22,.12);color:var(--accent)}
-.court-slot.filled .slot-box{border-color:var(--green);background:rgba(34,197,94,.1);color:var(--green)}
-.slot-initials{font-size:1rem;font-weight:900;line-height:1}
-.slot-pos{font-size:.55rem;font-weight:700;letter-spacing:.05em}
+/* ════════ SHARE MODAL ════════ */
+#share-modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+#share-modal.open{display:flex}
+.share-panel{background:#161b27;border:1px solid rgba(255,255,255,.1);border-radius:20px;width:100%;max-width:480px;overflow:hidden;margin:auto}
+.share-card{background:#1a2035;padding:22px 22px 18px;border-bottom:1px solid rgba(255,255,255,.07)}
+.sc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.sc-record-block{}
+.sc-label-sm{font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.sc-record-line{display:flex;align-items:baseline;gap:10px}
+.sc-record-num{font-size:2.6rem;font-weight:900;letter-spacing:-2px;line-height:1}
+.sc-grade{font-size:2rem;font-weight:900}
+.sc-mode-chip{display:inline-block;background:rgba(6,182,212,.15);border:1px solid rgba(6,182,212,.3);border-radius:99px;color:#22d3ee;font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:2px 10px;margin-top:6px}
+.sc-ovr-block{text-align:right}
+.sc-ovr-num{font-size:2.2rem;font-weight:900}
+.sc-players{display:flex;flex-direction:column;gap:4px}
+.sc-player-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.sc-player-row:last-child{border-bottom:none}
+.sc-pbadge{width:38px;height:38px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.65rem;font-weight:900;color:#fff;flex-shrink:0;line-height:1.1}
+.sc-pname{font-size:.9rem;font-weight:700;flex:1}
+.sc-pmeta{color:var(--muted);font-size:.72rem}
+.share-footer-line{display:flex;justify-content:space-between;align-items:center;padding:10px 22px;border-bottom:1px solid rgba(255,255,255,.07)}
+.sfl-text{font-size:.85rem;font-weight:700}
+.sfl-link{color:#3b82f6;font-size:.85rem;font-weight:700;text-decoration:none}
+.share-caption{padding:12px 22px;color:var(--muted);font-size:.88rem;border-bottom:1px solid rgba(255,255,255,.07)}
+.share-caption span{color:var(--accent);font-weight:600}
+.share-url-wrap{padding:10px 22px;border-bottom:1px solid rgba(255,255,255,.07)}
+.share-url{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:.78rem;padding:8px 12px;outline:none;cursor:pointer}
+.share-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px 22px}
+.soc-btn{border:none;border-radius:10px;color:#fff;cursor:pointer;font-size:.82rem;font-weight:700;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:5px;transition:.15s}
+.soc-btn:hover{filter:brightness(1.15);transform:translateY(-1px)}
+.soc-btn .si{font-size:1.2rem}
+.soc-twitter{background:#1d9bf0}
+.soc-facebook{background:#1877f2}
+.soc-bluesky{background:#0085ff}
+.soc-whatsapp{background:#25d366}
+.soc-telegram{background:#29b6f6}
+.soc-reddit{background:#ff4500}
+.share-copy-btn{margin:0 22px 18px;width:calc(100% - 44px);background:rgba(255,255,255,.06);border:1.5px solid var(--border);border-radius:10px;color:var(--text);cursor:pointer;font-size:.9rem;font-weight:700;padding:12px;transition:.18s}
+.share-copy-btn:hover{border-color:var(--accent);color:var(--accent)}
+.share-close-btn{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.1);border:none;border-radius:50%;width:34px;height:34px;color:#fff;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:.15s}
+.share-close-btn:hover{background:rgba(255,255,255,.2)}
 
 /* ════════ SIMULATION SCREEN ════════ */
 #s-sim{justify-content:center;gap:24px;padding:40px 20px;text-align:center}
@@ -213,84 +272,128 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 
 <!-- ════════ COURT ════════ -->
 <div class="screen" id="s-court">
-  <div class="court-left">
-    <div class="team-header">
-      <div class="th-team" id="ct-team">—</div>
-      <div class="th-era" id="ct-era">—</div>
+
+  <!-- Round bar -->
+  <div class="round-bar">
+    <div class="rb-left">
+      <div class="rb-round" id="ct-round">Round 1 / 5</div>
+      <div class="team-pill" id="ct-team-pill">—</div>
+      <div class="era-pill" id="ct-era-pill">—</div>
     </div>
-
-    <div class="position-selector" id="pos-list"></div>
-
-    <div class="search-box" id="search-box">
-      <input type="text" class="search-input" id="search-input" placeholder="Search player…" autocomplete="off"/>
-      <div class="search-results" id="search-results"></div>
+    <div class="rb-right">
+      <button class="respin-btn" id="respin-team">↺ Team</button>
+      <button class="respin-btn" id="respin-era">↺ Era</button>
     </div>
-
-    <button class="sim-btn" id="sim-btn">Simulate 82 Games →</button>
   </div>
 
-  <div class="court-wrap">
-    <div class="court" id="court">
-      <!-- SVG court lines -->
-      <svg class="court-svg" viewBox="0 0 480 384" xmlns="http://www.w3.org/2000/svg">
-        <!-- floor tint -->
-        <rect width="480" height="384" fill="#0d1825"/>
-        <!-- half-court line -->
-        <line x1="0" y1="192" x2="480" y2="192" stroke="rgba(255,255,255,.12)" stroke-width="1.5" stroke-dasharray="8,6"/>
-        <!-- center circle -->
-        <circle cx="240" cy="192" r="48" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1.5" stroke-dasharray="8,6"/>
-        <!-- three-point arc (top half) -->
-        <path d="M 60 384 A 200 200 0 0 1 420 384" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1.5" stroke-dasharray="8,6"/>
-        <!-- paint box -->
-        <rect x="160" y="0" width="160" height="170" fill="rgba(249,115,22,.06)" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>
-        <!-- free throw circle -->
-        <circle cx="240" cy="170" r="60" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1.5" stroke-dasharray="8,6"/>
-        <!-- restricted arc -->
-        <path d="M 210 30 A 30 30 0 0 1 270 30" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1.5"/>
-        <!-- backboard -->
-        <rect x="215" y="12" width="50" height="6" rx="2" fill="rgba(255,255,255,.3)"/>
-        <!-- basket circle -->
-        <circle cx="240" cy="28" r="14" fill="none" stroke="rgba(249,115,22,.7)" stroke-width="2"/>
-        <circle cx="240" cy="28" r="4" fill="rgba(249,115,22,.5)"/>
-      </svg>
+  <!-- Two-column body -->
+  <div class="court-main">
 
-      <!-- Position slots overlaid on court -->
-      <!-- C: paint center -->
-      <div class="court-slot" data-pos="C" style="left:50%;top:25%">
-        <div class="slot-box" id="slot-C">
-          <span class="slot-initials"></span>
-          <span class="slot-pos">C</span>
+    <!-- Left: Player list -->
+    <div class="player-panel">
+      <div class="filter-row">
+        <div class="pos-filters">
+          <button class="pf-btn active" data-f="all">All</button>
+          <button class="pf-btn" data-f="G">G</button>
+          <button class="pf-btn" data-f="F">F</button>
+          <button class="pf-btn" data-f="C">C</button>
         </div>
+        <input class="pl-search" id="pl-search" placeholder="Search..." autocomplete="off"/>
+        <select class="sort-sel" id="sort-sel">
+          <option value="pp">PPG</option>
+          <option value="rp">RPG</option>
+          <option value="ap">APG</option>
+          <option value="sp">SPG</option>
+        </select>
       </div>
-      <!-- PF: right block -->
-      <div class="court-slot" data-pos="PF" style="left:72%;top:28%">
-        <div class="slot-box" id="slot-PF">
-          <span class="slot-initials"></span>
-          <span class="slot-pos">PF</span>
-        </div>
+      <div class="pl-info-bar">
+        <span id="pl-count">0 players</span>
+        <span class="pl-hint" id="pl-hint">Click a player to select</span>
       </div>
-      <!-- SF: left wing -->
-      <div class="court-slot" data-pos="SF" style="left:18%;top:56%">
-        <div class="slot-box" id="slot-SF">
-          <span class="slot-initials"></span>
-          <span class="slot-pos">SF</span>
-        </div>
-      </div>
-      <!-- SG: right wing -->
-      <div class="court-slot" data-pos="SG" style="left:82%;top:56%">
-        <div class="slot-box" id="slot-SG">
-          <span class="slot-initials"></span>
-          <span class="slot-pos">SG</span>
-        </div>
-      </div>
-      <!-- PG: top of key -->
-      <div class="court-slot" data-pos="PG" style="left:50%;top:80%">
-        <div class="slot-box" id="slot-PG">
-          <span class="slot-initials"></span>
-          <span class="slot-pos">PG</span>
-        </div>
-      </div>
+      <div class="player-list" id="player-list"></div>
     </div>
+
+    <!-- Right: Court -->
+    <div class="court-side">
+      <div class="court" id="court">
+        <svg class="court-svg" viewBox="0 0 480 384" xmlns="http://www.w3.org/2000/svg">
+          <rect width="480" height="384" fill="#0d1825"/>
+          <line x1="0" y1="192" x2="480" y2="192" stroke="rgba(255,255,255,.1)" stroke-width="1.5" stroke-dasharray="8,6"/>
+          <circle cx="240" cy="192" r="48" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="1.5" stroke-dasharray="8,6"/>
+          <path d="M 60 384 A 200 200 0 0 1 420 384" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1.5" stroke-dasharray="8,6"/>
+          <rect x="160" y="0" width="160" height="170" fill="rgba(249,115,22,.05)" stroke="rgba(255,255,255,.15)" stroke-width="1.5"/>
+          <circle cx="240" cy="170" r="60" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1.5" stroke-dasharray="8,6"/>
+          <path d="M 210 30 A 30 30 0 0 1 270 30" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="1.5"/>
+          <rect x="215" y="12" width="50" height="6" rx="2" fill="rgba(255,255,255,.28)"/>
+          <circle cx="240" cy="28" r="14" fill="none" stroke="rgba(249,115,22,.65)" stroke-width="2"/>
+          <circle cx="240" cy="28" r="4" fill="rgba(249,115,22,.5)"/>
+        </svg>
+        <div class="court-slot" data-pos="C"  style="left:50%;top:25%"><div class="slot-box" id="slot-C"><span class="slot-initials"></span><span class="slot-pos">C</span></div></div>
+        <div class="court-slot" data-pos="PF" style="left:72%;top:28%"><div class="slot-box" id="slot-PF"><span class="slot-initials"></span><span class="slot-pos">PF</span></div></div>
+        <div class="court-slot" data-pos="SF" style="left:18%;top:56%"><div class="slot-box" id="slot-SF"><span class="slot-initials"></span><span class="slot-pos">SF</span></div></div>
+        <div class="court-slot" data-pos="SG" style="left:82%;top:56%"><div class="slot-box" id="slot-SG"><span class="slot-initials"></span><span class="slot-pos">SG</span></div></div>
+        <div class="court-slot" data-pos="PG" style="left:50%;top:80%"><div class="slot-box" id="slot-PG"><span class="slot-initials"></span><span class="slot-pos">PG</span></div></div>
+      </div>
+      <button class="sim-btn" id="sim-btn">Simulate 82 Games →</button>
+    </div>
+
+  </div>
+
+  <!-- Placing status bar (fixed bottom) -->
+  <div class="placing-bar" id="placing-bar">
+    Placing: <span id="placing-name">—</span> — click a court position
+  </div>
+
+</div>
+
+<!-- ════════ SHARE MODAL ════════ -->
+<div id="share-modal">
+  <div class="share-panel" style="position:relative">
+    <button class="share-close-btn" id="share-modal-close">✕</button>
+
+    <!-- Shareable card -->
+    <div class="share-card">
+      <div class="sc-top">
+        <div class="sc-record-block">
+          <div class="sc-label-sm">Projected Record</div>
+          <div class="sc-record-line">
+            <span class="sc-record-num" id="sm-record">—</span>
+            <span class="sc-grade" id="sm-grade"></span>
+          </div>
+          <div class="sc-mode-chip" id="sm-mode">CLASSIC MODE</div>
+        </div>
+        <div class="sc-ovr-block">
+          <div class="sc-label-sm">Team OVR</div>
+          <div class="sc-ovr-num" id="sm-ovr">—</div>
+        </div>
+      </div>
+      <div class="sc-players" id="sm-players"></div>
+    </div>
+
+    <div class="share-footer-line">
+      <span class="sfl-text">Can you go 82-0?</span>
+      <a class="sfl-link" href="https://wackybrains.com/82-and-0/" target="_blank">wackybrains.com</a>
+    </div>
+
+    <div class="share-caption">
+      I just went <span id="sm-caption-record">—</span>, think you can go 82-0?
+      <span>Play at wackybrains.com</span>
+    </div>
+
+    <div class="share-url-wrap">
+      <input class="share-url" id="share-url" readonly value="https://wackybrains.com/82-and-0/"/>
+    </div>
+
+    <div class="share-btns">
+      <button class="soc-btn soc-twitter"  id="soc-twitter"><span class="si">𝕏</span>X / Twitter</button>
+      <button class="soc-btn soc-facebook" id="soc-facebook"><span class="si">f</span>Facebook</button>
+      <button class="soc-btn soc-bluesky"  id="soc-bluesky"><span class="si">☁</span>Bluesky</button>
+      <button class="soc-btn soc-whatsapp" id="soc-whatsapp"><span class="si">💬</span>WhatsApp</button>
+      <button class="soc-btn soc-telegram" id="soc-telegram"><span class="si">✈</span>Telegram</button>
+      <button class="soc-btn soc-reddit"   id="soc-reddit"><span class="si">👾</span>Reddit</button>
+    </div>
+
+    <button class="share-copy-btn" id="share-copy-btn">📋 Copy Link</button>
   </div>
 </div>
 
@@ -545,11 +648,15 @@ const PLAYERS = [
    GAME STATE
 ═══════════════════════════════════════════ */
 let state = {
-  team: null,
-  era: null,
+  team: null, era: null,
   roster: { PG:null, SG:null, SF:null, PF:null, C:null },
-  activePos: null,
-  mode: 'classic',  // 'classic' | 'hoopiq'
+  selectedPlayer: null,
+  mode: 'classic',
+  filledCount: 0,
+  teamSpinUsed: false,
+  eraSpinUsed: false,
+  posFilter: 'all',
+  sortBy: 'pp',
 };
 
 const POSITIONS = ['C','PF','SF','SG','PG'];
@@ -628,111 +735,242 @@ function doSpin(){
 $('build-btn').addEventListener('click', ()=>{
   if(!state.team || !state.era) return;
   state.roster = { PG:null, SG:null, SF:null, PF:null, C:null };
-  state.activePos = null;
+  state.selectedPlayer = null;
+  state.filledCount = 0;
+  state.posFilter = 'all';
+  state.sortBy = 'pp';
   buildCourtScreen();
   showScreen('s-court');
 });
 
 /* ═══════════════════════════════════════════
-   COURT SCREEN
+   COURT SCREEN — NEW PLAYER LIST MODEL
 ═══════════════════════════════════════════ */
+function updateRoundBar(){
+  $('ct-round').textContent    = `Round ${state.filledCount + 1} / 5`;
+  $('ct-team-pill').textContent = state.team.id;
+  $('ct-era-pill').textContent  = state.era;
+  // Restore respin buttons each new round
+  $('respin-team').classList.remove('used');
+  $('respin-era').classList.remove('used');
+  $('respin-team').disabled = false;
+  $('respin-era').disabled  = false;
+  state.teamSpinUsed = false;
+  state.eraSpinUsed  = false;
+}
+
 function buildCourtScreen(){
-  $('ct-team').textContent = teamName(state.team.id);
-  $('ct-era').textContent  = state.era + ' · ' + state.team.id;
-
-  const list = $('pos-list');
-  list.innerHTML = '';
-  POSITIONS.forEach(pos=>{
-    const pill = document.createElement('div');
-    pill.className = 'pos-pill';
-    pill.dataset.pos = pos;
-    pill.innerHTML = `<div class="pos-badge" style="background:${state.team.color}">${pos}</div>
-      <div class="pos-name">${pos}</div>
-      <div class="pos-player" id="ppval-${pos}">—</div>`;
-    pill.addEventListener('click', ()=>selectPos(pos));
-    list.appendChild(pill);
-  });
+  updateRoundBar();
   updateCourtSlots();
+  renderPlayerList();
 }
 
-function selectPos(pos){
-  if(state.roster[pos]) return; // already filled
-  state.activePos = pos;
-  document.querySelectorAll('.pos-pill').forEach(p=>{
-    p.classList.toggle('active', p.dataset.pos === pos);
-  });
-  document.querySelectorAll('.court-slot').forEach(s=>{
-    s.classList.toggle('active', s.dataset.pos === pos);
-  });
-  $('search-box').classList.add('active');
-  $('search-input').value = '';
-  $('search-results').innerHTML = '';
-  $('search-input').focus();
-  renderSearch('');
-}
-
-// Court slot clicks
-document.querySelectorAll('.court-slot').forEach(slot=>{
-  slot.addEventListener('click', ()=>{
-    const pos = slot.dataset.pos;
-    if(!state.roster[pos]) selectPos(pos);
+// Position filter tabs
+document.querySelectorAll('.pf-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.pf-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    state.posFilter = btn.dataset.f;
+    renderPlayerList();
   });
 });
 
 // Search
-$('search-input').addEventListener('input', e=>{
-  renderSearch(e.target.value.trim());
-});
+$('pl-search').addEventListener('input', ()=>renderPlayerList());
 
-function renderSearch(query){
-  if(!state.team || !state.era || !state.activePos) return;
-  const q = query.toLowerCase();
-  const results = PLAYERS.filter(p=>{
-    const matchesTeam = p.t.includes(state.team.id);
-    const matchesEra  = p.e === state.era;
-    const matchesName = q.length < 2 || p.n.toLowerCase().includes(q);
-    const notUsed     = !Object.values(state.roster).some(r=>r&&r.n===p.n);
-    return matchesTeam && matchesEra && matchesName && notUsed;
-  }).slice(0, 8);
+// Sort
+$('sort-sel').addEventListener('change', e=>{ state.sortBy = e.target.value; renderPlayerList(); });
 
-  const div = $('search-results');
-  if(results.length === 0){
-    div.innerHTML = `<div style="padding:12px 14px;color:var(--muted);font-size:.85rem">No players found</div>`;
+function posMatchesFilter(p, f){
+  if(f === 'all') return true;
+  if(f === 'G') return p === 'PG' || p === 'SG';
+  if(f === 'F') return p === 'SF' || p === 'PF';
+  if(f === 'C') return p === 'C';
+  return true;
+}
+
+function renderPlayerList(){
+  const q       = ($('pl-search').value || '').trim().toLowerCase();
+  const sortKey = state.sortBy || 'pp';
+  const notUsed = p => !Object.values(state.roster).some(r=>r&&r.n===p.n);
+  const isHoopIQ = state.mode === 'hoopiq';
+
+  // Primary: current team + era
+  let list = PLAYERS.filter(p=>
+    p.t.includes(state.team.id) &&
+    p.e === state.era &&
+    posMatchesFilter(p.p, state.posFilter) &&
+    (q.length < 2 || p.n.toLowerCase().includes(q)) &&
+    notUsed(p)
+  );
+
+  // Fallback: if nothing, search all players
+  let isFallback = false;
+  if(list.length === 0){
+    isFallback = true;
+    list = PLAYERS.filter(p=>
+      posMatchesFilter(p.p, state.posFilter) &&
+      (q.length >= 1 ? p.n.toLowerCase().includes(q) : true) &&
+      notUsed(p)
+    );
+  }
+
+  // Sort
+  list = [...list].sort((a,b)=> (b.s[sortKey]||0) - (a.s[sortKey]||0));
+
+  $('pl-count').textContent = `${list.length} player${list.length!==1?'s':''} available`;
+  $('pl-hint').textContent  = state.selectedPlayer
+    ? `Placing: ${state.selectedPlayer.n.split(' ').pop()}`
+    : isFallback && q.length < 1
+      ? `No ${state.team.id} ${state.era} players — search all`
+      : 'Click a player to select';
+
+  const container = $('player-list');
+  container.innerHTML = '';
+
+  if(list.length === 0){
+    container.innerHTML = `<div style="padding:20px 16px;color:var(--muted);font-size:.85rem;text-align:center">Type a name to search all eras and teams</div>`;
     return;
   }
-  const isHoopIQ = state.mode === 'hoopiq';
-  div.innerHTML = results.map(p=>{
-    const col = badgeColor(state.team.id);
-    const statLine = isHoopIQ ? '' :
-      `<span style="color:var(--muted);font-size:.7rem;margin-left:6px">${p.s.pp} PPG · ${p.s.rp} RPG · ${p.s.ap} APG</span>`;
-    return `<div class="search-item" data-name="${p.n}">
-      <div class="si-badge" style="background:${col}">${initials(p.n)}</div>
-      <div class="si-info">
-        <div class="si-name">${p.n}${statLine}</div>
-        <div class="si-meta">${state.team.id} · ${p.e} · ${p.p}</div>
-      </div>
-    </div>`;
-  }).join('');
 
-  div.querySelectorAll('.search-item').forEach(item=>{
-    item.addEventListener('click', ()=>{
-      const player = PLAYERS.find(p=>p.n===item.dataset.name);
-      if(player) placePlayer(player);
-    });
+  list.forEach(p=>{
+    const col = isFallback ? badgeColor(p.t[0]) : badgeColor(state.team.id);
+    const isSelected = state.selectedPlayer && state.selectedPlayer.n === p.n;
+    const row = document.createElement('div');
+    row.className = 'pl-row' + (isSelected ? ' selected' : '');
+
+    const statCols = isHoopIQ ? '' : [
+      ['PPG', p.s.pp], ['RPG', p.s.rp], ['APG', p.s.ap], ['SPG', p.s.sp], ['BPG', p.s.bp]
+    ].map(([l,v])=>`<div class="ps"><div class="ps-v">${v.toFixed(1)}</div><div class="ps-l">${l}</div></div>`).join('');
+
+    const metaTeam = isFallback ? `${p.t[0]} · ${p.e}` : p.e;
+    row.innerHTML = `
+      <div class="pl-badge" style="background:${col}">
+        <div class="bi">${initials(p.n)}</div>
+        <div class="bp">${p.p}</div>
+      </div>
+      <div class="pl-info">
+        <div class="pl-name">${p.n}</div>
+        <div class="pl-pos-label">${p.p}</div>
+        <div class="pl-meta-line">${state.team.id} · ${metaTeam}</div>
+      </div>
+      ${isHoopIQ ? '' : `<div class="pl-stats-row">${statCols}</div>`}
+    `;
+
+    row.addEventListener('click', ()=>selectPlayer(p));
+    container.appendChild(row);
   });
 }
 
-function placePlayer(player){
-  if(!state.activePos) return;
-  state.roster[state.activePos] = player;
-  state.activePos = null;
-  $('search-box').classList.remove('active');
-  $('search-input').value = '';
+function selectPlayer(p){
+  state.selectedPlayer = p;
+  $('placing-name').textContent = p.n;
+  $('placing-bar').classList.add('active');
+  // Highlight ready slots
+  document.querySelectorAll('.court-slot').forEach(slot=>{
+    const pos = slot.dataset.pos;
+    if(!state.roster[pos]) slot.classList.add('ready');
+    else slot.classList.remove('ready');
+  });
+  renderPlayerList(); // re-render to show selected highlight
+}
+
+function clearSelection(){
+  state.selectedPlayer = null;
+  $('placing-bar').classList.remove('active');
+  document.querySelectorAll('.court-slot').forEach(s=>s.classList.remove('ready'));
+  renderPlayerList();
+}
+
+// Court slot clicks — place the selected player
+document.querySelectorAll('.court-slot').forEach(slot=>{
+  slot.addEventListener('click', ()=>{
+    const pos = slot.dataset.pos;
+    if(state.roster[pos]) return; // already filled
+    if(!state.selectedPlayer) return; // no player selected
+    placePlayer(state.selectedPlayer, pos);
+  });
+});
+
+function placePlayer(player, pos){
+  state.roster[pos] = player;
+  state.filledCount++;
+  clearSelection();
   updateCourtSlots();
-  updatePosPills();
-  // Check if all filled
+
   const filled = POSITIONS.every(p=>state.roster[p]);
   $('sim-btn').classList.toggle('ready', filled);
+
+  if(!filled){
+    // Auto-spin to new team+era for next round
+    autoSpinNextRound();
+  }
+}
+
+// Individual re-spin buttons (one use each per round)
+$('respin-team').addEventListener('click', ()=>{
+  if(state.teamSpinUsed) return;
+  state.teamSpinUsed = true;
+  $('respin-team').classList.add('used');
+  $('respin-team').disabled = true;
+  miniSpin('team', ()=>renderPlayerList());
+});
+$('respin-era').addEventListener('click', ()=>{
+  if(state.eraSpinUsed) return;
+  state.eraSpinUsed = true;
+  $('respin-era').classList.add('used');
+  $('respin-era').disabled = true;
+  miniSpin('era', ()=>renderPlayerList());
+});
+
+let miniSpinInt = null;
+function miniSpin(which, onDone){
+  const pill = which === 'team' ? $('ct-team-pill') : $('ct-era-pill');
+  let t = 0;
+  clearInterval(miniSpinInt);
+  miniSpinInt = setInterval(()=>{
+    pill.textContent = which === 'team'
+      ? TEAMS[Math.floor(Math.random()*TEAMS.length)].id
+      : ERAS[Math.floor(Math.random()*ERAS.length)];
+    t++;
+    if(t >= 18){
+      clearInterval(miniSpinInt);
+      if(which === 'team'){
+        state.team = TEAMS[Math.floor(Math.random()*TEAMS.length)];
+        pill.textContent = state.team.id;
+      } else {
+        state.era = ERAS[Math.floor(Math.random()*ERAS.length)];
+        pill.textContent = state.era;
+      }
+      if(onDone) onDone();
+    }
+  }, 65);
+}
+
+let autoSpinInt = null;
+function autoSpinNextRound(){
+  // Spin both team + era pills, then re-render list
+  const tp = $('ct-team-pill'), ep = $('ct-era-pill');
+  $('ct-round').textContent = `Round ${state.filledCount + 1} / 5`;
+  // Reset respin buttons
+  $('respin-team').classList.remove('used'); $('respin-team').disabled = false;
+  $('respin-era').classList.remove('used');  $('respin-era').disabled  = false;
+  state.teamSpinUsed = false; state.eraSpinUsed = false;
+  let t = 0;
+  clearInterval(autoSpinInt);
+  autoSpinInt = setInterval(()=>{
+    tp.textContent = TEAMS[Math.floor(Math.random()*TEAMS.length)].id;
+    ep.textContent = ERAS[Math.floor(Math.random()*ERAS.length)];
+    t++;
+    if(t >= 22){
+      clearInterval(autoSpinInt);
+      state.team = TEAMS[Math.floor(Math.random()*TEAMS.length)];
+      state.era  = ERAS[Math.floor(Math.random()*ERAS.length)];
+      tp.textContent = state.team.id;
+      ep.textContent = state.era;
+      renderPlayerList();
+    }
+  }, 70);
 }
 
 function updateCourtSlots(){
@@ -741,26 +979,17 @@ function updateCourtSlots(){
     const box  = $(`slot-${pos}`);
     const player = state.roster[pos];
     if(player){
-      slot.classList.add('filled'); slot.classList.remove('active');
+      slot.classList.add('filled'); slot.classList.remove('ready','active');
+      const col = badgeColor(player.t[0]);
+      box.style.background = col + '22';
+      box.style.borderColor = col;
       box.querySelector('.slot-initials').textContent = initials(player.n);
-      box.querySelector('.slot-pos').textContent = pos;
-      box.style.borderColor = 'var(--green)';
+      box.querySelector('.slot-pos').textContent      = pos;
     } else {
       slot.classList.remove('filled');
-      box.querySelector('.slot-initials').textContent = '';
+      box.style.background = '';
       box.style.borderColor = '';
-    }
-  });
-}
-
-function updatePosPills(){
-  POSITIONS.forEach(pos=>{
-    const pill  = document.querySelector(`.pos-pill[data-pos="${pos}"]`);
-    const val   = $(`ppval-${pos}`);
-    const player = state.roster[pos];
-    if(player){
-      pill.classList.add('filled'); pill.classList.remove('active');
-      val.textContent = player.n.split(' ').slice(-1)[0]; // last name
+      box.querySelector('.slot-initials').textContent = '';
     }
   });
 }
@@ -771,78 +1000,80 @@ function updatePosPills(){
 $('sim-btn').addEventListener('click', startSimulation);
 
 function startSimulation(){
+  $('placing-bar').classList.remove('active');
   showScreen('s-sim');
   $('sim-w').textContent = '0';
   $('sim-l').textContent = '0';
   $('sim-bar').style.width = '0%';
 
-  // Compute team strength
-  const ratings = POSITIONS.map(p=>state.roster[p]?.r || 60);
-  const avg = ratings.reduce((a,b)=>a+b,0)/5;
-  const stars = ratings.filter(r=>r>=90).length;
+  const ratings  = POSITIONS.map(p=>state.roster[p]?.r || 60);
+  const avg      = ratings.reduce((a,b)=>a+b,0)/5;
+  const stars    = ratings.filter(r=>r>=90).length;
   const strength = Math.min(99, avg + stars*3);
-
-  // Map strength → projected wins (0-82)
-  // strength 50 → ~20W, 70 → ~40W, 85 → ~58W, 95 → ~72W, 99 → ~78W
-  const targetW = Math.round(Math.max(5, Math.min(82,
-    (strength - 45) * 1.45 + (Math.random() - 0.5) * 8
+  const targetW  = Math.round(Math.max(5, Math.min(82,
+    (strength - 45) * 1.45 + (Math.random()-.5) * 8
   )));
-  const targetL = 82 - targetW;
+  const targetL  = 82 - targetW;
 
-  // Animate over ~3 seconds
-  let gamesPlayed = 0;
-  const totalGames = 82;
-  const msPerGame = 3000 / totalGames;
-  let wins = 0, losses = 0;
-  const winProb = targetW / 82;
-
+  let gamesPlayed=0, wins=0, losses=0;
+  const winProb = targetW/82;
   const interval = setInterval(()=>{
     gamesPlayed++;
-    if(Math.random() < winProb) wins++; else losses++;
+    if(Math.random()<winProb) wins++; else losses++;
     $('sim-w').textContent = wins;
     $('sim-l').textContent = losses;
-    $('sim-bar').style.width = ((gamesPlayed/totalGames)*100)+'%';
-    if(gamesPlayed >= totalGames){
+    $('sim-bar').style.width = ((gamesPlayed/82)*100)+'%';
+    if(gamesPlayed >= 82){
       clearInterval(interval);
-      // Adjust to exact target for cleanliness
-      wins = targetW; losses = targetL;
+      wins=targetW; losses=targetL;
       $('sim-w').textContent = wins;
       $('sim-l').textContent = losses;
       setTimeout(()=>showResults(wins, losses, strength), 600);
     }
-  }, msPerGame);
+  }, 3000/82);
+}
+
+/* ═══════════════════════════════════════════
+   GRADES — REAL NBA MILESTONES
+═══════════════════════════════════════════ */
+function gradeFromWins(w){
+  if(w === 82) return {l:'🐐', name:'PERFECT SEASON',  color:'#ffd700', note:'Never done in NBA history — you just made history'};
+  if(w >= 74)  return {l:'A+', name:'HISTORIC',         color:'#22c55e', note:'Beat the Warriors 73-win record (2015-16)!'};
+  if(w === 73) return {l:'A+', name:'TIES THE RECORD',  color:'#22c55e', note:'Matched the Warriors\' 73-9 all-time record'};
+  if(w >= 70)  return {l:'A+', name:'DYNASTY',          color:'#22c55e', note:'All-time great — top 5 season ever'};
+  if(w >= 67)  return {l:'A',  name:'ELITE',            color:'#4ade80', note:'Top 10 season in NBA history'};
+  if(w >= 60)  return {l:'A',  name:'CONTENDER',        color:'#4ade80', note:'Championship caliber — deep playoff run'};
+  if(w >= 53)  return {l:'B+', name:'TITLE THREAT',     color:'#a3e635', note:'Legit playoff threat'};
+  if(w >= 46)  return {l:'B',  name:'PLAYOFF TEAM',     color:'#fbbf24', note:'Solid postseason team'};
+  if(w >= 38)  return {l:'C',  name:'BUBBLE TEAM',      color:'#f97316', note:'Fighting for the play-in'};
+  if(w >= 28)  return {l:'D',  name:'REBUILDING',       color:'#fb923c', note:'Young team with potential'};
+  return               {l:'F',  name:'TANKING',          color:'#ef4444', note:'Full rebuild — draft lottery bound'};
 }
 
 /* ═══════════════════════════════════════════
    RESULTS
 ═══════════════════════════════════════════ */
-function gradeFromWins(w){
-  if(w >= 70) return {l:'A+', name:'DYNASTY',      color:'#22c55e'};
-  if(w >= 60) return {l:'A',  name:'CONTENDER',    color:'#22c55e'};
-  if(w >= 50) return {l:'B+', name:'TITLE THREAT', color:'#84cc16'};
-  if(w >= 45) return {l:'B',  name:'PLAYOFF TEAM', color:'#a3e635'};
-  if(w >= 38) return {l:'C',  name:'BUBBLE TEAM',  color:'#fbbf24'};
-  if(w >= 28) return {l:'D',  name:'REBUILDING',   color:'#f97316'};
-  return               {l:'F',  name:'TANKING',       color:'#ef4444'};
-}
+let lastResult = {};
 
 function showResults(wins, losses, strength){
   const grade = gradeFromWins(wins);
+  const ovr   = Math.round(strength);
   const pts   = Math.round(strength * 0.95 + Math.random()*4);
+  lastResult  = { wins, losses, grade, ovr, pts };
 
   $('res-w').textContent = wins;
   $('res-l').textContent = losses;
   $('grade-letter').textContent = grade.l;
   $('grade-letter').style.color = grade.color;
-  $('grade-name').textContent = grade.name;
-  $('grade-name').style.color = grade.color;
-  $('grade-pts').textContent  = `· ${pts} pts`;
-  // Show mode badge
-  const modeBadge = document.getElementById('res-mode-badge');
+  $('grade-name').textContent   = grade.name;
+  $('grade-name').style.color   = grade.color;
+  $('grade-pts').textContent    = `· ${pts} pts`;
+
+  const modeBadge = $('res-mode-badge');
   if(modeBadge){
-    modeBadge.textContent = state.mode === 'hoopiq' ? '🧠 HOOP IQ MODE' : '💯 CLASSIC MODE';
-    modeBadge.style.background = state.mode === 'hoopiq' ? 'rgba(124,58,237,.18)' : 'rgba(249,115,22,.15)';
-    modeBadge.style.color = state.mode === 'hoopiq' ? '#a78bfa' : '#f97316';
+    modeBadge.textContent        = state.mode === 'hoopiq' ? '🧠 HOOP IQ MODE' : '💯 CLASSIC MODE';
+    modeBadge.style.background   = state.mode === 'hoopiq' ? 'rgba(124,58,237,.18)' : 'rgba(249,115,22,.15)';
+    modeBadge.style.color        = state.mode === 'hoopiq' ? '#a78bfa' : '#f97316';
   }
 
   // Player cards
@@ -850,23 +1081,19 @@ function showResults(wins, losses, strength){
   cards.innerHTML = '';
   let totPP=0,totRP=0,totAP=0,totSP=0,totBP=0;
   POSITIONS.forEach(pos=>{
-    const p = state.roster[pos];
-    if(!p) return;
-    const col = badgeColor(state.team.id);
+    const p = state.roster[pos]; if(!p) return;
+    const col = badgeColor(p.t[0]);
     totPP+=p.s.pp; totRP+=p.s.rp; totAP+=p.s.ap; totSP+=p.s.sp; totBP+=p.s.bp;
     const card = document.createElement('div');
     card.className = 'player-card';
     card.style.borderLeftColor = col;
     card.innerHTML = `
       <div class="pc-badge" style="background:${col}">
-        <div>
-          <div class="pc-initials">${initials(p.n)}</div>
-          <div class="pc-pos">${pos}</div>
-        </div>
+        <div><div class="pc-initials">${initials(p.n)}</div><div class="pc-pos">${pos}</div></div>
       </div>
       <div class="pc-info">
         <div class="pc-name">${p.n}</div>
-        <div class="pc-meta">${state.team.id} · ${p.e}</div>
+        <div class="pc-meta">${p.t[0]} · ${p.e}</div>
       </div>
       <div class="pc-stats">
         ${[['PPG',p.s.pp],['RPG',p.s.rp],['APG',p.s.ap],['SPG',p.s.sp],['BPG',p.s.bp]]
@@ -875,30 +1102,76 @@ function showResults(wins, losses, strength){
     cards.appendChild(card);
   });
 
-  // Totals
   $('totals-row').innerHTML = [['PPG',totPP],['RPG',totRP],['APG',totAP],['SPG',totSP],['BPG',totBP]]
     .map(([l,v])=>`<div class="total-stat"><div class="total-val">${v.toFixed(1)}</div><div class="total-lbl">${l}</div></div>`).join('');
 
   showScreen('s-results');
 }
 
-// Share
-$('share-btn').addEventListener('click', ()=>{
-  const wins = $('res-w').textContent;
-  const losses = $('res-l').textContent;
-  const grade = $('grade-name').textContent;
-  const roster = POSITIONS.map(p=>`${p}: ${state.roster[p]?.n||'?'}`).join('\n');
-  const text = `🏀 82 & 0 Simulation\n${state.team.name} · ${state.era}\nProjected: ${wins}-${losses} (${grade})\n\n${roster}\n\nPlay at wackybrains.com`;
-  if(navigator.share){ navigator.share({text}); }
-  else if(navigator.clipboard){ navigator.clipboard.writeText(text).then(()=>alert('Copied!')); }
-});
-
 // Build Another
 $('again-btn').addEventListener('click', ()=>{
-  state.roster={PG:null,SG:null,SF:null,PF:null,C:null};
-  state.activePos=null;
+  state.roster = {PG:null,SG:null,SF:null,PF:null,C:null};
+  state.selectedPlayer = null;
   showScreen('s-mode');
 });
+
+/* ═══════════════════════════════════════════
+   SHARE MODAL
+═══════════════════════════════════════════ */
+$('share-btn').addEventListener('click', openShareModal);
+$('share-modal-close').addEventListener('click', ()=>$('share-modal').classList.remove('open'));
+$('share-modal').addEventListener('click', e=>{ if(e.target===$('share-modal')) $('share-modal').classList.remove('open'); });
+
+function openShareModal(){
+  const r = lastResult;
+  const grade = r.grade || gradeFromWins(r.wins||0);
+
+  $('sm-record').textContent = `${r.wins}-${r.losses}`;
+  $('sm-grade').textContent  = grade.l;
+  $('sm-grade').style.color  = grade.color;
+  $('sm-ovr').textContent    = r.ovr || '—';
+  $('sm-mode').textContent   = state.mode === 'hoopiq' ? 'HOOP IQ MODE' : 'CLASSIC MODE';
+  $('sm-caption-record').textContent = `${r.wins}-${r.losses}`;
+
+  const playersEl = $('sm-players');
+  playersEl.innerHTML = '';
+  POSITIONS.forEach(pos=>{
+    const p = state.roster[pos]; if(!p) return;
+    const col = badgeColor(p.t[0]);
+    const row = document.createElement('div');
+    row.className = 'sc-player-row';
+    row.innerHTML = `
+      <div class="sc-pbadge" style="background:${col}">
+        <div style="font-size:.65rem;font-weight:900">${initials(p.n)}</div>
+        <div style="font-size:.5rem;opacity:.8">${pos}</div>
+      </div>
+      <div class="sc-pname">${p.n}</div>
+      <div class="sc-pmeta">${p.t[0]} · ${p.e}</div>`;
+    playersEl.appendChild(row);
+  });
+
+  const shareText = `I just went ${r.wins}-${r.losses} (${grade.name}), think you can go 82-0?\nPlay at wackybrains.com/82-and-0/`;
+  const shareUrl  = 'https://wackybrains.com/82-and-0/';
+  const enc = s => encodeURIComponent(s);
+
+  $('share-url').value = shareUrl;
+
+  $('soc-twitter').onclick  = ()=>window.open(`https://twitter.com/intent/tweet?text=${enc(shareText)}`, '_blank');
+  $('soc-facebook').onclick = ()=>window.open(`https://www.facebook.com/sharer/sharer.php?u=${enc(shareUrl)}&quote=${enc(shareText)}`, '_blank');
+  $('soc-bluesky').onclick  = ()=>window.open(`https://bsky.app/intent/compose?text=${enc(shareText)}`, '_blank');
+  $('soc-whatsapp').onclick = ()=>window.open(`https://wa.me/?text=${enc(shareText)}`, '_blank');
+  $('soc-telegram').onclick = ()=>window.open(`https://t.me/share/url?url=${enc(shareUrl)}&text=${enc(shareText)}`, '_blank');
+  $('soc-reddit').onclick   = ()=>window.open(`https://reddit.com/submit?url=${enc(shareUrl)}&title=${enc(shareText)}`, '_blank');
+
+  $('share-copy-btn').onclick = ()=>{
+    navigator.clipboard?.writeText(shareUrl).then(()=>{
+      $('share-copy-btn').textContent = '✅ Copied!';
+      setTimeout(()=>{ $('share-copy-btn').textContent = '📋 Copy Link'; }, 2000);
+    });
+  };
+
+  $('share-modal').classList.add('open');
+}
 </script>
 </body>
 </html>
