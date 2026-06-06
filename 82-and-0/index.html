@@ -77,9 +77,11 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .court-main{display:flex;flex:1;width:100%;overflow:hidden;min-height:0}
 /* Player panel — fixed left column */
 .player-panel{width:360px;min-width:0;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
-/* Spin-wait overlay inside player panel */
-.spin-wait{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:30px;text-align:center}
-.spin-wait-label{color:var(--muted);font-size:.95rem;font-weight:600;line-height:1.5}
+/* Spin-wait — full-screen overlay like the setup screen */
+.spin-wait{position:fixed;inset:52px 0 0 0;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:40px 20px;text-align:center;z-index:50}
+.sw-round{font-size:1.1rem;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.1em}
+.sw-sub{color:var(--muted);font-size:.95rem}
+.sw-cards{display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
 .respin-btn{background:none;border:1.5px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-size:.8rem;font-weight:700;padding:6px 14px;transition:.15s;white-space:nowrap}
 .respin-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
 .respin-btn:disabled,.respin-btn.used{opacity:.3;cursor:default;text-decoration:line-through}
@@ -319,10 +321,6 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
         <span class="pl-hint" id="pl-hint">Click a player to select</span>
       </div>
       <div class="player-list" id="player-list"></div>
-      <div class="spin-wait" id="spin-wait">
-        <div class="spin-wait-label" id="spin-wait-label">Round 2 — Spin to draft your next player</div>
-        <button class="round-spin-btn" id="round-spin-btn">🏀 SPIN</button>
-      </div>
     </div>
 
     <!-- Right: Court -->
@@ -354,6 +352,30 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
   <!-- Placing status bar (fixed bottom) -->
   <div class="placing-bar" id="placing-bar">
     Placing: <span id="placing-name">—</span> — click a court position
+  </div>
+
+  <!-- Between-round SPIN overlay (full screen, like setup) -->
+  <div class="spin-wait" id="spin-wait">
+    <div class="mode-logo">🏀</div>
+    <div class="sw-round" id="sw-round">Round 2 / 5</div>
+    <div class="sw-sub">Spin to get your team &amp; era for this round</div>
+    <div class="sw-cards">
+      <div>
+        <div class="sel-card team-card" id="sw-team-card">
+          <div class="sc-label">Team</div>
+          <div class="sc-value" id="sw-team-val">—</div>
+        </div>
+        <div class="card-caption">Team</div>
+      </div>
+      <div>
+        <div class="sel-card era-card" id="sw-era-card">
+          <div class="sc-label">Era</div>
+          <div class="sc-value" id="sw-era-val">—</div>
+        </div>
+        <div class="card-caption">Decade</div>
+      </div>
+    </div>
+    <button class="spin-btn" id="round-spin-btn">SPIN</button>
   </div>
 
 </div>
@@ -768,8 +790,7 @@ function buildCourtScreen(){
   $('respin-era').disabled  = false; $('respin-era').classList.remove('used');
   $('placing-bar').classList.remove('active');
   $('sim-btn').classList.remove('ready');
-  $('spin-wait').style.display   = 'none';
-  $('player-list').style.display = '';
+  $('spin-wait').style.display = 'none';
   updateCourtSlots();
   renderPlayerList();
 }
@@ -901,39 +922,52 @@ function doPlacePlayer(player, pos){
     return;
   }
 
-  // ── Show SPIN button for next round ──
+  // ── Show full-screen SPIN overlay for next round ──
   const nextRound = state.filledCount + 1;
-  $('ct-round').textContent = `Round ${nextRound} / 5`;
-  $('respin-team').disabled = true; $('respin-team').classList.add('used');
-  $('respin-era').disabled  = true; $('respin-era').classList.add('used');
-  $('spin-wait-label').textContent = `Round ${nextRound} — Spin to draft your next player`;
-  $('player-list').style.display = 'none';
-  $('spin-wait').style.display   = 'flex';
+  $('sw-round').textContent    = `Round ${nextRound} / 5`;
+  $('sw-team-val').textContent = '—';
+  $('sw-era-val').textContent  = '—';
+  $('sw-team-card').style.borderColor = '';
+  $('sw-era-card').style.borderColor  = '';
+  $('sw-team-card').classList.remove('spinning');
+  $('sw-era-card').classList.remove('spinning');
+  $('round-spin-btn').disabled = false;
+  $('spin-wait').style.display = 'flex';
 }
 
 function doRoundSpin(){
   if(spinning) return;
-  $('spin-wait').style.display = 'none';
+  const btn = $('round-spin-btn');
+  btn.disabled = true;
+  $('sw-team-card').classList.add('spinning');
+  $('sw-era-card').classList.add('spinning');
   spinning = true;
-  const tp = $('ct-team-pill'), ep = $('ct-era-pill');
   let t = 0;
   clearInterval(spinIv);
   spinIv = setInterval(()=>{
-    tp.textContent = TEAMS[Math.floor(Math.random()*TEAMS.length)].id;
-    ep.textContent = ERAS[Math.floor(Math.random()*ERAS.length)];
+    $('sw-team-val').textContent = TEAMS[Math.floor(Math.random()*TEAMS.length)].id;
+    $('sw-era-val').textContent  = ERAS[Math.floor(Math.random()*ERAS.length)];
     t++;
-    if(t >= 22){
+    if(t >= 26){
       clearInterval(spinIv);
       state.team = TEAMS[Math.floor(Math.random()*TEAMS.length)];
       state.era  = ERAS[Math.floor(Math.random()*ERAS.length)];
-      tp.textContent = state.team.id;
-      ep.textContent = state.era;
+      $('sw-team-val').textContent = state.team.id;
+      $('sw-era-val').textContent  = state.era;
+      $('sw-team-card').classList.remove('spinning');
+      $('sw-era-card').classList.remove('spinning');
+      $('sw-team-card').style.borderColor = '#fbbf24';
+      $('sw-era-card').style.borderColor  = '#a78bfa';
+      $('ct-team-pill').textContent = state.team.id;
+      $('ct-era-pill').textContent  = state.era;
       state.teamSpinUsed = false; state.eraSpinUsed = false;
       $('respin-team').disabled = false; $('respin-team').classList.remove('used');
       $('respin-era').disabled  = false; $('respin-era').classList.remove('used');
-      $('player-list').style.display = '';
-      spinning = false;
-      renderPlayerList();
+      setTimeout(()=>{
+        $('spin-wait').style.display = 'none';
+        spinning = false;
+        renderPlayerList();
+      }, 500);
     }
   }, 70);
 }
