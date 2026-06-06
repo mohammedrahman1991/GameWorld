@@ -67,16 +67,16 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .build-btn.ready:hover{transform:translateY(-2px)}
 
 /* ════════ COURT SCREEN ════════ */
-#s-court{flex-direction:column;padding:0;align-items:stretch;height:calc(100vh - 52px);overflow:hidden}
+#s-court{display:flex;flex-direction:column;padding:0;align-items:stretch;height:calc(100vh - 52px);min-height:0;overflow:hidden}
 /* Round bar */
-.round-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;gap:8px}
+.round-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:nowrap;gap:8px}
 .rb-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.rb-right{display:flex;align-items:center;gap:8px}
-.rb-round{font-size:.85rem;font-weight:700;color:var(--text)}
-/* Two-column body */
-.court-main{display:flex;flex:1;overflow:hidden;min-height:0}
-/* Player panel — left column */
-.player-panel{width:360px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.rb-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.rb-round{font-size:.85rem;font-weight:700;color:var(--text);white-space:nowrap}
+/* Two-column body — fills remaining height, never scrolls */
+.court-main{display:flex;flex:1;width:100%;overflow:hidden;min-height:0}
+/* Player panel — fixed left column */
+.player-panel{width:360px;min-width:0;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
 /* Spin-wait overlay inside player panel */
 .spin-wait{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:30px;text-align:center}
 .spin-wait-label{color:var(--muted);font-size:.95rem;font-weight:600;line-height:1.5}
@@ -88,14 +88,14 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .round-spin-btn:disabled{opacity:.5;cursor:default;transform:none}
 .team-pill{background:var(--accent);border-radius:99px;padding:4px 14px;font-weight:900;font-size:.88rem;color:#fff}
 .era-pill{background:#92400e;border-radius:99px;padding:4px 14px;font-weight:900;font-size:.88rem;color:#fff}
-.filter-row{display:flex;align-items:center;gap:6px;padding:8px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
-.pos-filters{display:flex;gap:3px}
+.filter-row{display:flex;align-items:center;gap:6px;padding:8px 14px;border-bottom:1px solid var(--border);flex-wrap:nowrap;flex-shrink:0}
+.pos-filters{display:flex;gap:3px;flex-shrink:0}
 .pf-btn{background:none;border:none;border-radius:8px;color:var(--muted);cursor:pointer;font-size:.82rem;font-weight:700;padding:5px 10px;transition:.15s}
 .pf-btn.active{background:var(--accent);color:#fff}
 .pl-search{flex:1;min-width:70px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.82rem;padding:5px 9px;outline:none}
 .pl-search::placeholder{color:var(--muted)}
 .sort-sel{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.78rem;padding:5px 7px;outline:none;cursor:pointer}
-.pl-info-bar{display:flex;justify-content:space-between;align-items:center;padding:6px 14px;font-size:.72rem;color:var(--muted);border-bottom:1px solid var(--border)}
+.pl-info-bar{display:flex;justify-content:space-between;align-items:center;padding:6px 14px;font-size:.72rem;color:var(--muted);border-bottom:1px solid var(--border);flex-shrink:0}
 .pl-hint{color:var(--accent);font-weight:600;font-size:.72rem}
 /* Player list: scrollable, fills remaining panel height */
 .player-list{overflow-y:auto;flex:1}
@@ -113,8 +113,8 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .ps{text-align:center}
 .ps-v{font-size:.78rem;font-weight:700}
 .ps-l{color:var(--muted);font-size:.52rem}
-/* Court side — always visible */
-.court-side{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:12px}
+/* Court side — always visible, never pushed below viewport */
+.court-side{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:12px;overflow:hidden}
 .court{background:#0d1825;border:1px solid var(--border);border-radius:16px;position:relative;overflow:hidden;aspect-ratio:10/8;width:100%;max-width:500px}
 .court-svg{position:absolute;inset:0;width:100%;height:100%}
 .court-slot{position:absolute;width:14%;aspect-ratio:1;transform:translate(-50%,-50%);cursor:pointer;transition:.2s}
