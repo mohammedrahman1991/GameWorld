@@ -90,6 +90,7 @@
   <div id="fort-level">🏰 Fort: Not built</div>
   <div id="inv-display">No seeds — open Shop</div>
   <button id="shop-btn" onclick="openShop()">🛒 SHOP</button>
+  <button onclick="if(window.WackyShare)WackyShare.show('Farming Land','I earned '+document.getElementById('coins').textContent+' in Farming Land!','https://wackybrains.com/farming-land/')" style="position:fixed;bottom:24px;right:24px;padding:10px 22px;background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:10px;color:#fff;font-weight:800;cursor:pointer;z-index:999;">⬆ Share</button>
   <div id="hint"></div>
   <div id="buy-msg"></div>
 
@@ -112,5 +113,6 @@
   <div id="btn-interact">E<br>ACT</div>
 
   <script src="game.js"></script>
+  <script src="/share-widget.js"></script>
 </body>
 </html>

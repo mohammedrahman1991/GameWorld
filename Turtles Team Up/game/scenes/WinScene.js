@@ -178,6 +178,11 @@ export class WinScene extends Phaser.Scene {
         border:2px solid #334155;border-radius:8px;cursor:pointer;
         text-shadow:1px 1px 0 #000;
       ">CHANGE CHARACTERS</button>
+      <button id="wb-ttu-share-btn" style="
+        padding:14px 32px;font-size:18px;font-family:Impact,sans-serif;
+        background:linear-gradient(135deg,#f97316,#fbbf24);color:#fff;
+        border:none;border-radius:8px;cursor:pointer;
+      ">⬆ SHARE</button>
     `;
     document.body.appendChild(this._btnOverlay);
 
@@ -192,6 +197,11 @@ export class WinScene extends Phaser.Scene {
     document.getElementById('change-chars-btn').addEventListener('click', () => {
       this._cleanup();
       this.scene.start('CharacterSelect');
+    });
+
+    const _pl = `Player ${this._winnerIndex + 1}`;
+    document.getElementById('wb-ttu-share-btn').addEventListener('click', () => {
+      if(window.WackyShare) WackyShare.show('Turtles Team Up', `${_pl} wins in Turtles Team Up!`, 'https://wackybrains.com/Turtles%20Team%20Up/');
     });
   }
 

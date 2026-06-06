@@ -1598,7 +1598,12 @@ function update() {
   }
 
   if (gs === 'WIN' || gs === 'GAMEOVER') {
-    if (input.justDown) resetGame();
+    const _sb = document.getElementById('wb-sw-share');
+    if(_sb && _sb.style.display==='none'){
+      _sb.style.display='block';
+      _sb.onclick=()=>{ if(window.WackyShare) WackyShare.show('Swing Man', gs==='WIN'?`I beat Swing Man with score ${score}!`:`I scored ${score} in Swing Man!`, 'https://wackybrains.com/Swing%20Man/'); };
+    }
+    if (input.justDown) { if(_sb)_sb.style.display='none'; resetGame(); }
     return;
   }
 

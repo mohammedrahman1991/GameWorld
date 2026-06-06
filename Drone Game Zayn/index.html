@@ -103,6 +103,8 @@
   <!-- Crosshair (FPV mode) -->
   <div id="crosshair">+</div>
 
+  <button onclick="if(window.WackyShare)WackyShare.show('Drone Game','I flew to '+document.getElementById('altitude-value').textContent+' altitude and '+document.getElementById('distance-value').textContent+' distance in Drone Game!','https://wackybrains.com/Drone%20Game%20Zayn/')" style="position:fixed;bottom:24px;right:24px;padding:10px 22px;background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:10px;color:#fff;font-weight:800;cursor:pointer;z-index:999;">⬆ Share Stats</button>
   <script type="module" src="js/main.js"></script>
+  <script src="/share-widget.js"></script>
 </body>
 </html>
