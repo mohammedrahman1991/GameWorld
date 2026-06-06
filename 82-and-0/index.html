@@ -267,7 +267,6 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
   </div>
 
   <button class="spin-btn" id="spin-btn">SPIN</button>
-  <button class="build-btn" id="build-btn">Build Roster →</button>
 </div>
 
 <!-- ════════ COURT ════════ -->
@@ -723,25 +722,19 @@ function doSpin(){
       $('era-val').textContent  = chosenEra;
       teamCard.classList.remove('spinning');
       eraCard.classList.remove('spinning');
-      // Flash
       teamCard.style.borderColor = '#fbbf24';
       eraCard.style.borderColor  = '#a78bfa';
-      $('build-btn').classList.add('ready');
       btn.disabled = false;
+      // Auto-enter court immediately
+      state.roster = { PG:null, SG:null, SF:null, PF:null, C:null };
+      state.selectedPlayer = null;
+      state.filledCount = 0;
+      state.posFilter = 'all';
+      state.sortBy = 'pp';
+      setTimeout(()=>{ buildCourtScreen(); showScreen('s-court'); }, 400);
     }
   }, 80);
 }
-
-$('build-btn').addEventListener('click', ()=>{
-  if(!state.team || !state.era) return;
-  state.roster = { PG:null, SG:null, SF:null, PF:null, C:null };
-  state.selectedPlayer = null;
-  state.filledCount = 0;
-  state.posFilter = 'all';
-  state.sortBy = 'pp';
-  buildCourtScreen();
-  showScreen('s-court');
-});
 
 /* ═══════════════════════════════════════════
    COURT SCREEN — NEW PLAYER LIST MODEL
@@ -1112,7 +1105,13 @@ function showResults(wins, losses, strength){
 $('again-btn').addEventListener('click', ()=>{
   state.roster = {PG:null,SG:null,SF:null,PF:null,C:null};
   state.selectedPlayer = null;
-  showScreen('s-mode');
+  state.filledCount = 0;
+  // Reset spin cards
+  $('team-val').textContent = '—';
+  $('era-val').textContent  = '—';
+  $('team-card').style.borderColor = '';
+  $('era-card').style.borderColor  = '';
+  showScreen('s-setup');
 });
 
 /* ═══════════════════════════════════════════
