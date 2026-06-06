@@ -67,48 +67,54 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .build-btn.ready:hover{transform:translateY(-2px)}
 
 /* ════════ COURT SCREEN ════════ */
-#s-court{flex-direction:column;padding:0;align-items:stretch;min-height:calc(100vh - 52px)}
+#s-court{flex-direction:column;padding:0;align-items:stretch;height:calc(100vh - 52px);overflow:hidden}
 /* Round bar */
-.round-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);flex-wrap:wrap;gap:10px}
-.rb-left{display:flex;align-items:center;gap:12px}
-.rb-round{font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.team-pill{background:var(--accent);border-radius:99px;padding:5px 16px;font-weight:900;font-size:.95rem;color:#fff}
-.era-pill{background:#92400e;border-radius:99px;padding:5px 16px;font-weight:900;font-size:.95rem;color:#fff}
+.round-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;gap:8px}
+.rb-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .rb-right{display:flex;align-items:center;gap:8px}
-.respin-btn{background:none;border:1.5px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-size:.82rem;font-weight:700;padding:6px 14px;transition:.15s;display:flex;align-items:center;gap:5px;white-space:nowrap}
-.respin-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
-.respin-btn:disabled{opacity:.3;cursor:default}
-.respin-btn.used{opacity:.3;cursor:default;text-decoration:line-through}
-/* Main two-column layout */
+.rb-round{font-size:.85rem;font-weight:700;color:var(--text)}
+/* Two-column body */
 .court-main{display:flex;flex:1;overflow:hidden;min-height:0}
-/* Player list panel */
-.player-panel{width:420px;min-width:300px;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
-.filter-row{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
-.pos-filters{display:flex;gap:4px}
-.pf-btn{background:none;border:none;border-radius:8px;color:var(--muted);cursor:pointer;font-size:.85rem;font-weight:700;padding:6px 12px;transition:.15s}
+/* Player panel — left column */
+.player-panel{width:360px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+/* Spin-wait overlay inside player panel */
+.spin-wait{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:30px;text-align:center}
+.spin-wait-label{color:var(--muted);font-size:.95rem;font-weight:600;line-height:1.5}
+.respin-btn{background:none;border:1.5px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-size:.8rem;font-weight:700;padding:6px 14px;transition:.15s;white-space:nowrap}
+.respin-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.respin-btn:disabled,.respin-btn.used{opacity:.3;cursor:default;text-decoration:line-through}
+.round-spin-btn{background:var(--accent);border:none;border-radius:12px;color:#fff;cursor:pointer;font-size:1.05rem;font-weight:800;padding:13px 44px;transition:.18s;box-shadow:0 4px 18px rgba(249,115,22,.35)}
+.round-spin-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(249,115,22,.5)}
+.round-spin-btn:disabled{opacity:.5;cursor:default;transform:none}
+.team-pill{background:var(--accent);border-radius:99px;padding:4px 14px;font-weight:900;font-size:.88rem;color:#fff}
+.era-pill{background:#92400e;border-radius:99px;padding:4px 14px;font-weight:900;font-size:.88rem;color:#fff}
+.filter-row{display:flex;align-items:center;gap:6px;padding:8px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.pos-filters{display:flex;gap:3px}
+.pf-btn{background:none;border:none;border-radius:8px;color:var(--muted);cursor:pointer;font-size:.82rem;font-weight:700;padding:5px 10px;transition:.15s}
 .pf-btn.active{background:var(--accent);color:#fff}
-.pl-search{flex:1;min-width:80px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.85rem;padding:6px 10px;outline:none}
+.pl-search{flex:1;min-width:70px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.82rem;padding:5px 9px;outline:none}
 .pl-search::placeholder{color:var(--muted)}
-.sort-sel{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.82rem;padding:6px 8px;outline:none;cursor:pointer}
-.pl-info-bar{display:flex;justify-content:space-between;align-items:center;padding:7px 14px;font-size:.75rem;color:var(--muted);border-bottom:1px solid var(--border)}
-.pl-hint{color:var(--accent);font-weight:600}
-.player-list{flex:1;overflow-y:auto}
-.pl-row{padding:11px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);transition:background .12s}
+.sort-sel{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.78rem;padding:5px 7px;outline:none;cursor:pointer}
+.pl-info-bar{display:flex;justify-content:space-between;align-items:center;padding:6px 14px;font-size:.72rem;color:var(--muted);border-bottom:1px solid var(--border)}
+.pl-hint{color:var(--accent);font-weight:600;font-size:.72rem}
+/* Player list: scrollable, fills remaining panel height */
+.player-list{overflow-y:auto;flex:1}
+.pl-row{padding:9px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);transition:background .12s;min-height:62px}
 .pl-row:hover{background:rgba(255,255,255,.04)}
 .pl-row.selected{background:rgba(249,115,22,.12);border-left:3px solid var(--accent)}
-.pl-badge{width:40px;height:40px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.65rem;font-weight:900;color:#fff;flex-shrink:0;line-height:1.1}
-.pl-badge .bi{font-size:.75rem}
-.pl-badge .bp{font-size:.55rem;opacity:.8}
+.pl-badge{width:38px;height:38px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;color:#fff;flex-shrink:0;line-height:1.1}
+.pl-badge .bi{font-size:.72rem}
+.pl-badge .bp{font-size:.52rem;opacity:.8}
 .pl-info{flex:1;min-width:0}
-.pl-name{font-size:.9rem;font-weight:700}
-.pl-pos-label{font-size:.7rem;font-weight:700;color:var(--accent)}
-.pl-meta-line{color:var(--muted);font-size:.7rem}
-.pl-stats-row{display:flex;gap:10px;flex-shrink:0}
+.pl-name{font-size:.88rem;font-weight:700}
+.pl-pos-label{font-size:.68rem;font-weight:700;color:var(--accent)}
+.pl-meta-line{color:var(--muted);font-size:.68rem}
+.pl-stats-row{display:flex;gap:8px;flex-shrink:0}
 .ps{text-align:center}
-.ps-v{font-size:.82rem;font-weight:700}
-.ps-l{color:var(--muted);font-size:.55rem}
-/* Court side */
-.court-side{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:14px}
+.ps-v{font-size:.78rem;font-weight:700}
+.ps-l{color:var(--muted);font-size:.52rem}
+/* Court side — always visible */
+.court-side{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:12px}
 .court{background:#0d1825;border:1px solid var(--border);border-radius:16px;position:relative;overflow:hidden;aspect-ratio:10/8;width:100%;max-width:500px}
 .court-svg{position:absolute;inset:0;width:100%;height:100%}
 .court-slot{position:absolute;width:14%;aspect-ratio:1;transform:translate(-50%,-50%);cursor:pointer;transition:.2s}
@@ -118,12 +124,15 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .court-slot.filled .slot-box{border-style:solid;border-color:var(--green);background:rgba(34,197,94,.1);color:var(--green);animation:none}
 .slot-initials{font-size:.95rem;font-weight:900;line-height:1}
 .slot-pos{font-size:.5rem;font-weight:800;letter-spacing:.05em}
-.sim-btn{background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:12px;color:#fff;cursor:pointer;font-size:1rem;font-weight:800;padding:13px 36px;transition:.18s;opacity:.4;pointer-events:none;width:100%;max-width:500px}
+.sim-btn{background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:12px;color:#fff;cursor:pointer;font-size:.95rem;font-weight:800;padding:12px 36px;transition:.18s;opacity:.4;pointer-events:none;width:100%;max-width:500px}
 .sim-btn.ready{opacity:1;pointer-events:auto}
 .sim-btn.ready:hover{transform:translateY(-2px)}
-/* Placing status bar */
-.placing-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(13,17,23,.95);border-top:1px solid rgba(249,115,22,.3);padding:12px 24px;text-align:center;font-size:.9rem;font-weight:700;color:var(--accent);z-index:100}
+/* Placing bar */
+.placing-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(13,17,23,.95);border-top:1px solid rgba(249,115,22,.3);padding:10px 24px;text-align:center;font-size:.88rem;font-weight:700;color:var(--accent);z-index:100}
 .placing-bar.active{display:block}
+/* Round counter in nav */
+.nav-round{font-size:.85rem;font-weight:700;color:var(--text);display:none}
+.nav-round.visible{display:block}
 
 /* ════════ SHARE MODAL ════════ */
 #share-modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
@@ -310,6 +319,10 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
         <span class="pl-hint" id="pl-hint">Click a player to select</span>
       </div>
       <div class="player-list" id="player-list"></div>
+      <div class="spin-wait" id="spin-wait">
+        <div class="spin-wait-label" id="spin-wait-label">Round 2 — Spin to draft your next player</div>
+        <button class="round-spin-btn" id="round-spin-btn">🏀 SPIN</button>
+      </div>
     </div>
 
     <!-- Right: Court -->
@@ -737,120 +750,118 @@ function doSpin(){
 }
 
 /* ═══════════════════════════════════════════
-   COURT SCREEN — NEW PLAYER LIST MODEL
+   COURT SCREEN
 ═══════════════════════════════════════════ */
-function updateRoundBar(){
-  $('ct-round').textContent    = `Round ${state.filledCount + 1} / 5`;
-  $('ct-team-pill').textContent = state.team.id;
-  $('ct-era-pill').textContent  = state.era;
-  // Restore respin buttons each new round
-  $('respin-team').classList.remove('used');
-  $('respin-era').classList.remove('used');
-  $('respin-team').disabled = false;
-  $('respin-era').disabled  = false;
-  state.teamSpinUsed = false;
-  state.eraSpinUsed  = false;
-}
+let spinning = false;
+let spinIv   = null;
 
 function buildCourtScreen(){
-  updateRoundBar();
+  spinning = false;
+  clearInterval(spinIv);
+  state.selectedPlayer = null;
+  state.teamSpinUsed   = false;
+  state.eraSpinUsed    = false;
+  $('ct-round').textContent     = 'Round 1 / 5';
+  $('ct-team-pill').textContent = state.team.id;
+  $('ct-era-pill').textContent  = state.era;
+  $('respin-team').disabled = false; $('respin-team').classList.remove('used');
+  $('respin-era').disabled  = false; $('respin-era').classList.remove('used');
+  $('placing-bar').classList.remove('active');
+  $('sim-btn').classList.remove('ready');
+  $('spin-wait').style.display   = 'none';
+  $('player-list').style.display = '';
   updateCourtSlots();
   renderPlayerList();
 }
 
-// Position filter tabs
+// ── FILTERS / SEARCH / SORT ──
 document.querySelectorAll('.pf-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
+    if(spinning) return;
     document.querySelectorAll('.pf-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     state.posFilter = btn.dataset.f;
     renderPlayerList();
   });
 });
-
-// Search
-$('pl-search').addEventListener('input', ()=>renderPlayerList());
-
-// Sort
-$('sort-sel').addEventListener('change', e=>{ state.sortBy = e.target.value; renderPlayerList(); });
+$('pl-search').addEventListener('input', ()=>{ if(!spinning) renderPlayerList(); });
+$('sort-sel').addEventListener('change', e=>{ state.sortBy = e.target.value; if(!spinning) renderPlayerList(); });
 
 function posMatchesFilter(p, f){
-  if(f === 'all') return true;
-  if(f === 'G') return p === 'PG' || p === 'SG';
-  if(f === 'F') return p === 'SF' || p === 'PF';
-  if(f === 'C') return p === 'C';
+  if(f==='G') return p==='PG'||p==='SG';
+  if(f==='F') return p==='SF'||p==='PF';
+  if(f==='C') return p==='C';
   return true;
 }
 
 function renderPlayerList(){
-  const q       = ($('pl-search').value || '').trim().toLowerCase();
-  const sortKey = state.sortBy || 'pp';
-  const notUsed = p => !Object.values(state.roster).some(r=>r&&r.n===p.n);
-  const isHoopIQ = state.mode === 'hoopiq';
+  if(!state.team) return;
+  const q        = ($('pl-search').value||'').trim().toLowerCase();
+  const sortKey  = state.sortBy||'pp';
+  const isHoopIQ = state.mode==='hoopiq';
+  const notUsed  = p=>!Object.values(state.roster).some(r=>r&&r.n===p.n);
 
-  // Primary: current team + era
+  // Primary filter: current team + era
   let list = PLAYERS.filter(p=>
     p.t.includes(state.team.id) &&
-    p.e === state.era &&
+    p.e===state.era &&
     posMatchesFilter(p.p, state.posFilter) &&
-    (q.length < 2 || p.n.toLowerCase().includes(q)) &&
+    (q.length<2 || p.n.toLowerCase().includes(q)) &&
     notUsed(p)
   );
 
-  // Fallback: if nothing, search all players
-  let isFallback = false;
-  if(list.length === 0){
-    isFallback = true;
+  // Fallback: all players if empty
+  let fallback = false;
+  if(!list.length){
+    fallback = true;
     list = PLAYERS.filter(p=>
       posMatchesFilter(p.p, state.posFilter) &&
-      (q.length >= 1 ? p.n.toLowerCase().includes(q) : true) &&
+      (q.length>=1 ? p.n.toLowerCase().includes(q) : true) &&
       notUsed(p)
     );
   }
 
-  // Sort
-  list = [...list].sort((a,b)=> (b.s[sortKey]||0) - (a.s[sortKey]||0));
+  list = [...list].sort((a,b)=>(b.s[sortKey]||0)-(a.s[sortKey]||0));
 
-  $('pl-count').textContent = `${list.length} player${list.length!==1?'s':''} available`;
+  $('pl-count').textContent = list.length+' player'+(list.length!==1?'s':'')+' available';
   $('pl-hint').textContent  = state.selectedPlayer
-    ? `Placing: ${state.selectedPlayer.n.split(' ').pop()}`
-    : isFallback && q.length < 1
-      ? `No ${state.team.id} ${state.era} players — search all`
-      : 'Click a player to select';
+    ? 'Click a court position to place'
+    : fallback && !q ? 'No '+state.team.id+' '+state.era+' players — type to search all'
+    : 'Click a player to select';
 
   const container = $('player-list');
   container.innerHTML = '';
 
-  if(list.length === 0){
-    container.innerHTML = `<div style="padding:20px 16px;color:var(--muted);font-size:.85rem;text-align:center">Type a name to search all eras and teams</div>`;
+  if(!list.length){
+    container.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:.85rem;text-align:center">Type a player name to search all eras</div>';
     return;
   }
 
   list.forEach(p=>{
-    const col = isFallback ? badgeColor(p.t[0]) : badgeColor(state.team.id);
-    const isSelected = state.selectedPlayer && state.selectedPlayer.n === p.n;
-    const row = document.createElement('div');
-    row.className = 'pl-row' + (isSelected ? ' selected' : '');
+    const col   = fallback ? badgeColor(p.t[0]) : badgeColor(state.team.id);
+    const isSel = state.selectedPlayer && state.selectedPlayer.n===p.n;
+    const row   = document.createElement('div');
+    row.className = 'pl-row'+(isSel?' selected':'');
 
-    const statCols = isHoopIQ ? '' : [
-      ['PPG', p.s.pp], ['RPG', p.s.rp], ['APG', p.s.ap], ['SPG', p.s.sp], ['BPG', p.s.bp]
+    const stats = isHoopIQ ? '' : [
+      ['PPG',p.s.pp],['RPG',p.s.rp],['APG',p.s.ap],['SPG',p.s.sp],['BPG',p.s.bp]
     ].map(([l,v])=>`<div class="ps"><div class="ps-v">${v.toFixed(1)}</div><div class="ps-l">${l}</div></div>`).join('');
 
-    const metaTeam = isFallback ? `${p.t[0]} · ${p.e}` : p.e;
     row.innerHTML = `
       <div class="pl-badge" style="background:${col}">
-        <div class="bi">${initials(p.n)}</div>
-        <div class="bp">${p.p}</div>
+        <div class="bi">${initials(p.n)}</div><div class="bp">${p.p}</div>
       </div>
       <div class="pl-info">
         <div class="pl-name">${p.n}</div>
         <div class="pl-pos-label">${p.p}</div>
-        <div class="pl-meta-line">${state.team.id} · ${metaTeam}</div>
+        <div class="pl-meta-line">${fallback?p.t[0]+' · '+p.e:state.team.id+' · '+p.e}</div>
       </div>
-      ${isHoopIQ ? '' : `<div class="pl-stats-row">${statCols}</div>`}
-    `;
+      ${isHoopIQ?'':'<div class="pl-stats-row">'+stats+'</div>'}`;
 
-    row.addEventListener('click', ()=>selectPlayer(p));
+    row.addEventListener('click', ()=>{
+      if(spinning) return;
+      selectPlayer(p);
+    });
     container.appendChild(row);
   });
 }
@@ -859,129 +870,133 @@ function selectPlayer(p){
   state.selectedPlayer = p;
   $('placing-name').textContent = p.n;
   $('placing-bar').classList.add('active');
-  // Highlight ready slots
   document.querySelectorAll('.court-slot').forEach(slot=>{
-    const pos = slot.dataset.pos;
-    if(!state.roster[pos]) slot.classList.add('ready');
-    else slot.classList.remove('ready');
+    if(!state.roster[slot.dataset.pos]) slot.classList.add('ready');
   });
-  renderPlayerList(); // re-render to show selected highlight
-}
-
-function clearSelection(){
-  state.selectedPlayer = null;
-  $('placing-bar').classList.remove('active');
-  document.querySelectorAll('.court-slot').forEach(s=>s.classList.remove('ready'));
   renderPlayerList();
 }
 
-// Court slot clicks — place the selected player
+// ── COURT SLOT CLICKS ──
 document.querySelectorAll('.court-slot').forEach(slot=>{
   slot.addEventListener('click', ()=>{
+    if(spinning) return;
     const pos = slot.dataset.pos;
-    if(state.roster[pos]) return; // already filled
-    if(!state.selectedPlayer) return; // no player selected
-    placePlayer(state.selectedPlayer, pos);
+    if(state.roster[pos] || !state.selectedPlayer) return;
+    doPlacePlayer(state.selectedPlayer, pos);
   });
 });
 
-function placePlayer(player, pos){
+function doPlacePlayer(player, pos){
   state.roster[pos] = player;
   state.filledCount++;
-  clearSelection();
+  state.selectedPlayer = null;
+  $('placing-bar').classList.remove('active');
+  document.querySelectorAll('.court-slot').forEach(s=>s.classList.remove('ready'));
   updateCourtSlots();
 
-  const filled = POSITIONS.every(p=>state.roster[p]);
-  $('sim-btn').classList.toggle('ready', filled);
-
-  if(!filled){
-    // Auto-spin to new team+era for next round
-    autoSpinNextRound();
+  const allFilled = POSITIONS.every(p=>state.roster[p]);
+  if(allFilled){
+    $('sim-btn').classList.add('ready');
+    renderPlayerList();
+    return;
   }
+
+  // ── Show SPIN button for next round ──
+  const nextRound = state.filledCount + 1;
+  $('ct-round').textContent = `Round ${nextRound} / 5`;
+  $('respin-team').disabled = true; $('respin-team').classList.add('used');
+  $('respin-era').disabled  = true; $('respin-era').classList.add('used');
+  $('spin-wait-label').textContent = `Round ${nextRound} — Spin to draft your next player`;
+  $('player-list').style.display = 'none';
+  $('spin-wait').style.display   = 'flex';
 }
 
-// Individual re-spin buttons (one use each per round)
-$('respin-team').addEventListener('click', ()=>{
-  if(state.teamSpinUsed) return;
-  state.teamSpinUsed = true;
-  $('respin-team').classList.add('used');
-  $('respin-team').disabled = true;
-  miniSpin('team', ()=>renderPlayerList());
-});
-$('respin-era').addEventListener('click', ()=>{
-  if(state.eraSpinUsed) return;
-  state.eraSpinUsed = true;
-  $('respin-era').classList.add('used');
-  $('respin-era').disabled = true;
-  miniSpin('era', ()=>renderPlayerList());
-});
-
-let miniSpinInt = null;
-function miniSpin(which, onDone){
-  const pill = which === 'team' ? $('ct-team-pill') : $('ct-era-pill');
-  let t = 0;
-  clearInterval(miniSpinInt);
-  miniSpinInt = setInterval(()=>{
-    pill.textContent = which === 'team'
-      ? TEAMS[Math.floor(Math.random()*TEAMS.length)].id
-      : ERAS[Math.floor(Math.random()*ERAS.length)];
-    t++;
-    if(t >= 18){
-      clearInterval(miniSpinInt);
-      if(which === 'team'){
-        state.team = TEAMS[Math.floor(Math.random()*TEAMS.length)];
-        pill.textContent = state.team.id;
-      } else {
-        state.era = ERAS[Math.floor(Math.random()*ERAS.length)];
-        pill.textContent = state.era;
-      }
-      if(onDone) onDone();
-    }
-  }, 65);
-}
-
-let autoSpinInt = null;
-function autoSpinNextRound(){
-  // Spin both team + era pills, then re-render list
+function doRoundSpin(){
+  if(spinning) return;
+  $('spin-wait').style.display = 'none';
+  spinning = true;
   const tp = $('ct-team-pill'), ep = $('ct-era-pill');
-  $('ct-round').textContent = `Round ${state.filledCount + 1} / 5`;
-  // Reset respin buttons
-  $('respin-team').classList.remove('used'); $('respin-team').disabled = false;
-  $('respin-era').classList.remove('used');  $('respin-era').disabled  = false;
-  state.teamSpinUsed = false; state.eraSpinUsed = false;
   let t = 0;
-  clearInterval(autoSpinInt);
-  autoSpinInt = setInterval(()=>{
+  clearInterval(spinIv);
+  spinIv = setInterval(()=>{
     tp.textContent = TEAMS[Math.floor(Math.random()*TEAMS.length)].id;
     ep.textContent = ERAS[Math.floor(Math.random()*ERAS.length)];
     t++;
     if(t >= 22){
-      clearInterval(autoSpinInt);
+      clearInterval(spinIv);
       state.team = TEAMS[Math.floor(Math.random()*TEAMS.length)];
       state.era  = ERAS[Math.floor(Math.random()*ERAS.length)];
       tp.textContent = state.team.id;
       ep.textContent = state.era;
+      state.teamSpinUsed = false; state.eraSpinUsed = false;
+      $('respin-team').disabled = false; $('respin-team').classList.remove('used');
+      $('respin-era').disabled  = false; $('respin-era').classList.remove('used');
+      $('player-list').style.display = '';
+      spinning = false;
       renderPlayerList();
     }
   }, 70);
 }
 
+// ── ROUND SPIN BUTTON ──
+$('round-spin-btn').addEventListener('click', doRoundSpin);
+
+// ── RE-SPIN BUTTONS (one use each per round) ──
+$('respin-team').addEventListener('click', ()=>{
+  if(spinning||state.teamSpinUsed) return;
+  state.teamSpinUsed = true;
+  $('respin-team').disabled = true; $('respin-team').classList.add('used');
+  spinning = true;
+  const pill = $('ct-team-pill'); let t=0;
+  clearInterval(spinIv);
+  spinIv = setInterval(()=>{
+    pill.textContent = TEAMS[Math.floor(Math.random()*TEAMS.length)].id;
+    t++;
+    if(t>=16){
+      clearInterval(spinIv);
+      state.team = TEAMS[Math.floor(Math.random()*TEAMS.length)];
+      pill.textContent = state.team.id;
+      spinning = false;
+      renderPlayerList();
+    }
+  }, 65);
+});
+
+$('respin-era').addEventListener('click', ()=>{
+  if(spinning||state.eraSpinUsed) return;
+  state.eraSpinUsed = true;
+  $('respin-era').disabled = true; $('respin-era').classList.add('used');
+  spinning = true;
+  const pill = $('ct-era-pill'); let t=0;
+  clearInterval(spinIv);
+  spinIv = setInterval(()=>{
+    pill.textContent = ERAS[Math.floor(Math.random()*ERAS.length)];
+    t++;
+    if(t>=16){
+      clearInterval(spinIv);
+      state.era = ERAS[Math.floor(Math.random()*ERAS.length)];
+      pill.textContent = state.era;
+      spinning = false;
+      renderPlayerList();
+    }
+  }, 65);
+});
+
 function updateCourtSlots(){
   POSITIONS.forEach(pos=>{
     const slot = document.querySelector(`.court-slot[data-pos="${pos}"]`);
     const box  = $(`slot-${pos}`);
-    const player = state.roster[pos];
-    if(player){
+    const p    = state.roster[pos];
+    if(p){
       slot.classList.add('filled'); slot.classList.remove('ready','active');
-      const col = badgeColor(player.t[0]);
-      box.style.background = col + '22';
+      const col = badgeColor(p.t[0]);
+      box.style.background  = col+'22';
       box.style.borderColor = col;
-      box.querySelector('.slot-initials').textContent = initials(player.n);
+      box.querySelector('.slot-initials').textContent = initials(p.n);
       box.querySelector('.slot-pos').textContent      = pos;
     } else {
       slot.classList.remove('filled');
-      box.style.background = '';
-      box.style.borderColor = '';
+      box.style.background = box.style.borderColor = '';
       box.querySelector('.slot-initials').textContent = '';
     }
   });
