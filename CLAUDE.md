@@ -2,8 +2,15 @@
 ## Project Memory (auto-managed by Cortex)
 
 ### Last Session
-Session covered: The file /Users/mohammedrahman/Desktop/GameOfficial/GameWorld/Hide and Seek Game/index.html has been updated successfully. (file state is current in your context — no need to Read it back); The file /Users/mohammedrahman/Desktop/GameOfficial/GameWorld/Hide and Seek Game/index.html has been updated successfully. (file state is current in your context — no need to Read it back); <tool_use_error>String to replace not found in file.
-String:   cyl(0.3, 0.4, 3.5, x, 1.75, z, 0x4a37...
+1 file changed, 29 insertions(+), 4 deletions(-)
+To https://github.com/mohammedrahman1991/GameWorld.git
+   e2c690e..7e22edf  first-push -> first-push. Pushed. Three fixes in this update:
+
+**Black line gone** — The ground plane was at exactly `y=0`, same as the top of the house floor slab. Two surfaces sharing the same depth causes z-fighting (dark f. Make a MD file to make it organized and create game orderly and smooth
+
+Make a new game called castle man battles
+
+Make a game that everything is p
 
 ### Recent Decisions
 _No decisions recorded yet._
@@ -13,8 +20,9 @@ _No context available._
 
 ### Open Problems
 - Tool permission request failed: Error: Tool permission stream closed before response received
+- <tool_use_error>File has not been read yet. Read it first before writing to it.</tool_use_error>
 
-_Last updated: 2026-06-06T18:53:27.908Z | Tokens: 240/800_
+_Last updated: 2026-06-07T07:21:39.770Z | Tokens: 198/800_
 <!-- CORTEX:END -->
 
 

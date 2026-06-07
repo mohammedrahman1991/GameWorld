@@ -12,6 +12,13 @@
 </head>
 <body>
   <canvas id="c"></canvas>
+  <div id="splash" style="position:fixed;inset:0;z-index:100;background:linear-gradient(135deg,#052e16,#14532d);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;font-family:'Segoe UI',system-ui,sans-serif;">
+    <div style="font-size:4rem;">🏍️</div>
+    <h1 style="font-size:2.4rem;font-weight:900;color:#fff;margin:0;">Moto Island</h1>
+    <p style="color:rgba(255,255,255,.65);font-size:.95rem;margin:0;">Race across the island!</p>
+    <button onclick="document.getElementById('splash').style.display='none'" style="background:linear-gradient(135deg,#16a34a,#4ade80);border:none;border-radius:14px;color:#fff;cursor:pointer;font-size:1.05rem;font-weight:700;padding:15px 48px;box-shadow:0 5px 0 rgba(0,0,0,0.3);">▶ Play</button>
+    <button onclick="WackyShare.show('Moto Island','Play Moto Island!','https://wackybrains.com/moto-island/')" style="background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:14px;color:#fff;cursor:pointer;font-size:.95rem;font-weight:700;padding:13px 36px;box-shadow:0 5px 0 rgba(180,80,0,0.3);">⬆ Share Game</button>
+  </div>
   <button id="wb-moto-share" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 32px;background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:12px;color:#fff;font-size:1rem;font-weight:800;cursor:pointer;z-index:999;">⬆ Share Result</button>
   <script src="game.js"></script>
   <script src="/share-widget.js"></script>
