@@ -734,6 +734,14 @@ $('mode-hoopiq').addEventListener('click',  ()=>pickMode('hoopiq'));
 /* ═══════════════════════════════════════════
    SPIN LOGIC
 ═══════════════════════════════════════════ */
+function validErasForTeam(teamId){
+  return ERAS.filter(era=>PLAYERS.some(p=>p.t.includes(teamId)&&p.e===era));
+}
+function pickEra(teamId){
+  const v=validErasForTeam(teamId);
+  return v.length ? v[Math.floor(Math.random()*v.length)] : ERAS[Math.floor(Math.random()*ERAS.length)];
+}
+
 let spinInterval = null;
 $('spin-btn').addEventListener('click', doSpin);
 
@@ -756,7 +764,7 @@ function doSpin(){
       clearInterval(spinInterval);
       // Land on final values
       const chosenTeam = TEAMS[Math.floor(Math.random()*TEAMS.length)];
-      const chosenEra  = ERAS[Math.floor(Math.random()*ERAS.length)];
+      const chosenEra  = pickEra(chosenTeam.id);
       state.team = chosenTeam;
       state.era  = chosenEra;
       $('team-val').textContent = chosenTeam.id;
@@ -968,7 +976,7 @@ function doRoundSpin(){
     if(t >= 26){
       clearInterval(spinIv);
       state.team = TEAMS[Math.floor(Math.random()*TEAMS.length)];
-      state.era  = ERAS[Math.floor(Math.random()*ERAS.length)];
+      state.era  = pickEra(state.team.id);
       $('sw-team-val').textContent = state.team.id;
       $('sw-era-val').textContent  = state.era;
       $('sw-team-card').classList.remove('spinning');
@@ -1007,6 +1015,12 @@ $('respin-team').addEventListener('click', ()=>{
       clearInterval(spinIv);
       state.team = TEAMS[Math.floor(Math.random()*TEAMS.length)];
       pill.textContent = state.team.id;
+      // if current era has no players for the new team, quietly fix the era
+      const validEras = validErasForTeam(state.team.id);
+      if(validEras.length && !validEras.includes(state.era)){
+        state.era = validEras[Math.floor(Math.random()*validEras.length)];
+        $('ct-era-pill').textContent = state.era;
+      }
       spinning = false;
       renderPlayerList();
     }
@@ -1025,7 +1039,7 @@ $('respin-era').addEventListener('click', ()=>{
     t++;
     if(t>=16){
       clearInterval(spinIv);
-      state.era = ERAS[Math.floor(Math.random()*ERAS.length)];
+      state.era = pickEra(state.team.id);
       pill.textContent = state.era;
       spinning = false;
       renderPlayerList();
