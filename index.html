@@ -178,8 +178,6 @@
     #ai-send { width: 40px; height: 40px; border-radius: 50%; border: none; flex-shrink: 0; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .15s; }
     #ai-send:hover { transform: scale(1.08); }
 
-    #ai-disclaimer { font-size: .7rem; color: #475569; text-align: center; padding: 0 16px 12px; }
-
     @media (max-width: 480px) {
       #ai-panel { right: 16px; left: 16px; width: auto; top: 64px; max-height: min(70vh, calc(100vh - 80px)); }
       #ai-toggle { padding: 8px 12px; font-size: .8rem; }
@@ -691,7 +689,6 @@
     <input id="ai-input" type="text" placeholder="Describe the game in your own words…" />
     <button id="ai-send" aria-label="Send">➤</button>
   </div>
-  <div id="ai-disclaimer">✨ I'm still learning, so I might not always get it right — try different words!</div>
 </div>
 
 <!-- ── Game Detail Modal ── -->
@@ -1320,10 +1317,229 @@
   var AI_PRIMARY = ['relaxing', 'concentration'];
   var AI_MORE    = ['action', 'racing', 'adventure', 'multiplayer'];
 
-  var AI_STOPWORDS = ['a','an','the','i','want','to','play','game','games','for','with','of','and','some','something','looking','like','find','me','please','that','is','are','can','you','show','recommend'];
+  /* Mood/vibe keywords per game — used only to make AI search smarter */
+  var GAME_VIBES = {
+    'buckman':        'racing fast paced arcade solo',
+    'drone-zayn':     'relaxing flying exploration simulation casual solo',
+    'goofy-house':    'relaxing casual exploration funny silly family solo',
+    'monster-truck':  'action arcade fast paced destruction solo',
+    'turtles':        'action multiplayer coop 2player brawler family',
+    'sniper':         'action shooter pvp multiplayer 2player versus competitive intense',
+    'fight-arrows':   'action archery pvp multiplayer 2player versus competitive',
+    'castle-man':     'action pvp multiplayer 2player zombie shooter intense',
+    'shootpoint':     'action shooter solo intense',
+    'space-invasion': 'arcade classic shooter solo retro',
+    'capaw':          'action multiplayer 2player funny silly brawler family animals',
+    'blob-eating':    'arcade casual competitive solo io',
+    'moto-island':    'racing multiplayer 2player competitive',
+    'bike-rider':     'racing platformer multiplayer 2player challenging',
+    'futbol':         'sports multiplayer 2player versus competitive football soccer',
+    'bball':          'sports multiplayer 2player casual basketball',
+    'parkour':        'platformer solo challenging fast paced',
+    'swing-man':      'casual relaxing physics solo',
+    'packaging':      'simulation relaxing casual exploration solo',
+    'farming':        'relaxing casual simulation family solo',
+    'hide-seek':      'multiplayer 2player family funny stealth hiding exploration',
+    'obstacle':       'platformer challenging solo',
+    'resell':         'strategy simulation casual business solo',
+    'paintball':      'puzzle casual relaxing colorful solo',
+    'blackjack':      'cards casual strategy classic multiplayer 2player',
+    'tictactoe':      'classic casual quick family multiplayer 2player',
+    'marbles':        'casual multiplayer 2player physics versus',
+    'spelling':       'educational family kids casual solo word',
+    'touch-arrow':    'casual quick reflex mobile solo archery',
+    'going-balls':    'casual arcade multiplayer 2player colorful racing',
+    'braincrate':     'family educational memory casual kids multiplayer',
+    '82-and-0':       'strategy sports solo deep basketball',
+    'find-word':      'educational family kids word multiplayer',
+  };
+
+  /* Everyday words → vocabulary used in tags/vibes, so loose descriptions still match */
+  var AI_SYNONYMS = {
+    casual: ['relaxing','simple','family','arcade'],
+    chill: ['relaxing','casual','calm'],
+    relax: ['relaxing','casual'],
+    calm: ['relaxing','casual'],
+    easy: ['casual','relaxing','simple'],
+    simple: ['casual','easy'],
+    fun: ['casual','funny','arcade'],
+    funny: ['silly','comedy'],
+    silly: ['funny'],
+    scary: ['horror','zombie','spooky'],
+    spooky: ['horror','zombie'],
+    horror: ['zombie','spooky'],
+    fight: ['fighting','brawler','combat','pvp','battle'],
+    fighting: ['brawler','combat','pvp'],
+    brawl: ['brawler','fight','combat'],
+    shoot: ['shooter','shooting','gun'],
+    shooting: ['shooter','gun','sniper'],
+    gun: ['shooter','shooting','sniper'],
+    guns: ['shooter','shooting','sniper'],
+    war: ['action','battle','combat','shooter'],
+    car: ['racing','driving','race'],
+    cars: ['racing','driving','race'],
+    drive: ['racing','driving'],
+    driving: ['racing','car'],
+    bike: ['racing','motorcycle'],
+    motorcycle: ['bike','racing'],
+    multiplayer: ['2player','coop','versus','pvp'],
+    '2player': ['multiplayer','coop'],
+    friend: ['multiplayer','coop','versus','2player'],
+    friends: ['multiplayer','coop','versus','2player'],
+    coop: ['multiplayer','team'],
+    versus: ['pvp','multiplayer','competitive'],
+    pvp: ['versus','multiplayer','competitive'],
+    solo: ['1player','single'],
+    single: ['solo','1player'],
+    kid: ['kids','family','educational'],
+    kids: ['family','educational','memory'],
+    child: ['kids','family'],
+    children: ['kids','family'],
+    brain: ['memory','puzzle','strategy','educational'],
+    smart: ['memory','puzzle','strategy'],
+    think: ['puzzle','strategy','memory'],
+    thinking: ['puzzle','strategy'],
+    word: ['vocabulary','spelling','words'],
+    words: ['vocabulary','spelling','word'],
+    vocabulary: ['word','spelling'],
+    spell: ['spelling','word'],
+    card: ['cards','blackjack'],
+    cards: ['blackjack','card'],
+    zombie: ['zombies','castle'],
+    zombies: ['zombie','castle'],
+    basketball: ['bball','sports'],
+    soccer: ['football','futbol','sports'],
+    football: ['soccer','futbol','sports'],
+    archery: ['arrow','bow'],
+    bow: ['archery','arrow'],
+    arrow: ['archery','bow'],
+    space: ['alien','rocket'],
+    alien: ['space','invasion'],
+    aliens: ['space','invasion'],
+    farm: ['farming'],
+    money: ['business','simulation'],
+    business: ['simulation','money'],
+    flying: ['drone','flight'],
+    fly: ['drone','flight'],
+    drone: ['flight','flying'],
+    explore: ['exploration','adventure'],
+    exploring: ['exploration','adventure'],
+    house: ['exploration'],
+    hide: ['hiding','stealth'],
+    seek: ['hiding','stealth'],
+    hiding: ['hide','stealth'],
+    quick: ['fast','reflex'],
+    fast: ['quick','racing'],
+    colorful: ['colors','colourful'],
+    colourful: ['colors','colorful'],
+  };
+
+  var AI_STOPWORDS = ['a','an','the','i','want','to','play','game','games','for','with','of','and','some','something','looking','like','find','me','please','that','is','are','can','you','show','recommend','do','does','did','have','has','had','got','any','there','kind','kinds','type','types','sort','sorts','could','would','should','need','needs','give','get','more','also','too','really','very','super','duper','nice','cool','good','best','new','my','your','this','these','those','hi','hello','hey','yo','sup','thanks','thank','please'];
+
+  var AI_FALLBACK = ['braincrate','going-balls','castle-man','farming','82-and-0'];
 
   function aiEsc(s) {
     return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; });
+  }
+
+  /* Levenshtein distance — corrects small typos against the known vocabulary */
+  function aiDistance(a, b) {
+    var m = a.length, n = b.length, dp = [], i, j;
+    for (i = 0; i <= m; i++) dp.push([i]);
+    for (j = 0; j <= n; j++) dp[0][j] = j;
+    for (i = 1; i <= m; i++) {
+      for (j = 1; j <= n; j++) {
+        dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+      }
+    }
+    return dp[m][n];
+  }
+
+  var AI_VOCAB = (function(){
+    var set = {};
+    Object.keys(AI_SYNONYMS).forEach(function(w){ set[w] = true; });
+    Object.keys(GAME_VIBES).forEach(function(id){ GAME_VIBES[id].split(/\s+/).forEach(function(w){ set[w] = true; }); });
+    Object.keys(GAMES).forEach(function(id){
+      (GAMES[id].tags || []).forEach(function(t){ t.toLowerCase().split(/[^a-z0-9]+/).forEach(function(w){ if (w) set[w] = true; }); });
+    });
+    return Object.keys(set);
+  })();
+
+  function aiCorrect(word) {
+    if (word.length < 4 || AI_VOCAB.indexOf(word) !== -1) return word;
+    var best = word, bestDist = 3;
+    AI_VOCAB.forEach(function(v){
+      if (Math.abs(v.length - word.length) > 2) return;
+      var d = aiDistance(word, v);
+      if (d < bestDist) { bestDist = d; best = v; }
+    });
+    return best;
+  }
+
+  /* Precomputed searchable word lists per game, weighted by field */
+  var AI_FIELD_WEIGHT = { title: 3, cat: 3, tags: 4, vibes: 4, about: 1 };
+  var AI_INDEX = (function(){
+    var idx = {};
+    function words(s){ return (s || '').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean); }
+    Object.keys(GAMES).forEach(function(id){
+      var g = GAMES[id];
+      idx[id] = {
+        title: words(g.title),
+        cat:   words(g.cat),
+        tags:  words((g.tags || []).join(' ')),
+        vibes: words(GAME_VIBES[id] || ''),
+        about: words(g.about),
+      };
+    });
+    return idx;
+  })();
+
+  function aiWordMatch(token, word) {
+    if (token === word) return true;
+    if (token.length >= 4 && word.length >= 4 && (word.indexOf(token) === 0 || token.indexOf(word) === 0)) return true;
+    return false;
+  }
+
+  function aiSearch(query) {
+    var raw = query.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(function(w){
+      return w.length > 1 && AI_STOPWORDS.indexOf(w) === -1;
+    });
+    if (!raw.length) return { ids: [], label: '' };
+
+    var tokens = [], seen = {}, labelWords = [];
+    raw.forEach(function(w){
+      var corrected = aiCorrect(w);
+      if (labelWords.indexOf(corrected) === -1) labelWords.push(corrected);
+      if (!seen[corrected]) { tokens.push({ word: corrected, weight: 1 }); seen[corrected] = true; }
+      (AI_SYNONYMS[corrected] || []).forEach(function(syn){
+        if (!seen[syn]) { tokens.push({ word: syn, weight: 0.6 }); seen[syn] = true; }
+      });
+    });
+
+    var scored = [];
+    Object.keys(GAMES).forEach(function(id){
+      var hay = AI_INDEX[id], score = 0;
+      tokens.forEach(function(tok){
+        Object.keys(AI_FIELD_WEIGHT).forEach(function(field){
+          hay[field].forEach(function(word){
+            if (aiWordMatch(tok.word, word)) score += AI_FIELD_WEIGHT[field] * tok.weight;
+          });
+        });
+      });
+      if (score > 0) scored.push({ id: id, score: score });
+    });
+    scored.sort(function(a, b){ return b.score - a.score; });
+    return { ids: scored.map(function(s){ return s.id; }), label: labelWords.join(' ') };
+  }
+
+  function aiResultCard(id) {
+    var g = GAMES[id];
+    return '<div class="ai-result-card" data-game="' + id + '">'
+      + '<div class="ai-result-icon ' + g.grad + '">' + g.emoji + '</div>'
+      + '<div class="ai-result-info"><div class="ai-result-title">' + aiEsc(g.title) + '</div>'
+      + '<div class="ai-result-cat">' + aiEsc(g.cat) + '</div></div>'
+      + '<div class="ai-result-play">▶</div>'
+      + '</div>';
   }
 
   function aiAppend(html, cls) {
@@ -1335,22 +1551,16 @@
     return div;
   }
 
-  function aiRenderResults(ids) {
-    var matched = ids.filter(function(id){ return GAMES[id]; }).slice(0, 4);
+  function aiRenderResults(ids, label) {
+    var matched = ids.filter(function(id){ return GAMES[id]; }).slice(0, 5);
     var html;
     if (!matched.length) {
-      html = '<div>Hmm, I couldn\'t find a match for that 🤔 Try words like "racing", "puzzle", "multiplayer" or "relaxing"!</div>';
+      html = '<div>' + (label ? 'No exact match for "' + aiEsc(label) + '" yet' : 'Not sure on that one') + ' — here are some popular picks, or try describing a genre, mood, or gameplay style!</div><div class="ai-results">';
+      AI_FALLBACK.forEach(function(id){ html += aiResultCard(id); });
+      html += '</div>';
     } else {
-      html = '<div>Here\'s what I found for you:</div><div class="ai-results">';
-      matched.forEach(function(id){
-        var g = GAMES[id];
-        html += '<div class="ai-result-card" data-game="' + id + '">'
-          + '<div class="ai-result-icon ' + g.grad + '">' + g.emoji + '</div>'
-          + '<div class="ai-result-info"><div class="ai-result-title">' + aiEsc(g.title) + '</div>'
-          + '<div class="ai-result-cat">' + aiEsc(g.cat) + '</div></div>'
-          + '<div class="ai-result-play">▶</div>'
-          + '</div>';
-      });
+      html = '<div>' + (label ? 'Here\'s what I found for "' + aiEsc(label) + '":' : 'Here\'s what I found for you:') + '</div><div class="ai-results">';
+      matched.forEach(function(id){ html += aiResultCard(id); });
       html += '</div>';
     }
     var div = aiAppend(html, 'ai-msg-bot');
@@ -1385,29 +1595,13 @@
     });
   }
 
-  function aiSearch(query) {
-    var words = query.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/).filter(function(w){
-      return w.length > 1 && AI_STOPWORDS.indexOf(w) === -1;
-    });
-    if (!words.length) return [];
-    var scored = [];
-    Object.keys(GAMES).forEach(function(id){
-      var g = GAMES[id];
-      var hay = (g.title + ' ' + g.cat + ' ' + g.about + ' ' + (g.tags || []).join(' ')).toLowerCase();
-      var score = 0;
-      words.forEach(function(w){ if (hay.indexOf(w) !== -1) score++; });
-      if (score > 0) scored.push({ id: id, score: score });
-    });
-    scored.sort(function(a, b){ return b.score - a.score; });
-    return scored.map(function(s){ return s.id; });
-  }
-
   function aiHandleQuery() {
     var q = aiInput.value.trim();
     if (!q) return;
     aiAppend(aiEsc(q), 'ai-msg-user');
     aiInput.value = '';
-    aiRenderResults(aiSearch(q));
+    var result = aiSearch(q);
+    aiRenderResults(result.ids, result.label);
   }
 
   aiToggle.addEventListener('click', function(){
