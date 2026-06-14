@@ -66,6 +66,14 @@
 
     .section-label { color: var(--muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin: 40px 0 16px; }
 
+    .site-search { position: relative; margin: 0 0 28px; }
+    .site-search svg { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #a1a1aa; pointer-events: none; }
+    .site-search input { width: 100%; background: #52525b; border: 1px solid rgba(255,255,255,.06); border-radius: 14px; padding: 14px 18px 14px 50px; font-size: 1rem; color: var(--text); outline: none; transition: background .2s, box-shadow .2s; }
+    .site-search input::placeholder { color: #a1a1aa; }
+    .site-search input:focus { background: #5b5b66; box-shadow: 0 0 0 2px var(--accent); }
+    .site-search-empty { display: none; text-align: center; color: var(--muted); padding: 40px 0; }
+    .site-search-empty.show { display: block; }
+
     nav { background: rgba(13,13,26,0.97); border-bottom: 1px solid rgba(255,255,255,0.08); position: sticky; top: 0; z-index: 100; }
     .nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; height: 56px; }
     .nav-logo { font-weight: 900; font-size: 1.1rem; background: linear-gradient(135deg,#a78bfa,#22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
@@ -208,6 +216,12 @@
 </header>
 
 <main>
+
+  <div class="site-search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    <input id="site-search-input" type="text" placeholder="Find game or genre" autocomplete="off" />
+  </div>
+  <p id="site-search-empty" class="site-search-empty">No games found — try a different word like "racing", "puzzle", or "multiplayer".</p>
 
   <!-- BrainCrate Featured Hero -->
   <div class="featured-hero">
@@ -1190,6 +1204,41 @@
       ]
     },
   };
+
+  /* ── SITE SEARCH ── */
+  var siteSearchInput = document.getElementById('site-search-input');
+  var siteSearchEmpty = document.getElementById('site-search-empty');
+  var siteSearchHero  = document.querySelector('.featured-hero');
+  var siteSearchAbout = document.querySelector('.about-section');
+  var siteSearchSections = Array.prototype.map.call(document.querySelectorAll('.section-label'), function(label){
+    return { label: label, grid: label.nextElementSibling };
+  }).filter(function(s){ return s.grid && s.grid.classList.contains('grid'); });
+
+  siteSearchInput.addEventListener('input', function(){
+    var query = siteSearchInput.value.trim().toLowerCase();
+    var active = query.length > 0;
+
+    if (siteSearchHero)  siteSearchHero.style.display  = active ? 'none' : '';
+    if (siteSearchAbout) siteSearchAbout.style.display = active ? 'none' : '';
+
+    var totalVisible = 0;
+    siteSearchSections.forEach(function(section){
+      var visible = 0;
+      section.grid.querySelectorAll('.card[data-game]').forEach(function(card){
+        var g = GAMES[card.dataset.game];
+        var hay = [g.title, g.cat, (g.tags || []).join(' '), GAME_VIBES[card.dataset.game] || ''].join(' ').toLowerCase();
+        var match = !active || hay.indexOf(query) !== -1;
+        card.style.display = match ? '' : 'none';
+        if (match) visible++;
+      });
+      var show = !active || visible > 0;
+      section.label.style.display = show ? '' : 'none';
+      section.grid.style.display = show ? '' : 'none';
+      totalVisible += visible;
+    });
+
+    siteSearchEmpty.classList.toggle('show', active && totalVisible === 0);
+  });
 
   /* ── STAR RENDERER ── */
   function stars(rating) {
