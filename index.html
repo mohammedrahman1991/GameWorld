@@ -74,6 +74,25 @@
     .site-search-empty { display: none; text-align: center; color: var(--muted); padding: 40px 0; }
     .site-search-empty.show { display: block; }
 
+    .recent-section { display: none; margin-bottom: 8px; }
+    .recent-row { display: flex; gap: 14px; overflow-x: auto; padding: 4px 2px 16px; }
+    .recent-row.expanded { flex-wrap: wrap; overflow-x: visible; }
+    .recent-row::-webkit-scrollbar { height: 6px; }
+    .recent-row::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 99px; }
+
+    .recent-mygames { flex: 0 0 110px; width: 110px; height: 110px; border-radius: 16px; background: linear-gradient(135deg, rgba(124,58,237,.35), rgba(6,182,212,.18)); border: 1px solid rgba(255,255,255,.1); display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 14px 8px 10px; cursor: pointer; font-weight: 700; font-size: .9rem; text-align: center; color: var(--text); transition: transform .15s; }
+    .recent-mygames:hover { transform: translateY(-3px); }
+    .recent-mygames-arrow { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #fff; transition: transform .2s; }
+    .recent-row.expanded .recent-mygames-arrow { transform: rotate(90deg); }
+
+    .recent-card { flex: 0 0 110px; width: 110px; height: 110px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 2.6rem; position: relative; cursor: pointer; border: 1px solid rgba(255,255,255,.07); transition: transform .15s; overflow: hidden; }
+    .recent-card:hover { transform: translateY(-3px); }
+    .recent-card-label { position: absolute; left: 0; right: 0; bottom: 0; font-size: .68rem; font-weight: 700; padding: 4px 6px; background: linear-gradient(transparent, rgba(0,0,0,.8)); color: #fff; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    @media (max-width: 480px) {
+      .recent-mygames, .recent-card { flex-basis: 92px; width: 92px; height: 92px; font-size: 2.1rem; }
+    }
+
     nav { background: rgba(13,13,26,0.97); border-bottom: 1px solid rgba(255,255,255,0.08); position: sticky; top: 0; z-index: 100; }
     .nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; height: 56px; }
     .nav-logo { font-weight: 900; font-size: 1.1rem; background: linear-gradient(135deg,#a78bfa,#22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
@@ -222,6 +241,17 @@
     <input id="site-search-input" type="text" placeholder="Find game or genre" autocomplete="off" />
   </div>
   <p id="site-search-empty" class="site-search-empty">No games found — try a different word like "racing", "puzzle", or "multiplayer".</p>
+
+  <!-- ── Continue Playing ── -->
+  <div class="recent-section" id="recent-section">
+    <p class="section-label">🕹️ Continue Playing</p>
+    <div class="recent-row" id="recent-row">
+      <div class="recent-mygames" id="recent-mygames">
+        <span>My games</span>
+        <span class="recent-mygames-arrow" id="recent-mygames-arrow">›</span>
+      </div>
+    </div>
+  </div>
 
   <!-- BrainCrate Featured Hero -->
   <div class="featured-hero">
@@ -1240,6 +1270,48 @@
     siteSearchEmpty.classList.toggle('show', active && totalVisible === 0);
   });
 
+  /* ── CONTINUE PLAYING (recently played games) ── */
+  var RECENT_KEY = 'wb_recent_games';
+  var RECENT_MAX = 20;
+
+  function getRecentGames() {
+    try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch (e) { return []; }
+  }
+
+  function recordRecentGame(id) {
+    if (!id || !GAMES[id]) return;
+    try {
+      var list = getRecentGames().filter(function(x){ return x !== id; });
+      list.unshift(id);
+      if (list.length > RECENT_MAX) list = list.slice(0, RECENT_MAX);
+      localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+    } catch (e) {}
+    renderRecentGames();
+  }
+
+  function renderRecentGames() {
+    var list = getRecentGames().filter(function(id){ return GAMES[id]; });
+    var section = document.getElementById('recent-section');
+    var row = document.getElementById('recent-row');
+    section.style.display = list.length ? 'block' : 'none';
+    Array.prototype.slice.call(row.children, 1).forEach(function(el){ el.remove(); });
+    list.forEach(function(id){
+      var g = GAMES[id];
+      var card = document.createElement('div');
+      card.className = 'recent-card ' + g.grad;
+      card.innerHTML = '<span>' + g.emoji + '</span><div class="recent-card-label"></div>';
+      card.querySelector('.recent-card-label').textContent = g.title;
+      card.addEventListener('click', function(){ openModal(id); });
+      row.appendChild(card);
+    });
+  }
+
+  document.getElementById('recent-mygames').addEventListener('click', function(){
+    document.getElementById('recent-row').classList.toggle('expanded');
+  });
+
+  renderRecentGames();
+
   /* ── STAR RENDERER ── */
   function stars(rating) {
     var full = Math.floor(rating), half = (rating - full) >= 0.4 ? 1 : 0;
@@ -1252,12 +1324,14 @@
   var panelEl   = document.getElementById('gm-panel');
   var currentHref  = '';
   var currentTitle = '';
+  var currentId    = '';
 
   function openModal(id) {
     var g = GAMES[id];
     if (!g) return;
     currentHref  = g.href;
     currentTitle = g.title;
+    currentId    = id;
 
     // icon
     var icon = document.getElementById('gm-icon');
@@ -1341,6 +1415,7 @@
 
   /* ── AD OVERLAY ── */
   document.getElementById('gm-play-now').addEventListener('click', function() {
+    recordRecentGame(currentId);
     closeModal();
     var name = encodeURIComponent(currentTitle);
     var dest = encodeURIComponent(currentHref);
