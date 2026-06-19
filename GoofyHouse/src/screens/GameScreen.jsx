@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useCallback } from 'react'
 import { Canvas } from '@react-three/fiber'
 import useGameStore from '../store/useGameStore'
 import HouseInterior from '../components/interiors/HouseInterior'
@@ -164,7 +164,7 @@ export default function GameScreen() {
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <Canvas shadows camera={{ fov: 50, position: [12, 12, 12] }}>
+      <Canvas shadows camera={{ fov: 55, position: [0, 5.5, 7] }}>
         <Scene houseType={selectedHouse} />
       </Canvas>
 
@@ -259,6 +259,85 @@ export default function GameScreen() {
 
       {/* Exterior inventory panel */}
       {exteriorInventoryOpen && editMode === 'exterior' && !heldItem && <ExteriorInventoryPanel />}
+
+      {/* Mobile joystick — only shown on touch devices in interior mode */}
+      {editMode === 'interior' && !heldItem && !shopOpen && !inventoryOpen && (
+        <MobileJoystick />
+      )}
+    </div>
+  )
+}
+
+function MobileJoystick() {
+  const stickRef  = useRef(null)
+  const baseRef   = useRef(null)
+  const touchId   = useRef(null)
+  const originRef = useRef({ x: 0, y: 0 })
+  const RADIUS    = 40
+
+  const onTouchStart = useCallback((e) => {
+    if (touchId.current !== null) return
+    const t = e.changedTouches[0]
+    touchId.current  = t.identifier
+    originRef.current = { x: t.clientX, y: t.clientY }
+    if (stickRef.current) stickRef.current.style.transform = 'translate(-50%,-50%)'
+  }, [])
+
+  const onTouchMove = useCallback((e) => {
+    for (const t of e.changedTouches) {
+      if (t.identifier !== touchId.current) continue
+      let dx = t.clientX - originRef.current.x
+      let dz = t.clientY - originRef.current.y
+      const len = Math.sqrt(dx * dx + dz * dz)
+      if (len > RADIUS) { dx = dx / len * RADIUS; dz = dz / len * RADIUS }
+      if (stickRef.current) {
+        stickRef.current.style.transform =
+          `translate(calc(-50% + ${dx}px), calc(-50% + ${dz}px))`
+      }
+      if (window.__ghJoystick) {
+        window.__ghJoystick.current.dx = dx / RADIUS
+        window.__ghJoystick.current.dz = dz / RADIUS
+      }
+    }
+  }, [])
+
+  const onTouchEnd = useCallback((e) => {
+    for (const t of e.changedTouches) {
+      if (t.identifier !== touchId.current) continue
+      touchId.current = null
+      if (stickRef.current) stickRef.current.style.transform = 'translate(-50%,-50%)'
+      if (window.__ghJoystick) window.__ghJoystick.current = { dx: 0, dz: 0 }
+    }
+  }, [])
+
+  return (
+    <div
+      ref={baseRef}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      onTouchCancel={onTouchEnd}
+      style={{
+        position: 'absolute', bottom: 100, left: 40,
+        width: 110, height: 110,
+        background: 'rgba(255,255,255,0.12)',
+        border: '2px solid rgba(255,255,255,0.25)',
+        borderRadius: '50%',
+        touchAction: 'none', userSelect: 'none',
+      }}
+    >
+      <div
+        ref={stickRef}
+        style={{
+          position: 'absolute', top: '50%', left: '50%',
+          width: 50, height: 50,
+          background: 'rgba(255,255,255,0.35)',
+          border: '2px solid rgba(255,255,255,0.6)',
+          borderRadius: '50%',
+          transform: 'translate(-50%,-50%)',
+          pointerEvents: 'none',
+        }}
+      />
     </div>
   )
 }

@@ -4,51 +4,64 @@ import { isInsideBounds, isBlocked } from '../../utils/collision'
 import { HOUSE_BOUNDS, FURNITURE_SIZES } from '../../utils/furnitureSizes'
 import useGameStore from '../../store/useGameStore'
 
-const SPEED = 4
+const SPEED     = 4
+const TURN_RATE = 2.2   // radians per second
 const CHAR_SIZE = { w: 0.4, d: 0.4 }
 
-// positionRef: { current: [x, y, z] }
-// rotationRef: { current: number }  (Y rotation in radians)
-// walkTimeRef: { current: number }  (increments while moving, drives animation)
+// W/S — move forward/backward along the character's facing direction
+// A/D — turn left / turn right (rotate the character)
 export default function useCharacterMovement(positionRef, rotationRef, walkTimeRef, houseType) {
-  const keys = useRef(new Set())
+  const keys     = useRef(new Set())
+  const joystick = useRef({ dx: 0, dz: 0 })   // filled by mobile joystick
   const isMoving = useRef(false)
 
   useEffect(() => {
     const down = (e) => keys.current.add(e.key.toLowerCase())
-    const up = (e) => keys.current.delete(e.key.toLowerCase())
+    const up   = (e) => keys.current.delete(e.key.toLowerCase())
     window.addEventListener('keydown', down)
     window.addEventListener('keyup', up)
+    // expose joystick ref so the HUD joystick can write into it
+    window.__ghJoystick = joystick
     return () => {
       window.removeEventListener('keydown', down)
       window.removeEventListener('keyup', up)
+      delete window.__ghJoystick
     }
   }, [])
 
   useFrame((_, delta) => {
-    const k = keys.current
-    let dx = 0, dz = 0
+    const k  = keys.current
+    const jx = joystick.current.dx
+    const jz = joystick.current.dz
 
-    if (k.has('w') || k.has('arrowup'))    dz -= 1
-    if (k.has('s') || k.has('arrowdown'))  dz += 1
-    if (k.has('a') || k.has('arrowleft'))  dx -= 1
-    if (k.has('d') || k.has('arrowright')) dx += 1
+    // Turn left/right
+    let turn = 0
+    if (k.has('a') || k.has('arrowleft'))  turn -= 1
+    if (k.has('d') || k.has('arrowright')) turn += 1
+    if (jx !== 0) turn = jx
 
-    if (dx === 0 && dz === 0) {
+    if (turn !== 0) rotationRef.current += turn * TURN_RATE * delta
+
+    // Move forward/backward along facing direction
+    let fwd = 0
+    if (k.has('w') || k.has('arrowup'))   fwd =  1
+    if (k.has('s') || k.has('arrowdown')) fwd = -1
+    if (jz !== 0) fwd = -jz   // joystick up = positive jz → move forward
+
+    if (fwd === 0 && turn === 0) {
       isMoving.current = false
       return
     }
 
-    // Normalize diagonal
-    const len = Math.sqrt(dx * dx + dz * dz)
-    dx = (dx / len) * SPEED * delta
-    dz = (dz / len) * SPEED * delta
+    const yaw = rotationRef.current
+    const dx  = Math.sin(yaw) * fwd * SPEED * delta
+    const dz  = Math.cos(yaw) * fwd * SPEED * delta
 
     const [cx, cy, cz] = positionRef.current
     const nx = cx + dx
     const nz = cz + dz
 
-    const bounds = HOUSE_BOUNDS[houseType] || HOUSE_BOUNDS.modern
+    const bounds     = HOUSE_BOUNDS[houseType] || HOUSE_BOUNDS.modern
     const placedItems = useGameStore.getState().placedItems
 
     const canX = isInsideBounds(nx, cz, bounds) &&
@@ -56,18 +69,10 @@ export default function useCharacterMovement(positionRef, rotationRef, walkTimeR
     const canZ = isInsideBounds(cx, nz, bounds) &&
       !isBlocked(cx, nz, CHAR_SIZE, placedItems, FURNITURE_SIZES)
 
-    const finalX = canX ? nx : cx
-    const finalZ = canZ ? nz : cz
+    positionRef.current = [canX ? nx : cx, cy, canZ ? nz : cz]
+    isMoving.current = fwd !== 0
 
-    positionRef.current = [finalX, cy, finalZ]
-    isMoving.current = true
-
-    // Face direction of travel
-    if (dx !== 0 || dz !== 0) {
-      rotationRef.current = Math.atan2(dx, dz)
-    }
-
-    walkTimeRef.current += delta
+    walkTimeRef.current += Math.abs(fwd) * delta
     useGameStore.getState().setCharacterPosition(positionRef.current)
   })
 
