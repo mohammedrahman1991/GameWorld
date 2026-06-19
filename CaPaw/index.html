@@ -576,6 +576,16 @@ class CharacterSelectScene extends Phaser.Scene {
 
     this._updateCursors();
 
+    // Restore last fighter selections
+    try {
+      const _sv = JSON.parse(localStorage.getItem('wb_save_capaw'));
+      if (_sv) {
+        if (_sv.lastP1Fighter) { const i1 = FIGHTERS.findIndex(f => f.id === _sv.lastP1Fighter); if (i1 >= 0) { this.p1.cursor = i1; } }
+        if (_sv.lastP2Fighter) { const i2 = FIGHTERS.findIndex(f => f.id === _sv.lastP2Fighter); if (i2 >= 0) { this.p2.cursor = i2; } }
+        this._updateCursors(); this._updatePreview('p1'); this._updatePreview('p2');
+      }
+    } catch(e) {}
+
     const keys = this.input.keyboard.addKeys({
       p1Left: 'A', p1Right: 'D', p1Confirm: 'F',
       p2Left: 'LEFT', p2Right: 'RIGHT', p2Confirm: 'L',
@@ -852,6 +862,7 @@ class FightScene extends Phaser.Scene {
   _endMatch() {
     if (music) music.stop();
     const winner = this.p1Wins >= 2 ? 'p1' : 'p2';
+    try { localStorage.setItem('wb_save_capaw', JSON.stringify({lastP1Fighter: this.p1FighterId, lastP2Fighter: this.p2FighterId})); } catch(e) {}
     speakAnnouncer(winner === 'p1' ? 'Player 1 Wins!' : 'Player 2 Wins!');
     this.cameras.main.fadeOut(800, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => {

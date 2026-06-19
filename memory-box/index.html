@@ -88,9 +88,12 @@
       box-shadow: 0 4px 14px rgba(0,0,0,0.12);
     }
     .lbtn:hover { transform: translateY(-5px) scale(1.04); box-shadow: 0 12px 28px rgba(0,0,0,0.2); border-color: #fbbf24; }
+    .lbtn { position: relative; }
     .lbtn .ln { font-size: 1.5rem; font-weight: 900; color: var(--accent); }
     .lbtn .ll { font-size: 0.62rem; color: #475569; margin-top: 2px; font-weight: 700; }
     .lbtn .li { font-size: 0.58rem; color: #94a3b8; margin-top: 1px; }
+    .lbtn .lc { position: absolute; top: 4px; right: 6px; font-size: 0.7rem; font-weight: 900; color: #22c55e; }
+    .lbtn-last { border-color: #fbbf24 !important; }
 
     /* How to play card */
     .how-card {
@@ -587,6 +590,7 @@
   <div class="game-logo">📦</div>
   <h1 class="game-title">BrainCrate</h1>
   <p class="game-tagline">Open the crate · Memorize the contents · Recall them all</p>
+  <p id="high-score-label" style="display:none;color:#fbbf24;font-weight:800;font-size:.95rem;margin:-4px 0 8px;">🏆 High Score: 0</p>
 
   <p class="section-label">Quick Start</p>
   <div class="diff-row">

@@ -304,10 +304,19 @@ const WINS = [
   [0,4,8],[2,4,6]            // diags
 ];
 
+// ─── Save/resume ──────────────────────────────────────────────────────────────
+function wbLoad(defaults) {
+  try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem('wb_save_tictactoe')) || {}); }
+  catch (e) { return defaults; }
+}
+function wbSave(data) {
+  try { localStorage.setItem('wb_save_tictactoe', JSON.stringify(data)); } catch (e) {}
+}
+
 let board       = Array(9).fill(null);
 let current     = 'X';
 let gameOver    = false;
-let scores      = { X: 0, O: 0 };
+let scores      = wbLoad({ scores: { X: 0, O: 0 } }).scores;
 
 const boardEl   = document.getElementById('board');
 const statusEl  = document.getElementById('status');
@@ -326,6 +335,7 @@ for (let i = 0; i < 9; i++) {
   boardEl.appendChild(cell);
   cells.push(cell);
 }
+updateScores();
 
 function handleClick(i) {
   if (gameOver || board[i]) return;
@@ -339,6 +349,7 @@ function handleClick(i) {
     winLine.forEach(idx => cells[idx].classList.add('win-cell'));
     scores[current]++;
     updateScores();
+    wbSave({ scores: scores });
     const winner = current === 'O' ? '0' : current;
     setStatus(`Player ${winner} Wins! 🎉`, 'winner');
     gameOver = true;
@@ -392,6 +403,7 @@ function updateScores() {
 resetBtn.addEventListener('click', () => {
   scores = { X: 0, O: 0 };
   updateScores();
+  wbSave({ scores: scores });
   newGame();
 });
 </script>

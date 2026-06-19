@@ -680,6 +680,17 @@ const PLAYERS = [
 ];
 
 /* ═══════════════════════════════════════════
+   SAVE / RESUME
+═══════════════════════════════════════════ */
+function wbLoad(defaults) {
+  try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem('wb_save_82-and-0')) || {}); }
+  catch (e) { return defaults; }
+}
+function wbSave(data) {
+  try { localStorage.setItem('wb_save_82-and-0', JSON.stringify(data)); } catch (e) {}
+}
+
+/* ═══════════════════════════════════════════
    GAME STATE
 ═══════════════════════════════════════════ */
 let state = {
@@ -797,7 +808,7 @@ function buildCourtScreen(){
   state.selectedPlayer = null;
   state.teamSpinUsed   = false;
   state.eraSpinUsed    = false;
-  $('ct-round').textContent     = 'Round 1 / 5';
+  $('ct-round').textContent     = `Round ${Math.min(state.filledCount + 1, 5)} / 5`;
   $('ct-team-pill').textContent = state.team.id;
   $('ct-era-pill').textContent  = state.era;
   $('respin-team').disabled = false; $('respin-team').classList.remove('used');
@@ -807,6 +818,7 @@ function buildCourtScreen(){
   $('spin-wait').style.display = 'none';
   updateCourtSlots();
   renderPlayerList();
+  if(POSITIONS.every(p=>state.roster[p])) $('sim-btn').classList.add('ready');
 }
 
 // ── FILTERS / SEARCH / SORT ──
@@ -937,6 +949,7 @@ function doPlacePlayer(player, pos){
   $('placing-bar').classList.remove('active');
   document.querySelectorAll('.court-slot').forEach(s=>s.classList.remove('ready'));
   updateCourtSlots();
+  wbSave({ team: state.team, era: state.era, roster: state.roster, mode: state.mode, filledCount: state.filledCount });
 
   const allFilled = POSITIONS.every(p=>state.roster[p]);
   if(allFilled){
@@ -1191,6 +1204,7 @@ $('again-btn').addEventListener('click', ()=>{
   $('era-val').textContent  = '—';
   $('team-card').style.borderColor = '';
   $('era-card').style.borderColor  = '';
+  wbSave({ team: null, era: null, roster: null, mode: state.mode, filledCount: 0 });
   showScreen('s-setup');
 });
 
@@ -1251,6 +1265,25 @@ function openShareModal(){
 
   $('share-modal').classList.add('open');
 }
+
+/* ═══════════════════════════════════════════
+   RESUME IN-PROGRESS ROSTER
+═══════════════════════════════════════════ */
+(function(){
+  const saved = wbLoad({ team: null, era: null, roster: null, mode: null, filledCount: 0 });
+  if(saved.team && saved.roster && saved.filledCount > 0){
+    state.team        = saved.team;
+    state.era         = saved.era;
+    state.roster      = saved.roster;
+    state.mode        = saved.mode || 'classic';
+    state.filledCount = saved.filledCount;
+    state.selectedPlayer = null;
+    state.posFilter = 'all';
+    state.sortBy    = 'pp';
+    buildCourtScreen();
+    showScreen('s-court');
+  }
+})();
 </script>
 </body>
 </html>

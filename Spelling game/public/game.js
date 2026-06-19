@@ -1,3 +1,9 @@
+// ─── SAVE ────────────────────────────────────────────────────────────────────
+function wbLoad(d){try{return Object.assign({},d,JSON.parse(localStorage.getItem('wb_save_spelling'))||{});}catch(e){return d;}}
+function wbSave(d){try{localStorage.setItem('wb_save_spelling',JSON.stringify(d));}catch(e){}}
+const _wb = wbLoad({bestScore: 0, lastLevel: 'easy'});
+let bestScore = _wb.bestScore;
+
 // ─── STATE ───────────────────────────────────────────────────────────────────
 const state = {
   level: 'easy',            // 'easy' | 'medium' | 'hard'
@@ -339,6 +345,7 @@ function nextRound() {
 // ─── GAME OVER (hearts gone) ─────────────────────────────────────────────────
 function onGameOver() {
   stopTimer();
+  wbSave({bestScore, lastLevel: state.level});
   speak('Oh no! Your alien ran out of hearts!');
 
   // Reveal the full word in tiles
@@ -360,6 +367,8 @@ function onGameOver() {
 
 // ─── END GAME (10 rounds done) ───────────────────────────────────────────────
 function endGame() {
+  if (state.score > bestScore) bestScore = state.score;
+  wbSave({bestScore, lastLevel: state.level});
   speak(`Mission complete! You spelled ${state.score} out of 10 words!`);
 
   document.getElementById('final-score').textContent = state.score;
@@ -377,6 +386,15 @@ function endGame() {
 // ─── INIT ────────────────────────────────────────────────────────────────────
 buildStars();
 showScreen('screen-home');
+if (bestScore > 0) {
+  const bel = document.getElementById('wb-spell-best');
+  if (bel) { bel.textContent = '🏆 Best Score: ' + bestScore; bel.style.display = 'block'; }
+}
+if (_wb.lastLevel) {
+  document.querySelectorAll('.diff-card').forEach(c => {
+    if (c.dataset.level === _wb.lastLevel) c.style.outline = '3px solid #FFD700';
+  });
+}
 
 document.addEventListener('keydown', e => {
   const letter = e.key.toUpperCase();

@@ -184,6 +184,7 @@ class LevelCompleteScene extends Phaser.Scene {
     _proceed() {
         if (this._transitioning) return;
         this._transitioning = true;
+        try { localStorage.setItem('wb_save_monster-truck', JSON.stringify({bestLevel: this.level + 1})); } catch(e) {}
         this.cameras.main.fadeOut(300, 0, 0, 0);
         this.cameras.main.once('camerafadeoutcomplete', () => {
             this.scene.start('GameScene', {

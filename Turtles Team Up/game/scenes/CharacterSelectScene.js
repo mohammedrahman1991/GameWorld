@@ -59,6 +59,15 @@ export class CharacterSelectScene extends Phaser.Scene {
         this._startFight();
       }
     });
+
+    // Restore last character selections
+    try {
+      const _sv = JSON.parse(localStorage.getItem('wb_save_turtles'));
+      if (_sv) {
+        if (_sv.lastP1CharId) this._selectCharacter(1, _sv.lastP1CharId);
+        if (_sv.lastP2CharId) this._selectCharacter(2, _sv.lastP2CharId);
+      }
+    } catch(e) {}
   }
 
   _playerPanel(playerNum) {

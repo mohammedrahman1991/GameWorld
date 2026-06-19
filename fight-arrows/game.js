@@ -11,9 +11,20 @@ function resize() {
 resize();
 window.addEventListener('resize', resize);
 
+// ── Save/resume ───────────────────────────────────────────────────────────────
+function wbLoad(defaults) {
+  try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem('wb_save_fight-arrows')) || {}); }
+  catch (e) { return defaults; }
+}
+function wbSave(data) {
+  try { localStorage.setItem('wb_save_fight-arrows', JSON.stringify(data)); } catch (e) {}
+}
+const wbSaved = wbLoad({ mapName: 'snow', gameMode: 1, wins: [0, 0] });
+const wins = wbSaved.wins;
+
 // ── Game state ────────────────────────────────────────────────────────────────
-let gameMode = 1;
-let mapName  = 'snow';
+let gameMode = wbSaved.gameMode;
+let mapName  = wbSaved.mapName;
 let running  = false;
 let animId   = null;
 let score    = [0, 0];
@@ -112,13 +123,19 @@ function show(id) { document.getElementById(id).style.display = 'flex'; }
 function hide(id) { document.getElementById(id).style.display = 'none'; }
 
 // ── Mode / map selection ──────────────────────────────────────────────────────
-function selectMode(m) { gameMode = m; hide('start-overlay'); show('map-overlay'); }
+function selectMode(m) { gameMode = m; wbSave({ mapName, gameMode, wins }); hide('start-overlay'); show('map-overlay'); }
 
 function selectMap(m) {
   mapName = m;
+  wbSave({ mapName, gameMode, wins });
   document.querySelectorAll('.map-card').forEach(c => c.classList.remove('selected'));
   document.getElementById('mc-' + m).classList.add('selected');
 }
+
+// Restore last-selected map highlight on load
+document.querySelectorAll('.map-card').forEach(c => c.classList.remove('selected'));
+const _mc = document.getElementById('mc-' + mapName);
+if (_mc) _mc.classList.add('selected');
 
 function startGame() {
   hide('map-overlay'); hide('over-overlay');
@@ -395,6 +412,8 @@ function addKill(pidx) {
 
 function endGame(winner) {
   winState = { winner, time: 0 };
+  wins[winner]++;
+  wbSave({ mapName, gameMode, wins });
   // Spawn confetti from winner
   const wx = archers[winner]?.x ?? W/2;
   const wy = archers[winner]?.y ?? H/2;

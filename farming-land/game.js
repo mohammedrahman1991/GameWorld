@@ -1,6 +1,10 @@
 'use strict';
 /* ── Farming Land ── Three.js 3D farming game ───────────────────── */
 
+function wbLoad(d){try{return Object.assign({},d,JSON.parse(localStorage.getItem('wb_save_farming'))||{});}catch(e){return d;}}
+function wbSave(d){try{localStorage.setItem('wb_save_farming',JSON.stringify(d));}catch(e){}}
+const _wb=wbLoad({coins:50,fortLevel:0,inventory:{carrot:0,potato:0,sunflower:0,legendary:0,og:0}});
+
 // ── Seed types ────────────────────────────────────────────────────
 const SEEDS = {
   carrot:    {name:'Carrot Seeds',    emoji:'🥕', cost:50,   growTime:8,  harvest:1000,  stCol:0x33AA22, crCol:0xFF6622},
@@ -21,13 +25,13 @@ const FORT_LEVELS = [
 ];
 
 // ── Game state ────────────────────────────────────────────────────
-let coins = 50;
-const inventory = {carrot:0, potato:0, sunflower:0, legendary:0, og:0};
+let coins = _wb.coins;
+const inventory = Object.assign({carrot:0,potato:0,sunflower:0,legendary:0,og:0}, _wb.inventory);
 let selectedSeed = null;
 let shopOpen     = false;
 let nearPlot     = null;
 let nearFort     = false;
-let fortLevel    = 0;
+let fortLevel    = _wb.fortLevel;
 const touch = {up:false, down:false, left:false, right:false};
 
 // ── Three.js core ─────────────────────────────────────────────────
@@ -540,6 +544,7 @@ function updateUI() {
     else if (fortLevel === 5) fl.textContent = `🏰 ${FORT_LEVELS[5].label} ⭐ MAX`;
     else fl.textContent = `🏰 ${FORT_LEVELS[fortLevel].label} (Lv ${fortLevel}/5)`;
   }
+  wbSave({coins, fortLevel, inventory: Object.assign({}, inventory)});
 }
 
 function openShop() {
@@ -776,5 +781,6 @@ function animate() {
   renderer.render(scene, camera);
 }
 
+buildFort(fortLevel);
 updateUI();
 animate();

@@ -357,6 +357,18 @@ function drawHUD(bikes, np) {
   fT(ctrl, CW/2, CH-10, 12, '#667788');
 }
 
+// ── Save / Resume ───────────────────────────────────────────────
+function wbLoad(defaults) {
+  try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem('wb_save_moto-island')) || {}); }
+  catch (e) { return defaults; }
+}
+function wbSave(data) {
+  try { localStorage.setItem('wb_save_moto-island', JSON.stringify(data)); } catch (e) {}
+}
+const wbSaved = wbLoad({ lastNumP: 1, bestPos: 0 });
+let lastNumP = wbSaved.lastNumP;
+let bestPos  = wbSaved.bestPos;
+
 // ── Game state ───────────────────────────────────────────────────
 let state        = 'title';
 let numP         = 1;
@@ -372,6 +384,8 @@ const BOT_SPD = [1.3, 1.1, 1.0, 1.2, 0.9, 1.1];
 
 function initRace(np) {
   numP = np;
+  lastNumP = np;
+  wbSave({ lastNumP, bestPos });
   finishCount = 0;
   endTimer    = -1;
 
@@ -410,7 +424,24 @@ function updateRace(dt) {
     if (b.finished && !b.finishRank) b.finishRank = ++finishCount;
   }
   if (endTimer < 0 && bikes.some(b => b.finished)) endTimer = 1800;
-  if (endTimer >= 0) { endTimer -= dt; if (endTimer <= 0) state = 'finish'; }
+  if (endTimer >= 0) {
+    endTimer -= dt;
+    if (endTimer <= 0) {
+      state = 'finish';
+      if (numP === 1) {
+        const sorted = [...bikes].sort((a,b) => {
+          if (a.finishRank && b.finishRank) return a.finishRank - b.finishRank;
+          if (a.finishRank) return -1; if (b.finishRank) return 1;
+          return b.raceProgress - a.raceProgress;
+        });
+        const p1pos = sorted.indexOf(bikes[0]) + 1;
+        if (bestPos === 0 || p1pos < bestPos) {
+          bestPos = p1pos;
+          wbSave({ lastNumP, bestPos });
+        }
+      }
+    }
+  }
 }
 
 // ── Render screens ───────────────────────────────────────────────
@@ -421,9 +452,10 @@ function renderTitle() {
   sT('MOTORCYCLE RACING', CW/2, 196, 24, '#ffffff', '#000');
 
   const h1=hov(CW/2-135,268,270,64), h2=hov(CW/2-135,350,270,64);
-  drawBtn('🏍  1 PLAYER',  CW/2-135,268,270,64, h1);
-  drawBtn('🏍  2 PLAYERS', CW/2-135,350,270,64, h2);
+  drawBtn('🏍  1 PLAYER',  CW/2-135,268,270,64, h1 || (lastNumP===1 && !h2));
+  drawBtn('🏍  2 PLAYERS', CW/2-135,350,270,64, h2 || (lastNumP===2 && !h1));
   fT('Race 3 Laps · Beat the Bots · First Wins!', CW/2,440, 14,'#889aaa');
+  if (bestPos > 0) fT(`Best Finish: ${ordinal(bestPos)}`, CW/2, 466, 14, '#FFD700');
   if (mclick) {
     if (h1) initRace(1);
     if (h2) initRace(2);

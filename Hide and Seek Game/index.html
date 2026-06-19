@@ -61,6 +61,7 @@ canvas{display:block;}
 <div id="menu">
   <h1>Hide &amp; Seek</h1>
   <p class="sub">Can you find them all in time?</p>
+  <p class="sub" id="rounds-won-label" style="display:none;font-size:.95em;color:#ffd700;margin-top:-30px;margin-bottom:30px;">🏆 Rounds Won: <span id="rounds-won-val">0</span></p>
   <button class="btn" onclick="startGame('1p')">🔍 1 Player vs 20 Bots</button>
   <button class="btn btn-red" onclick="startGame('2p')">👥 2 Players — 1v1 (Split Screen)</button>
   <div class="controls-hint">
@@ -151,6 +152,18 @@ const FLOOR_H     = 4.2;  // height of each floor
 const NUM_FLOORS  = 3;
 const HOUSE_W     = 24;
 const HOUSE_D     = 18;
+
+// ─────────────────────────────────────────────────────────────
+//  SAVE / RESUME
+// ─────────────────────────────────────────────────────────────
+function wbLoad(defaults) {
+  try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem('wb_save_hide-seek')) || {}); }
+  catch (e) { return defaults; }
+}
+function wbSave(data) {
+  try { localStorage.setItem('wb_save_hide-seek', JSON.stringify(data)); } catch (e) {}
+}
+let lifetimeRoundsWon = wbLoad({ roundsWon: 0 }).roundsWon;
 
 // ─────────────────────────────────────────────────────────────
 //  GLOBALS
@@ -1255,6 +1268,15 @@ function endGame(winner) {
     }
   }
 
+  // Track lifetime rounds won by P1 (the human player)
+  const p1Won = gameMode === '2p'
+    ? (seekerIsP2 ? winner === 'hider' : winner === 'seeker')
+    : winner === 'seeker'; // 1P: the player is always the seeker
+  if (p1Won) {
+    lifetimeRoundsWon++;
+    wbSave({ roundsWon: lifetimeRoundsWon });
+  }
+
   if (winner === 'seeker') sfxWin(); else sfxLose();
   launchConfetti();
 
@@ -1584,6 +1606,10 @@ function onResize() {
 // ─────────────────────────────────────────────────────────────
 //  BOOT
 // ─────────────────────────────────────────────────────────────
+if (lifetimeRoundsWon > 0) {
+  document.getElementById('rounds-won-val').textContent = lifetimeRoundsWon;
+  document.getElementById('rounds-won-label').style.display = '';
+}
 initThree();
 </script>
 </body>

@@ -277,6 +277,16 @@ const LEVELS = [
   { speed:7.5,  obstacleRate:38,  coinRate:30, target:3100, bats:12, msg:"BOSS LEVEL! BuckMan SUPREME! 👑" },
 ];
 
+// ── SAVE/RESUME ───────────────────────────────────────────────────────────────
+function wbLoad(defaults) {
+  try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem('wb_save_buckman')) || {}); }
+  catch (e) { return defaults; }
+}
+function wbSave(data) {
+  try { localStorage.setItem('wb_save_buckman', JSON.stringify(data)); } catch (e) {}
+}
+let bestLevel = wbLoad({ bestLevel: 0 }).bestLevel;
+
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let state = 'title';
 let score = 0, lives = 3, level = 0, frameCount = 0;
@@ -330,7 +340,7 @@ function resetBuildings() {
 }
 
 function startGame() {
-  score=0; lives=3; level=0; frameCount=0;
+  score=0; lives=3; level=bestLevel; frameCount=0;
   obstacles=[]; coins=[]; particles=[]; floats=[]; bats=[];
   projectiles=[]; laserBeam=null;
   weapons = { batarangs:0, lasers:0 };
@@ -945,6 +955,7 @@ function showLevelUp() {
     <div class="msg">${LEVELS[level].msg}<br><br>Next target: <strong style="color:#FFD700">${next.target} pts</strong></div>
   `,'🚗 NEXT LEVEL!',()=>{
     level++; score=0;
+    if (level > bestLevel) { bestLevel = level; wbSave({ bestLevel: bestLevel }); }
     obstacles=[]; coins=[]; particles=[]; floats=[]; projectiles=[]; laserBeam=null;
     spawnBats(); state='playing'; updateUI();
   });

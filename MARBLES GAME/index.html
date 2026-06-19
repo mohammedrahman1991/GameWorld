@@ -149,6 +149,15 @@ const TC = [
   '#27ae60','#8e44ad','#16a085','#d35400'
 ];
 
+// ── Save/resume ──────────────────────────────────────────────────────────────
+function wbLoad(defaults) {
+  try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem('wb_save_marbles')) || {}); }
+  catch (e) { return defaults; }
+}
+function wbSave(data) {
+  try { localStorage.setItem('wb_save_marbles', JSON.stringify(data)); } catch (e) {}
+}
+
 // ── State ─────────────────────────────────────────────────────────────────────
 let gs   = 'aim'; // 'aim' | 'shoot' | 'pause' | 'over'
 let cp   = 0;     // current player 0 or 1
@@ -321,6 +330,7 @@ function endTurn() {
   s.x = HOMES[cp].x; s.y = HOMES[cp].y; s.vx = 0; s.vy = 0;
 
   refreshScores();
+  wbSave({ scores: scores });
 
   if (targets.every(t => t.out)) { gs = 'over'; refreshUI(); return; }
 
@@ -686,6 +696,8 @@ function loop() {
 }
 
 initGame();
+const _wbSaved = wbLoad({ scores: null }).scores;
+if (_wbSaved) { scores = _wbSaved.slice(); refreshScores(); }
 loop();
 </script>
 <script src="/share-widget.js"></script>

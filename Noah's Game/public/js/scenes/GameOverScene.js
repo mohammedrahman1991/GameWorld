@@ -6,6 +6,13 @@ class GameOverScene extends Phaser.Scene {
     var self   = this;
     var winner = data.winner;
 
+    // Track lifetime wins
+    var _sv; try { _sv = JSON.parse(localStorage.getItem('wb_save_bball')) || {}; } catch(e) { _sv = {}; }
+    if (!_sv.winsCurry) _sv.winsCurry = 0;
+    if (!_sv.winsEdwards) _sv.winsEdwards = 0;
+    if (winner === 'curry') _sv.winsCurry++; else _sv.winsEdwards++;
+    try { localStorage.setItem('wb_save_bball', JSON.stringify(_sv)); } catch(e) {}
+
     var g = this.add.graphics();
     g.fillStyle(winner === 'curry' ? 0x1d428a : 0x8b0000, 0.94);
     g.fillRect(0, 0, W, H);
@@ -27,6 +34,12 @@ class GameOverScene extends Phaser.Scene {
 
     this.add.text(W / 2 - 80, H * 0.56, 'CHEF',   { fontSize: '13px', color: '#aaaaaa' }).setOrigin(0.5);
     this.add.text(W / 2 + 80, H * 0.56, 'ANT-MAN', { fontSize: '13px', color: '#aaaaaa' }).setOrigin(0.5);
+
+    if (_sv.winsCurry + _sv.winsEdwards > 1) {
+      this.add.text(W / 2, H * 0.63, 'All-time: Chef ' + _sv.winsCurry + ' – Ant-Man ' + _sv.winsEdwards, {
+        fontSize: '13px', color: '#888888', fontFamily: 'monospace',
+      }).setOrigin(0.5);
+    }
 
     // Play Again
     var btn = this.add.text(W / 2, H * 0.73, '  PLAY AGAIN  ', {

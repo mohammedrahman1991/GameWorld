@@ -239,6 +239,12 @@ const LVLS=[
 ];
 function LV(){return LVLS[Math.min(level-1,9)];}
 
+// ── Save / Resume ───────────────────────────────────────────────────
+function wbLoad(defaults){try{return Object.assign({},defaults,JSON.parse(localStorage.getItem('wb_save_parkour'))||{});}catch(e){return defaults;}}
+function wbSave(data){try{localStorage.setItem('wb_save_parkour',JSON.stringify(data));}catch(e){}}
+const wbSaved=wbLoad({bestLevel:1,bestScore:0,bestCoins:0});
+let bestLevel=wbSaved.bestLevel,bestScore=wbSaved.bestScore,bestCoins=wbSaved.bestCoins;
+
 // ── Player ────────────────────────────────────────────────────────────
 let worldX=0,spd=5.5,score=0,coins=0,level=1,dist=0,nextSpawn=500;
 let active=false,paused=false,goalReached=false,finishWX=6000;
@@ -1191,6 +1197,10 @@ function drawGroundThemed(){
 
 // ── Level complete ────────────────────────────────────────────────────
 function showLevelComplete(){
+  if(score>bestScore)bestScore=score;
+  if(coins>bestCoins)bestCoins=coins;
+  if(Math.min(level+1,10)>bestLevel)bestLevel=Math.min(level+1,10);
+  wbSave({bestLevel,bestScore,bestCoins});
   const lv=LV();
   document.getElementById('lvl-icon').textContent=lv.icon;
   document.getElementById('lvl-title').textContent='LEVEL '+level+' COMPLETE!';
@@ -1275,15 +1285,25 @@ function nextLevel(){
 }
 function endGame(){
   active=false;
+  if(score>bestScore)bestScore=score;
+  if(coins>bestCoins)bestCoins=coins;
+  wbSave({bestLevel,bestScore,bestCoins});
   document.getElementById('go-overlay').style.display='flex';
   document.getElementById('go-score').textContent='Score: '+Math.floor(score);
   document.getElementById('go-coins').textContent='Coins: '+coins;
 }
-window.startGame   =()=>{document.getElementById('start-overlay').style.display='none';startMusic();try{AC().resume();}catch(e){}level=1;initGame();active=true;};
-window.restartGame =()=>{document.getElementById('go-overlay').style.display='none';level=1;initGame();active=true;};
+window.startGame   =()=>{document.getElementById('start-overlay').style.display='none';startMusic();try{AC().resume();}catch(e){}level=bestLevel;initGame();active=true;};
+window.restartGame =()=>{document.getElementById('go-overlay').style.display='none';level=bestLevel;initGame();active=true;};
 window.restartLevel=()=>{document.getElementById('lvl-overlay').style.display='none';paused=false;initGame();active=true;};
 window.goNextLevel =()=>{document.getElementById('lvl-overlay').style.display='none';paused=false;level=Math.min(level+1,10);nextLevel();active=true;};
 window.togglePause =()=>{paused=!paused;document.getElementById('pause-btn').textContent=paused?'▶':'⏸';};
+
+if(bestLevel>1){
+  document.getElementById('btn-start').textContent='▶ CONTINUE — LEVEL '+bestLevel;
+  const bs=document.getElementById('best-stats');
+  bs.textContent='Best: Level '+bestLevel+' · Score '+Math.floor(bestScore)+' · Coins '+bestCoins;
+  bs.style.display='block';
+}
 
 // ── Loop ──────────────────────────────────────────────────────────────
 let lastTs=0;

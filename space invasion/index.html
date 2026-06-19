@@ -67,6 +67,7 @@
   <div id="overlay">
     <h1>SPACE INVASION</h1>
     <p>Click / Tap to shoot<br>Arrow keys or D-pad to move<br>Survive 15 levels. Boss at level 5!<br><br><b style="color:#ff0">POWERUPS drop from enemies:</b><br>🟡 M = Multi-shot &nbsp; 🟣 L = Laser &nbsp; 🟢 B = Boomerang</p>
+    <p id="bestStats" style="display:none;color:#0f8;font-weight:700;"></p>
     <button id="startBtn">START GAME</button>
     <button onclick="WackyShare.show('Space Invasion','Play Space Invasion!','https://wackybrains.com/space%20invasion/')" style="background:linear-gradient(135deg,#f97316,#fbbf24);border:none;border-radius:14px;color:#fff;cursor:pointer;font-size:.95rem;font-weight:700;padding:14px 36px;margin-top:16px;display:inline-flex;align-items:center;gap:8px;box-shadow:0 5px 0 rgba(180,80,0,0.3),0 8px 20px rgba(249,115,22,0.35);transition:.18s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">⬆ Share Game</button>
   </div>
@@ -86,6 +87,18 @@ const W = 480, H = 640;
 canvas.width = W; canvas.height = H;
 document.getElementById('gameContainer').style.width = W + 'px';
 document.getElementById('gameContainer').style.height = H + 'px';
+
+// ── Save / Resume ─────────────────────────────────────────────────────────
+function wbLoad(defaults) {
+  try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem('wb_save_space-invasion')) || {}); }
+  catch (e) { return defaults; }
+}
+function wbSave(data) {
+  try { localStorage.setItem('wb_save_space-invasion', JSON.stringify(data)); } catch (e) {}
+}
+const wbSaved = wbLoad({ bestLevel: 1, bestScore: 0 });
+let bestLevel = wbSaved.bestLevel;
+let bestScore = wbSaved.bestScore;
 
 // ── State ──────────────────────────────────────────────────────────────────
 let state = 'menu'; // menu | playing | dead | win
@@ -135,7 +148,7 @@ function initLevel() {
 }
 
 function startGame() {
-  level = 1; score = 0; lives = 3;
+  level = bestLevel; score = 0; lives = 3;
   initLevel();
   state = 'playing';
   overlay.style.display = 'none';
@@ -494,6 +507,7 @@ function playerHit() {
 }
 
 function showDead() {
+  if (score > bestScore) { bestScore = score; wbSave({ bestLevel, bestScore }); }
   state = 'dead';
   overlay.style.display = 'flex';
   overlay.innerHTML = `
@@ -507,6 +521,7 @@ function showDead() {
 
 function advanceLevel() {
   level++;
+  if (level > bestLevel) { bestLevel = level; wbSave({ bestLevel, bestScore }); }
   if (level > 15) {
     showWin(); return;
   }
@@ -515,6 +530,8 @@ function advanceLevel() {
 }
 
 function showWin() {
+  if (score > bestScore) { bestScore = score; wbSave({ bestLevel, bestScore }); }
+  bestLevel = 1; wbSave({ bestLevel, bestScore });
   state = 'win';
   overlay.style.display = 'flex';
   overlay.innerHTML = `
@@ -750,6 +767,13 @@ document.getElementById('btnRight').addEventListener('touchstart', e => { e.prev
 document.getElementById('btnRight').addEventListener('touchend', e => { e.preventDefault(); moveRight = false; });
 
 startBtn.onclick = startGame;
+
+if (bestLevel > 1 || bestScore > 0) {
+  const bestStats = document.getElementById('bestStats');
+  bestStats.textContent = `Best: Level ${bestLevel} · High Score ${bestScore}`;
+  bestStats.style.display = 'block';
+  if (bestLevel > 1) startBtn.textContent = `CONTINUE — LEVEL ${bestLevel}`;
+}
 
 // Start the loop (draws nothing while in menu)
 requestAnimationFrame(ts => { lastTime = ts; requestAnimationFrame(update); });

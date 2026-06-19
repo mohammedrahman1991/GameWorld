@@ -64,6 +64,17 @@ class MenuScene extends Phaser.Scene {
             stroke: '#000', strokeThickness: 4,
         }).setOrigin(0.5);
 
+        // ── Continue badge (if saved progress) ───────────────
+        try {
+            const _sv = JSON.parse(localStorage.getItem('wb_save_monster-truck'));
+            if (_sv && _sv.bestLevel > 1) {
+                this.add.text(W / 2, 164, `▶ Continue: Level ${_sv.bestLevel}`, {
+                    fontSize: '18px', color: '#69F0AE', fontStyle: 'bold',
+                    stroke: '#000', strokeThickness: 3,
+                }).setOrigin(0.5);
+            }
+        } catch(e) {}
+
         // ── Feature badges ───────────────────────────────────
         const features = ['🔥 Fire Cannon', '⚡ Sprint Boost', '🔄 Power Slide', '👻 Invisibility', '💥 Boss Fights'];
         features.forEach((f, i) => {
@@ -247,10 +258,12 @@ class MenuScene extends Phaser.Scene {
     }
 
     _startGame(playerCount) {
+        let _startLevel = 1;
+        try { const _s = JSON.parse(localStorage.getItem('wb_save_monster-truck')); if (_s && _s.bestLevel > 1) _startLevel = _s.bestLevel; } catch(e) {}
         this.cameras.main.fadeOut(400, 0, 0, 0);
         this.cameras.main.once('camerafadeoutcomplete', () => {
             this.scene.start('GameScene', {
-                level: 1,
+                level: _startLevel,
                 playerCount,
                 p1HP: GAME_CONFIG.PLAYER_MAX_HP,
                 p2HP: GAME_CONFIG.PLAYER_MAX_HP,

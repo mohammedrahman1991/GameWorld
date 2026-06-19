@@ -439,12 +439,21 @@
 const SUITS = ['♠', '♥', '♦', '♣'];
 const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 
+// ── Save/resume ──────────────────────────────────────────────────────────────
+function wbLoad(defaults) {
+  try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem('wb_save_blackjack')) || {}); }
+  catch (e) { return defaults; }
+}
+function wbSave(data) {
+  try { localStorage.setItem('wb_save_blackjack', JSON.stringify(data)); } catch (e) {}
+}
+
 // ── State ─────────────────────────────────────────────────────────────────────
 let deck      = [];
 let players   = [];   // [{hand, stood, bust, blackjack, result}]
 let cur       = 0;    // active player index
 let roundOver = false;
-let tally     = { p1: 0, ties: 0, p2: 0 };
+let tally     = wbLoad({ tally: { p1: 0, ties: 0, p2: 0 } }).tally;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function makeDeck() {
@@ -705,6 +714,7 @@ function updateScoreboard(winner) {
   document.getElementById('s-p1').textContent  = tally.p1;
   document.getElementById('s-tie').textContent = tally.ties;
   document.getElementById('s-p2').textContent  = tally.p2;
+  wbSave({ tally: tally });
 
   // Bump animation on winning cell
   if (winner === 0)     bump('s-p1');
@@ -738,6 +748,7 @@ function resetGame() {
   document.getElementById('s-p1').textContent  = 0;
   document.getElementById('s-tie').textContent = 0;
   document.getElementById('s-p2').textContent  = 0;
+  wbSave({ tally: tally });
 
   setMsg('Press Deal to start a new round.');
   setTurn('');
@@ -747,6 +758,9 @@ function resetGame() {
 // ── Init ──────────────────────────────────────────────────────────────────────
 players = [0, 1].map(() => ({ hand: [], stood: false, bust: false, blackjack: false, result: '' }));
 updateButtons();
+document.getElementById('s-p1').textContent  = tally.p1;
+document.getElementById('s-tie').textContent = tally.ties;
+document.getElementById('s-p2').textContent  = tally.p2;
 </script>
 <script src="/share-widget.js"></script>
 

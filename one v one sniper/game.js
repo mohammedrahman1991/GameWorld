@@ -70,11 +70,21 @@ const COVERS = [
 // SECTION 3: STATE
 // ============================================================
 
+function wbLoad(defaults) {
+  try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem('wb_save_sniper')) || {}); }
+  catch (e) { return defaults; }
+}
+function wbSave(data) {
+  try { localStorage.setItem('wb_save_sniper', JSON.stringify(data)); } catch (e) {}
+}
+const wbSaved = wbLoad({ matchWins: [0,0], lastSelection: [0,0] });
+const matchWins = wbSaved.matchWins;
+
 const roundWins = [0,0];
 let currentRound  = 1;
 let currentScreen = SCREEN.WEAPON_SELECT;
 let winner = -1;
-const selection   = [0,0];
+const selection   = [wbSaved.lastSelection[0]||0, wbSaved.lastSelection[1]||0];
 const confirmed   = [false,false];
 let players       = [];
 let bullets       = [];
@@ -84,7 +94,6 @@ let floorLabel    = ['',''];
 
 function initRound() {
   confirmed[0] = false; confirmed[1] = false;
-  selection[0] = 0;     selection[1] = 0;
   bullets       = [];
   roundMsg      = '';
   roundMsgTimer = 0;
@@ -287,7 +296,11 @@ function updateBullets(dt) {
 function onPlayerDied(dead) {
   const wi=1-dead.index; roundWins[wi]++;
   roundMsg=`P${wi+1} WINS ROUND ${currentRound}!`; roundMsgTimer=2.0; currentRound++;
-  if (roundWins[wi]>=3) { roundMsg=`P${wi+1} WINS THE MATCH!`; roundMsgTimer=2.5; winner=wi; }
+  if (roundWins[wi]>=3) {
+    roundMsg=`P${wi+1} WINS THE MATCH!`; roundMsgTimer=2.5; winner=wi;
+    matchWins[wi]++;
+    wbSave({ matchWins: matchWins, lastSelection: selection });
+  }
 }
 
 function endRoundTransition() {
@@ -309,7 +322,7 @@ function updateWeaponSelect(_dt) {
     if      (navUp(fp)&&!_navPressed[i])   { selection[i]=(selection[i]-1+WEAPON_KEYS.length)%WEAPON_KEYS.length; _navPressed[i]=true; }
     else if (navDown(fp)&&!_navPressed[i]) { selection[i]=(selection[i]+1)%WEAPON_KEYS.length;                    _navPressed[i]=true; }
     else if (!navUp(fp)&&!navDown(fp))     { _navPressed[i]=false; }
-    if (confirmKey(fp)) confirmed[i]=true;
+    if (confirmKey(fp) && !confirmed[i]) { confirmed[i]=true; wbSave({ matchWins: matchWins, lastSelection: selection }); }
   }
   if (confirmed[0]&&confirmed[1]) { clearKeys(); initRound(); currentScreen=SCREEN.BATTLE; }
 }
@@ -648,6 +661,7 @@ function renderWinScreen() {
   ctx.fillText(`PLAYER ${winner+1}`,W/2,H/2-40);
   ctx.fillStyle=wc; ctx.font='bold 28px monospace'; ctx.fillText('WINS THE MATCH',W/2,H/2+10);
   ctx.fillStyle='#555'; ctx.font='14px monospace'; ctx.fillText(`${roundWins[0]} — ${roundWins[1]}`,W/2,H/2+50);
+  ctx.fillStyle='#444'; ctx.font='11px monospace'; ctx.fillText(`Lifetime Matches Won — P1: ${matchWins[0]}  P2: ${matchWins[1]}`,W/2,H/2+68);
   ctx.strokeStyle=wc; ctx.lineWidth=1; ctx.strokeRect(W/2-160,H/2+80,140,36);
   ctx.fillStyle=wc; ctx.font='13px monospace'; ctx.fillText('REMATCH [ENTER]',W/2-90,H/2+104);
   ctx.strokeStyle='#444'; ctx.strokeRect(W/2+20,H/2+80,140,36);

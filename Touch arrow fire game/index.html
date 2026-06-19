@@ -634,15 +634,25 @@
 // ─── State ───────────────────────────────────────────────────────────────────
 const ARROWS_PER_TURN = 10;
 
+// ─── Save/resume ──────────────────────────────────────────────────────────────
+function wbLoad(defaults) {
+  try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem('wb_save_touch-arrow')) || {}); }
+  catch (e) { return defaults; }
+}
+function wbSave(data) {
+  try { localStorage.setItem('wb_save_touch-arrow', JSON.stringify(data)); } catch (e) {}
+}
+const wbSaved = wbLoad({ p1Score: 0, p2Score: 0, gameCount: 0 });
+
 let state = {
   phase: 'start',   // start | p1turn | p2turn | switchWait | gameOver
-  p1Score: 0,
-  p2Score: 0,
+  p1Score: wbSaved.p1Score,
+  p2Score: wbSaved.p2Score,
   currentPlayer: 1,
   arrowsLeft: ARROWS_PER_TURN,
   arrowsFired: 0,
   firing: false,
-  gameCount: 0,
+  gameCount: wbSaved.gameCount,
 };
 
 // ─── DOM refs ─────────────────────────────────────────────────────────────────
@@ -1196,6 +1206,7 @@ function endTurn() {
     state.gameCount++;
     setTimeout(showGameOver, 400);
   }
+  wbSave({ p1Score: state.p1Score, p2Score: state.p2Score, gameCount: state.gameCount });
 }
 
 // ─── Game over ────────────────────────────────────────────────────────────────

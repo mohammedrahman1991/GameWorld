@@ -634,16 +634,30 @@ function drawViewport(bike, map, ox, clipW) {
   ctx.restore();
 }
 
+// ── Save / Resume ───────────────────────────────────────────────
+function wbLoad(defaults) {
+  try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem('wb_save_bike-rider')) || {}); }
+  catch (e) { return defaults; }
+}
+function wbSave(data) {
+  try { localStorage.setItem('wb_save_bike-rider', JSON.stringify(data)); } catch (e) {}
+}
+const wbSaved = wbLoad({ completedMaps: [false,false,false,false,false], lastMap: 0 });
+let completedMaps = wbSaved.completedMaps;
+let lastMap       = wbSaved.lastMap;
+
 // ── Game state ────────────────────────────────────────────────────
 let state      = 'title';
 let numPlayers = 1;
-let selMap     = null;
+let selMap     = lastMap;
 let activMap   = null;
 let bikes      = [];
 let lastTime   = 0;
 
 function startGame(mapIdx, np) {
   numPlayers = np;
+  lastMap = mapIdx;
+  wbSave({ completedMaps, lastMap });
   const m = MAPS[mapIdx];
   // Instantiate lasers
   m._lasers = m.lasers.map(d => new Laser(d));
@@ -728,6 +742,9 @@ function renderMapSelect() {
     ctx.fillStyle=m.groundCol; ctx.fill();
     ctx.restore();
 
+    // Completed badge
+    if (completedMaps[i]) fT('✓', cx+cardW-14, cy+18, 16, '#44ff88');
+
     // Map name
     fT(m.name, cx+cardW/2, cy+100, 11, '#ffffff');
     // Difficulty
@@ -784,6 +801,10 @@ function renderPlaying(dt) {
                                 : bikes.some(b => b.finished);
   if (done) {
     state = 'finish';
+    if (numPlayers === 1 && selMap !== null && !completedMaps[selMap]) {
+      completedMaps[selMap] = true;
+      wbSave({ completedMaps, lastMap });
+    }
     const sb = document.getElementById('wb-share-btn');
     if (sb) { sb.style.display = 'block'; sb.onclick = () => WackyShare.show('Bike Rider', numPlayers===1 ? 'I finished the track in Bike Rider!' : (bikes[0].finished && (!bikes[1].finished||bikes[0].finishTime<=bikes[1].finishTime) ? 'Player 1 won in Bike Rider!' : 'Player 2 won in Bike Rider!'), 'https://wackybrains.com/bike-rider/'); }
   }

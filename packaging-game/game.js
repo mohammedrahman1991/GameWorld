@@ -1,5 +1,7 @@
 'use strict';
 /* ── PACKAGING GAME ── 3D City Delivery ─────────────────────────── */
+function wbLoad(d){try{return Object.assign({},d,JSON.parse(localStorage.getItem('wb_save_packaging'))||{});}catch(e){return d;}}
+function wbSave(d){try{localStorage.setItem('wb_save_packaging',JSON.stringify(d));}catch(e){}}
 
 // ── Three.js setup ─────────────────────────────────────────────────
 const canvas = document.getElementById('c');
@@ -55,10 +57,11 @@ const LOCATIONS = [
 ];
 
 // ── Game state ──────────────────────────────────────────────────────
+const _wb = wbLoad({money: 0, orderIdx: 0});
 let gameState = 'order';
-let money = 0;
+let money = _wb.money;
 let currentOrder = null;
-let orderIdx = 0;
+let orderIdx = _wb.orderIdx;
 
 // ── Ground ──────────────────────────────────────────────────────────
 const ground = new THREE.Mesh(
@@ -501,6 +504,7 @@ window.doDeliver = function() {
   document.getElementById('reward-text').textContent = '+$' + currentOrder.pay + '  ' + currentOrder.item + ' delivered!';
   document.getElementById('total-text').textContent = 'Total earned: $' + money;
   orderIdx++;
+  wbSave({money, orderIdx});
 };
 
 window.nextOrder = function() {
@@ -672,5 +676,6 @@ function animate() {
 camera.position.set(0, 70, 90);
 camera.lookAt(0, 0, 0);
 renderer.render(scene, camera);
+document.getElementById('money-hud').textContent = '💵 $' + money;
 showOrderScreen();
 animate();

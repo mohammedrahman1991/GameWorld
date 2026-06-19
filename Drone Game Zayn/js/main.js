@@ -129,6 +129,9 @@ showLobby().then(selectedDrone => {
     renderer.render(scene, camera);
   }
   animate();
+
+  // Restore last mode preference
+  try { const _sv = JSON.parse(localStorage.getItem('wb_save_drone-zayn')); if (_sv && _sv.lastMode === 'sport') toggleMode(); } catch(e) {}
 });
 
 // ── Drone physics ─────────────────────────────────────────────
@@ -209,6 +212,7 @@ function updateCamera(dt) {
 // ── Mode toggle ───────────────────────────────────────────────
 function toggleMode() {
   state.mode = state.mode === 'sport' ? 'normal' : 'sport';
+  try { localStorage.setItem('wb_save_drone-zayn', JSON.stringify({lastMode: state.mode})); } catch(e) {}
   const isSport = state.mode === 'sport';
   document.getElementById('flight-mode').textContent = isSport ? 'SPORT MODE' : 'NORMAL MODE';
   const btn = document.getElementById('mode-btn');

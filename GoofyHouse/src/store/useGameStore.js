@@ -1,6 +1,7 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
-const useGameStore = create((set) => ({
+const useGameStore = create(persist((set) => ({
   // ── Existing ────────────────────────────────────────────────────────────
   selectedHouse: null,
   cameraMode: 'third',          // 'third' | 'first'
@@ -78,6 +79,18 @@ const useGameStore = create((set) => ({
     set((s) => ({ exteriorItems: s.exteriorItems.filter((item) => item.id !== id) })),
   setRoofStyle: (style) => set({ roofStyle: style }),
   setRoofColor: (color) => set({ roofColor: color }),
+}), {
+  name: 'goofy-house-save',
+  partialize: (s) => ({
+    placedItems:    s.placedItems,
+    floorTiles:     s.floorTiles,
+    placedWindows:  s.placedWindows,
+    exteriorItems:  s.exteriorItems,
+    roofStyle:      s.roofStyle,
+    roofColor:      s.roofColor,
+    currentFloor:   s.currentFloor,
+    selectedHouse:  s.selectedHouse,
+  }),
 }))
 
 export default useGameStore

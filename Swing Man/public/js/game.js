@@ -22,10 +22,22 @@ const CFG = {
   momentumPush: 0.18,   // auto-pump forward while swinging
 };
 
+// ─── SAVE / RESUME ──────────────────────────────────────────────────────────────
+function wbLoad(defaults) {
+  try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem('wb_save_swing-man')) || {}); }
+  catch (e) { return defaults; }
+}
+function wbSave(data) {
+  try { localStorage.setItem('wb_save_swing-man', JSON.stringify(data)); } catch (e) {}
+}
+const wbSaved = wbLoad({ bestLevel: 1, bestScore: 0 });
+let bestLevel = wbSaved.bestLevel;
+let bestScore = wbSaved.bestScore;
+
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let gs = 'TITLE';   // TITLE | PLAYING | LEVEL_COMPLETE | BOSS | WIN | GAMEOVER
 let level = 1;
-let retryLevel = 1;  // level to return to on game over (never goes below 1)
+let retryLevel = bestLevel;  // level to return to on game over (never goes below 1)
 let score = 0;
 let lives = 3;
 let bossHP = 10;
@@ -1305,8 +1317,17 @@ function drawTitle() {
   ctx.font = 'bold 22px Arial Black, Arial';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('▶  TAP TO PLAY', cx, btnY + btnH/2);
+  ctx.fillText(bestLevel > 1 ? `▶  CONTINUE — LV ${bestLevel}` : '▶  TAP TO PLAY', cx, btnY + btnH/2);
   ctx.restore();
+
+  // Best stats
+  if (bestLevel > 1 || bestScore > 0) {
+    ctx.fillStyle = 'rgba(255,220,100,0.85)';
+    ctx.font = 'bold 13px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(`Best: Level ${bestLevel} · Score ${bestScore}`, cx, 365);
+  }
 
   // Tagline
   ctx.fillStyle = 'rgba(180,200,255,0.7)';
@@ -1590,7 +1611,7 @@ function update() {
 
   if (gs === 'TITLE') {
     if (input.justDown) {
-      retryLevel = 1; // fresh start from title always goes to level 1
+      retryLevel = bestLevel; // resume from the highest level reached
       resetGame();
       playSfx('levelup');
     }
@@ -1616,6 +1637,11 @@ function update() {
         playSfx('levelup');
       } else {
         startBoss(); // level 10 = boss
+      }
+      if (level > bestLevel || score > bestScore) {
+        bestLevel = Math.max(bestLevel, level);
+        bestScore = Math.max(bestScore, score);
+        wbSave({ bestLevel, bestScore });
       }
     }
     return;
@@ -1660,6 +1686,9 @@ function update() {
           boss.dead = true;
           playSfx('win');
           spawnParticles(boss.wx, boss.y, '#ff00ff', 40);
+          bestScore = Math.max(bestScore, score);
+          bestLevel = 1; // game completed — start fresh next time
+          wbSave({ bestLevel, bestScore });
           setTimeout(() => playVoice('You defeated the Dark Goo Monster! You are the Swing Hero!'), 500);
           setTimeout(() => { gs = 'WIN'; }, 2000);
         }
@@ -1673,6 +1702,7 @@ function update() {
       if (lives <= 0) {
         retryLevel = level;
         gs = 'GAMEOVER';
+        if (score > bestScore) { bestScore = score; wbSave({ bestLevel, bestScore }); }
         playSfx('death');
         setTimeout(() => playVoice('Game over! Try again!'), 300);
       } else {
@@ -1731,6 +1761,7 @@ function update() {
     if (lives <= 0) {
       retryLevel = level; // always restart on the same level
       gs = 'GAMEOVER';
+      if (score > bestScore) { bestScore = score; wbSave({ bestLevel, bestScore }); }
       setTimeout(() => playVoice('Game over! Try again!'), 300);
     } else {
       player.reset(Math.max(100, player.wx - 200));

@@ -7,6 +7,14 @@ class GameOverScene extends Phaser.Scene {
   }
 
   create() {
+    // Track lifetime wins
+    let _sv; try { _sv = JSON.parse(localStorage.getItem('wb_save_futbol')) || {}; } catch(e) { _sv = {}; }
+    if (!_sv.winsMessai) _sv.winsMessai = 0;
+    if (!_sv.winsRonalda) _sv.winsRonalda = 0;
+    if (this._winner === 'messai') _sv.winsMessai++;
+    else if (this._winner === 'ronalda') _sv.winsRonalda++;
+    try { localStorage.setItem('wb_save_futbol', JSON.stringify(_sv)); } catch(e) {}
+
     const W = CFG.WIDTH, H = CFG.HEIGHT;
     const g = this.add.graphics();
 
@@ -82,6 +90,12 @@ class GameOverScene extends Phaser.Scene {
     this.add.text(W/2 + 70, 315, 'RONALDA', {
       fontFamily: 'Arial Black', fontSize: '11px', color: '#ffaaaa',
     }).setOrigin(0.5);
+
+    if (_sv.winsMessai + _sv.winsRonalda > 1) {
+      this.add.text(W/2, 340, `All-time: Messai ${_sv.winsMessai} – Ronalda ${_sv.winsRonalda}`, {
+        fontFamily: 'monospace', fontSize: '13px', color: '#888888',
+      }).setOrigin(0.5);
+    }
 
     // Buttons
     const playBtn = this.add.text(W/2 - 110, 370, '▶  PLAY AGAIN', {

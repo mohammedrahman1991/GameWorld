@@ -16,6 +16,7 @@ export class WinScene extends Phaser.Scene {
   create() {
     this._voice = new VoiceSystem(ELEVENLABS_API_KEY);
     this._btnOverlay = null;
+    try { localStorage.setItem('wb_save_turtles', JSON.stringify({lastP1CharId: this._p1CharId, lastP2CharId: this._p2CharId})); } catch(e) {}
 
     const W = this.scale.width;
     const H = this.scale.height;

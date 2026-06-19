@@ -1,5 +1,9 @@
 'use strict';
 /* ── OBSTACLE GAME ── Three.js 3D obstacle course ─────────────── */
+function wbLoad(d){try{return Object.assign({},d,JSON.parse(localStorage.getItem('wb_save_obstacle'))||{});}catch(e){return d;}}
+function wbSave(d){try{localStorage.setItem('wb_save_obstacle',JSON.stringify(d));}catch(e){}}
+const _wb=wbLoad({bestCpCount:0});
+let bestCpCount=_wb.bestCpCount;
 
 // ── Physics constants ─────────────────────────────────────────────
 const GRAVITY    = 30;
@@ -1023,6 +1027,12 @@ function getSkyIdx(z) {
 }
 let lastSkyIdx=-1;
 
+// ── Show best on mode screen ──────────────────────────────────────
+(function() {
+  const el = document.getElementById('ob-best');
+  if (el && bestCpCount > 0) el.textContent = '🏆 Best: ' + bestCpCount + '/9 checkpoints';
+})();
+
 // ── Mode start ────────────────────────────────────────────────────
 window.startGame = function(mode) {
   gameMode = mode;
@@ -1128,6 +1138,7 @@ function animate() {
       const dx=player.x-cp.x, dz=player.z-cp.z;
       if (Math.sqrt(dx*dx+dz*dz)<3) {
         cp.collected=true; cpCount++; spawnPos={x:cp.x,y:cp.y+1,z:cp.z+8};
+        if (cpCount > bestCpCount) { bestCpCount = cpCount; wbSave({bestCpCount}); }
         cp.coin.visible=false; showCPPop(); sfxCheckpoint(); updateHUD();
       }
     }

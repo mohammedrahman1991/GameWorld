@@ -175,8 +175,19 @@ const LEVELS = {
   5: {name:'Expert',  wordCount:10, timer:22, pts:30},
 };
 
+// ─────────────────────── SAVE/RESUME ───────────────────────
+function wbLoad(defaults) {
+  try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem('wb_save_find-word')) || {}); }
+  catch (e) { return defaults; }
+}
+function wbSave(data) {
+  try { localStorage.setItem('wb_save_find-word', JSON.stringify(data)); } catch (e) {}
+}
+const wbSaved = wbLoad({ selectedLevel: 1, bestScore: 0 });
+
 // ─────────────────────── STATE ───────────────────────
-let selectedLevel   = 1;
+let selectedLevel   = wbSaved.selectedLevel;
+let bestScore       = wbSaved.bestScore;
 let players         = [];           // [{name}]
 let playerResults   = [];           // [{name,correct,wrong,score,attempts}]
 let currentPlayerIdx= 0;
@@ -251,12 +262,21 @@ function pct(n, d) { return d === 0 ? '0%' : Math.round((n / d) * 100) + '%' }
 
 // ─────────────────────── DIFFICULTY BUTTONS ───────────────────────
 document.querySelectorAll('.diff-btn').forEach(btn => {
+  if (+btn.dataset.level === selectedLevel) {
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  }
   btn.addEventListener('click', () => {
     document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
     selectedLevel = +btn.dataset.level;
+    wbSave({ selectedLevel: selectedLevel, bestScore: bestScore });
   });
 });
+
+if (bestScore > 0) {
+  $('best-score-label').textContent = `· Best: ${bestScore}`;
+}
 
 // ─────────────────────── SETUP OVERLAY ───────────────────────
 $('open-setup-btn').addEventListener('click', () => {
@@ -437,6 +457,11 @@ function endRound() {
   pr.correct += roundCorrect;
   pr.wrong   += roundWrong;
   pr.score   += roundScore;
+
+  if (pr.score > bestScore) {
+    bestScore = pr.score;
+    wbSave({ selectedLevel: selectedLevel, bestScore: bestScore });
+  }
 
   showResults();
 }

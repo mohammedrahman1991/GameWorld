@@ -108,6 +108,19 @@ const LEVELS = [
 
 const RECALL_TIME = 90;
 
+// ── Save / Resume ────────────────────────────────────────────────────────
+function wbLoad(defaults) {
+  try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem('wb_save_braincrate')) || {}); }
+  catch (e) { return defaults; }
+}
+function wbSave(data) {
+  try { localStorage.setItem('wb_save_braincrate', JSON.stringify(data)); } catch (e) {}
+}
+const wbSaved = wbLoad({ bestLevelIdx: -1, lastLevelIdx: 0, highScore: 0 });
+let bestLevelIdx = wbSaved.bestLevelIdx;
+let lastLevelIdx = wbSaved.lastLevelIdx;
+let highScore    = wbSaved.highScore;
+
 // ── State ─────────────────────────────────────────────────────────────────
 let levelIdx        = 0;
 let currentItems    = [];
@@ -162,6 +175,10 @@ function makeIcon(item, size) {
 // ── Init ─────────────────────────────────────────────────────────────────
 function init() {
   buildLevelGrid();
+  if (highScore > 0) {
+    const hs = $('high-score-label');
+    if (hs) { hs.textContent = `🏆 High Score: ${highScore}`; hs.style.display = ''; }
+  }
   $('recall-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitRecall(); });
   $('recall-input').addEventListener('input', updateSuggestions);
 }
@@ -172,7 +189,9 @@ function buildLevelGrid() {
   LEVELS.forEach((lv, i) => {
     const btn = document.createElement('button');
     btn.className = 'lbtn';
-    btn.innerHTML = `<div class="ln">${i+1}</div><div class="ll">${lv.label}</div><div class="li">${lv.items} items · ${lv.time}s</div>`;
+    if (i === lastLevelIdx) btn.classList.add('lbtn-last');
+    const badge = i <= bestLevelIdx ? '<div class="lc">✓</div>' : '';
+    btn.innerHTML = `${badge}<div class="ln">${i+1}</div><div class="ll">${lv.label}</div><div class="li">${lv.items} items · ${lv.time}s</div>`;
     btn.onclick = () => showSetup(i);
     grid.appendChild(btn);
   });
@@ -515,6 +534,11 @@ function showResults() {
   const r   = playerResults[0];
   const acc = r.accuracy;
 
+  lastLevelIdx = levelIdx;
+  if (levelIdx > bestLevelIdx) bestLevelIdx = levelIdx;
+  if (r.score > highScore) highScore = r.score;
+  wbSave({ bestLevelIdx, lastLevelIdx, highScore });
+
   let stars = '';
   if      (acc >= 90) stars = '⭐⭐⭐';
   else if (acc >= 70) stars = '⭐⭐';
@@ -559,6 +583,11 @@ function showLeaderboard() {
   const sorted   = [...playerResults].sort((a, b) => b.score - a.score);
   const maxScore = Math.max(...sorted.map(p => p.score), 1);
   const medals   = ['🥇','🥈','🥉','4️⃣'];
+
+  lastLevelIdx = levelIdx;
+  if (levelIdx > bestLevelIdx) bestLevelIdx = levelIdx;
+  if (sorted[0].score > highScore) highScore = sorted[0].score;
+  wbSave({ bestLevelIdx, lastLevelIdx, highScore });
 
   $('lb-level').textContent = `Level ${levelIdx+1} — ${LEVELS[levelIdx].label} · ${currentItems.length} items`;
   $('lb-rows').innerHTML = sorted.map((p, rank) => {

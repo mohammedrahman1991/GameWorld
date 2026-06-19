@@ -192,6 +192,20 @@ document.addEventListener('keydown', e => {
 });
 
 // ================================================================
+// SAVE / RESUME
+// ================================================================
+function wbLoad(defaults) {
+  try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem('wb_save_castle-man')) || {}); }
+  catch (e) { return defaults; }
+}
+function wbSave(data) {
+  try { localStorage.setItem('wb_save_castle-man', JSON.stringify(data)); } catch (e) {}
+}
+const wbSaved = wbLoad({ bestZombieKills: 0, lastZombiePlayers: 1 });
+let bestZombieKills = wbSaved.bestZombieKills;
+let lastZombiePlayers = wbSaved.lastZombiePlayers;
+
+// ================================================================
 // GAME STATE
 // ================================================================
 let gameState  = 'title'; // title | zombie_select | battle | zombie
@@ -1118,6 +1132,8 @@ function initBattle() {
 }
 
 function initZombie(numP) {
+  lastZombiePlayers = numP;
+  wbSave({ bestZombieKills, lastZombiePlayers });
   gameMode = 'zombie'; gameState = 'zombie';
   paused = false; gameOver = false;
   score = { blue:0, red:0 };
@@ -1254,6 +1270,10 @@ function updateZombie(dt) {
     gameOver = true;
     const m = Math.floor(zombieElapsed/60000), s = Math.floor((zombieElapsed%60000)/1000);
     goMessage = `GAME OVER! Survived ${m}m ${s}s | Kills: ${zombieKills}`;
+    if (zombieKills > bestZombieKills) {
+      bestZombieKills = zombieKills;
+      wbSave({ bestZombieKills, lastZombiePlayers });
+    }
   }
   const castleBlocks = blocks.filter(b => !b.playerPlaced);
   if (castleBlocks.length > 0 && castleBlocks.every(b => b.dead)) {
@@ -1672,6 +1692,10 @@ function renderTitle() {
   fillRect(0, CH - 55, CW, 6, '#1a2a1a');
   fillText('Press ESC to pause · Walk into chests/crates to pick up weapons', CW/2, CH - 22, 13, '#445566');
 
+  if (bestZombieKills > 0) {
+    fillText(`☠ Best Zombie Kills: ${bestZombieKills}`, CW/2, CH - 60, 16, '#88ff88');
+  }
+
   if (mclick) {
     if (bth) initBattle();
     if (zh)  gameState = 'zombie_select';
@@ -1693,14 +1717,14 @@ function renderZombieSelect() {
   // 1P box
   const oh = hover(mx2 - 230, 280, 200, 120);
   fillRect(mx2 - 230, 280, 200, 120, oh ? '#0e3a0e' : '#051a05');
-  strokeRect(mx2 - 230, 280, 200, 120, oh ? '#44ff44' : '#1a3a1a', 3);
+  strokeRect(mx2 - 230, 280, 200, 120, oh ? '#44ff44' : (lastZombiePlayers === 1 ? '#ffdd44' : '#1a3a1a'), 3);
   drawSprite(mx2 - 215, 296, 4, PAL_BLUE, false);
   fillText('1  PLAYER', mx2 - 130, 370, 18, '#44ff44');
 
   // 2P box
   const twh = hover(mx2 + 30, 280, 200, 120);
   fillRect(mx2 + 30, 280, 200, 120, twh ? '#0e3a0e' : '#051a05');
-  strokeRect(mx2 + 30, 280, 200, 120, twh ? '#44ff44' : '#1a3a1a', 3);
+  strokeRect(mx2 + 30, 280, 200, 120, twh ? '#44ff44' : (lastZombiePlayers === 2 ? '#ffdd44' : '#1a3a1a'), 3);
   drawSprite(mx2 + 48, 296, 4, PAL_BLUE,  false);
   drawSprite(mx2 + 96, 296, 4, PAL_RED,   true);
   fillText('2  PLAYERS', mx2 + 130, 370, 18, '#44ff44');

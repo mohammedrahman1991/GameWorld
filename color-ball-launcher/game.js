@@ -114,12 +114,25 @@ function drawBall(x, y, r, ci, alpha) {
 }
 
 // ================================================================
+// SAVE / RESUME
+// ================================================================
+function wbLoad(defaults) {
+  try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem('wb_save_paintball')) || {}); }
+  catch (e) { return defaults; }
+}
+function wbSave(data) {
+  try { localStorage.setItem('wb_save_paintball', JSON.stringify(data)); } catch (e) {}
+}
+const wbSaved = wbLoad({ hiScore: +(localStorage.getItem('pbHi') || 0), bestLevel: 1 });
+
+// ================================================================
 // GAME STATE
 // ================================================================
 let gameState = 'title';
 let level     = 1;
 let score     = 0;
-let hiScore   = +(localStorage.getItem('pbHi') || 0);
+let hiScore   = wbSaved.hiScore;
+let bestLevel = wbSaved.bestLevel;
 let shotsLeft = 0;
 let levelBalls = 0;
 
@@ -342,7 +355,9 @@ function landProj() {
   const rem = countGrid();
   if (rem === 0) {
     score += level * 500;
-    if (score > hiScore) { hiScore = score; localStorage.setItem('pbHi', hiScore); }
+    if (score > hiScore) hiScore = score;
+    if (level + 1 > bestLevel) bestLevel = Math.min(level + 1, 50);
+    wbSave({ hiScore, bestLevel });
     gameState = level >= 50 ? 'victory' : 'levelcomplete';
   } else if (shotsLeft <= 0) {
     gameState = 'gameover';
@@ -507,12 +522,12 @@ function renderTitle() {
   fillT('Match the colors · Clear the grid · 50 Levels', CW/2, 185, 15, '#7788aa');
 
   const pyH = hov(CW/2-110, 470, 220, 58);
-  drawBtn('▶  PLAY NOW', CW/2-110, 470, 220, 58, pyH);
+  drawBtn(bestLevel > 1 ? `▶ CONTINUE LV ${bestLevel}` : '▶  PLAY NOW', CW/2-110, 470, 220, 58, pyH);
 
   fillT(`HIGH SCORE:  ${hiScore}`, CW/2, 555, 15, '#ffdd88');
   fillT('Click to aim & shoot · Match 2+ same color to pop', CW/2, 582, 13, '#445566');
 
-  if (mclick && pyH) { level=1; score=0; loadLevel(1); gameState='playing'; }
+  if (mclick && pyH) { level=bestLevel; score=0; loadLevel(level); gameState='playing'; }
 }
 
 // ================================================================

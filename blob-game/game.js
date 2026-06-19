@@ -66,8 +66,19 @@ let players = [], bots = [], foods = [];
 let grid = {}, king = null;
 let kills = [0, 0], frame = 0;
 
-let skinColor = [0, 3];
-let skinFace  = [0, 2];
+// ── Save/resume ──────────────────────────────────────────────────────────────
+function wbLoad(defaults) {
+  try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem('wb_save_blob-eating')) || {}); }
+  catch (e) { return defaults; }
+}
+function wbSave(data) {
+  try { localStorage.setItem('wb_save_blob-eating', JSON.stringify(data)); } catch (e) {}
+}
+const wbSaved = wbLoad({ skinColor: [0, 3], skinFace: [0, 2], bestKills: 0 });
+
+let skinColor = wbSaved.skinColor;
+let skinFace  = wbSaved.skinFace;
+let bestKills = wbSaved.bestKills;
 
 let mouseX = 0, mouseY = 0;
 const ARROW = {ArrowUp:false, ArrowDown:false, ArrowLeft:false, ArrowRight:false};
@@ -101,6 +112,10 @@ window.onload = () => {
   });
   window.addEventListener('keyup', e => { if (ARROW[e.code]!==undefined){ ARROW[e.code]=false; } });
 
+  document.getElementById('cname0').textContent = COLORS[skinColor[0]].name;
+  document.getElementById('cname1').textContent = COLORS[skinColor[1]].name;
+  document.getElementById('fname0').textContent = FACE_NAMES[skinFace[0]];
+  document.getElementById('fname1').textContent = FACE_NAMES[skinFace[1]];
   drawPreview(0);
   drawPreview(1);
 };
@@ -230,12 +245,14 @@ function cycleColor(pidx,dir) {
   skinColor[pidx]=(skinColor[pidx]+dir+COLORS.length)%COLORS.length;
   document.getElementById('cname'+pidx).textContent=COLORS[skinColor[pidx]].name;
   drawPreview(pidx);
+  wbSave({ skinColor: skinColor, skinFace: skinFace, bestKills: bestKills });
 }
 
 function cycleFace(pidx,dir) {
   skinFace[pidx]=(skinFace[pidx]+dir+8)%8;
   document.getElementById('fname'+pidx).textContent=FACE_NAMES[skinFace[pidx]];
   drawPreview(pidx);
+  wbSave({ skinColor: skinColor, skinFace: skinFace, bestKills: bestKills });
 }
 
 function startGame() {
@@ -461,7 +478,10 @@ function gameOver(pidx) {
   document.getElementById('dpad').style.display='none';
   document.getElementById('over-score').textContent=fmt(players[pidx].num);
   document.getElementById('over-kills').textContent=kills[pidx];
+  if(pidx===0 && kills[0]>bestKills) bestKills=kills[0];
+  document.getElementById('over-best-kills').textContent=bestKills;
   document.getElementById('over-overlay').style.display='flex';
+  wbSave({ skinColor: skinColor, skinFace: skinFace, bestKills: bestKills });
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
