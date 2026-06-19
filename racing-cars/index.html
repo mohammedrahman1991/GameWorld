@@ -339,10 +339,12 @@ canvas{display:block;width:100vw;height:100vh}
 /* ════════════════════════════════════════════════════════════
    SAVE / LOAD
 ═══════════════════════════════════════════════════════════ */
+const ALL_CARS_LIST = ['basic','muscle','sports','turbo','stealth','legend'];
 function wbLoad(d){try{return Object.assign({},d,JSON.parse(localStorage.getItem('wb_save_racing-cars'))||{});}catch(e){return d;}}
 function wbSave(d){try{localStorage.setItem('wb_save_racing-cars',JSON.stringify(d));}catch(e){}}
-const _sv = wbLoad({coins:0, ownedCars:['basic','muscle','sports','turbo','stealth','legend'], selectedCar:'basic', bestLapTime:null});
-let STATE = { coins: _sv.coins, ownedCars: [..._sv.ownedCars], selectedCar: _sv.selectedCar, bestLapTime: _sv.bestLapTime };
+const _sv = wbLoad({coins:0, ownedCars:ALL_CARS_LIST, selectedCar:'basic', bestLapTime:null});
+// Always give all cars regardless of old saved data
+let STATE = { coins: _sv.coins, ownedCars: ALL_CARS_LIST, selectedCar: _sv.selectedCar, bestLapTime: _sv.bestLapTime };
 function persistState(){ wbSave({coins:STATE.coins,ownedCars:STATE.ownedCars,selectedCar:STATE.selectedCar,bestLapTime:STATE.bestLapTime}); }
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') persistState(); });
 window.addEventListener('pagehide', persistState);
