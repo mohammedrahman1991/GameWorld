@@ -566,9 +566,9 @@ buildTrack();
 /* ════════════════════════════════════════════════════════════
    CAR MODEL FACTORY
 ═══════════════════════════════════════════════════════════ */
-function createCarMesh(carId){
+function createCarMesh(carId, colorOverride){
   const cfg=CARS[carId]||CARS.basic;
-  const col=cfg.color;
+  const col=colorOverride!==undefined ? colorOverride : cfg.color;
   const g=new THREE.Group();
   const bmat=new THREE.MeshStandardMaterial({color:col,metalness:0.7,roughness:0.25});
   const gmat=new THREE.MeshStandardMaterial({color:0x88bbdd,metalness:0.1,roughness:0.05,transparent:true,opacity:0.75});
@@ -849,6 +849,11 @@ function spawnGame(mode){
   clearGame(); gameMode=mode;
   const carId=STATE.selectedCar;
 
+  // P2 color is always a contrasting colour so players can tell each other apart
+  const P2_COLORS=[0xff4500,0x00ccff,0x00ee44,0xff00cc,0xffcc00,0xff6600];
+  const p1Color=CARS[carId]?CARS[carId].color:0x3b82f6;
+  const p2Color=P2_COLORS.find(c=>c!==p1Color)||0xff4500;
+
   if(mode==='fd1'||mode==='fd2'||mode==='race1'||mode==='race2'){
     const m1=createCarMesh(carId);
     scene.add(m1); activeMeshes.push(m1);
@@ -856,7 +861,7 @@ function spawnGame(mode){
     camInit[0]=false;
   }
   if(mode==='fd2'||mode==='race2'){
-    const m2=createCarMesh(carId);
+    const m2=createCarMesh(carId, p2Color);
     scene.add(m2); activeMeshes.push(m2);
     players.push(new CarCtrl(carId,m2,4,P2_KEYS));
     camInit[1]=false;
