@@ -704,16 +704,20 @@ class CarCtrl {
     const dx=Math.sin(this.rot)*this.spd*dt;
     const dz=Math.cos(this.rot)*this.spd*dt;
     const nx=this.pos.x+dx, nz=this.pos.z+dz;
-    const wpIdx=nearestWP(nx,nz);
-    const lat=lateralOffset(nx,nz,wpIdx);
-    if(Math.abs(lat)<TRACK_W/2+1.5){
+    const isFd=gameMode==='fd1'||gameMode==='fd2';
+    if(isFd){
       this.pos.x=nx; this.pos.z=nz;
     } else {
-      // push back gently onto track
-      this.spd*=0.6;
-      const w=WPS[wpIdx];
-      this.pos.x+=(w.x-this.pos.x)*0.06;
-      this.pos.z+=(w.z-this.pos.z)*0.06;
+      const wpIdx=nearestWP(nx,nz);
+      const lat=lateralOffset(nx,nz,wpIdx);
+      if(Math.abs(lat)<TRACK_W/2+1.5){
+        this.pos.x=nx; this.pos.z=nz;
+      } else {
+        this.spd*=0.6;
+        const w=WPS[wpIdx];
+        this.pos.x+=(w.x-this.pos.x)*0.06;
+        this.pos.z+=(w.z-this.pos.z)*0.06;
+      }
     }
 
     this.mesh.position.copy(this.pos);
