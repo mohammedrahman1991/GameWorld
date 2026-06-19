@@ -307,6 +307,16 @@
       </div>
     </div>
 
+    <div class="card" data-game="racing-cars">
+      <div class="card-thumb g1">🏎️</div>
+      <div class="card-body">
+        <h2>Racing Cars</h2>
+        <p>3D arcade racing — free drive, buy cars, race a bot or a friend split-screen.</p>
+        <span class="badge badge-live">Live</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
     <div class="card" data-game="buckman">
       <div class="card-thumb g1">🦇</div>
       <div class="card-body">
@@ -457,6 +467,16 @@
   <p class="section-label">🏎️ Sports &amp; Racing</p>
   <div class="grid">
 
+    <div class="card" data-game="racing-cars">
+      <div class="card-thumb g1">🏎️</div>
+      <div class="card-body">
+        <h2>Racing Cars</h2>
+        <p>3D arcade racing — free drive, buy cars, race a bot or a friend split-screen.</p>
+        <span class="badge badge-live">Live</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
     <div class="card" data-game="moto-island">
       <div class="card-thumb g2">🏍️</div>
       <div class="card-body">
@@ -522,6 +542,16 @@
       <div class="card-body">
         <h2>Monster Truck</h2>
         <p>Smash, crush, and plow through obstacles with a massive monster truck. Huge tires, huge air, huge fun.</p>
+        <span class="badge badge-live">Live</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
+    <div class="card" data-game="racing-cars">
+      <div class="card-thumb g1">🏎️</div>
+      <div class="card-body">
+        <h2>Racing Cars</h2>
+        <p>3D arcade racing — free drive, buy cars with coins, race a bot or a friend in split-screen. Boost included.</p>
         <span class="badge badge-live">Live</span>
         <button class="play-btn play-btn-active">▶ Play</button>
       </div>
@@ -794,6 +824,21 @@
         ['↑ / W', 'Accelerate'],
         ['↓ / S', 'Brake / reverse'],
         ['Space', 'Boost / jump'],
+      ]
+    },
+    'racing-cars': {
+      title: 'Racing Cars', emoji: '🏎️', grad: 'g1',
+      href: 'racing-cars/index.html',
+      cat: 'Racing · Multiplayer', dev: 'Wacky Brains',
+      players: '1–2 Players', platform: 'Desktop', age: '0+', rating: 4.6,
+      tags: ['racing', '3d', 'cars', 'multiplayer', 'split-screen', 'free', 'coins', 'shop'],
+      about: 'Racing Cars is a 3D arcade racer built with Three.js. Free-Drive the oval track to collect gold coins, spend them in the car shop to unlock six increasingly powerful machines, and then put the hammer down in head-to-head Racing mode — 1 player vs a rubber-band bot, or 2-player split-screen. Features a sunset sky, shadow-cast car models, grandstands, boost mechanic, and all progress saved between sessions.',
+      controls: [
+        ['W / S', 'Accelerate / brake'],
+        ['A / D', 'Steer left / right'],
+        ['Space', '🚀 Boost (P1)'],
+        ['Arrow Keys', 'P2 steer & drive'],
+        ['Enter', '🚀 Boost (P2)'],
       ]
     },
     'drone-zayn': {
@@ -1434,7 +1479,7 @@
     relaxing:      { label: '🌴 Relaxing',          ids: ['farming','braincrate','goofy-house','resell','spelling','paintball'] },
     concentration: { label: '🧠 For Concentration', ids: ['braincrate','82-and-0','find-word','blackjack','tictactoe','marbles','paintball'] },
     action:        { label: '⚡ Action & Combat',    ids: ['fight-arrows','castle-man','sniper','shootpoint','space-invasion','capaw','turtles','blob-eating'] },
-    racing:        { label: '🏎️ Racing & Speed',    ids: ['buckman','moto-island','bike-rider','monster-truck','drone-zayn','going-balls'] },
+    racing:        { label: '🏎️ Racing & Speed',    ids: ['racing-cars','buckman','moto-island','bike-rider','monster-truck','drone-zayn','going-balls'] },
     adventure:     { label: '🌍 Adventure',          ids: ['packaging','farming','hide-seek','obstacle','goofy-house','swing-man'] },
     multiplayer:   { label: '👥 Multiplayer',        ids: Object.keys(GAMES).filter(function(id){ return GAMES[id].players !== '1 Player'; }) },
   };
@@ -1443,6 +1488,7 @@
 
   /* Mood/vibe keywords per game — used only to make AI search smarter */
   var GAME_VIBES = {
+    'racing-cars':    'racing 3d cars multiplayer 2player split-screen shop coins boost fast paced',
     'buckman':        'racing fast paced arcade solo',
     'drone-zayn':     'relaxing flying exploration simulation casual solo',
     'goofy-house':    'relaxing casual exploration funny silly family solo',
