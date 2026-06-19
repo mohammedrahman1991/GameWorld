@@ -863,7 +863,9 @@ function spawnGame(mode){
   if(mode==='fd2'||mode==='race2'){
     const m2=createCarMesh(carId, p2Color);
     scene.add(m2); activeMeshes.push(m2);
-    players.push(new CarCtrl(carId,m2,4,P2_KEYS));
+    const p2=new CarCtrl(carId,m2,4,P2_KEYS);
+    p2.maxSpd=60; p2.accel=40; p2.turn=3.5; p2.boostMult=3; p2.boostMax=5;
+    players.push(p2);
     camInit[1]=false;
   }
   if(mode==='race1'){
