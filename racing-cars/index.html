@@ -249,14 +249,22 @@ canvas{display:block;width:100vw;height:100vh}
 
 <!-- ── 2P CAR SELECT ── -->
 <div class="screen submenu-bg" id="s-2pselect">
-  <div style="text-align:center;margin-bottom:1rem">
-    <div class="menu-title" style="font-size:2rem;margin-bottom:0.2em" id="s2p-title">👥 Pick Your Cars</div>
-    <div style="color:rgba(255,255,255,0.5);font-size:0.9rem" id="s2p-desc">Player 1 — choose your car</div>
+  <div style="color:#fff;font-size:1.6rem;font-weight:900;text-align:center;margin-bottom:1rem">👥 Pick Your Cars</div>
+  <div style="display:flex;gap:16px;width:min(700px,96vw);justify-content:center">
+    <!-- P1 -->
+    <div style="flex:1;min-width:0">
+      <div style="color:#ff6b35;font-weight:800;font-size:0.9rem;text-align:center;margin-bottom:8px;letter-spacing:0.1em">🟠 PLAYER 1</div>
+      <div id="s2p-p1list" style="display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto;padding:2px"></div>
+    </div>
+    <!-- P2 -->
+    <div style="flex:1;min-width:0">
+      <div style="color:#3b82f6;font-weight:800;font-size:0.9rem;text-align:center;margin-bottom:8px;letter-spacing:0.1em">🔵 PLAYER 2</div>
+      <div id="s2p-p2list" style="display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto;padding:2px"></div>
+    </div>
   </div>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:560px;width:95vw;max-height:65vh;overflow-y:auto;padding:4px" id="s2p-carlist"></div>
-  <div style="margin-top:14px;display:flex;gap:10px">
+  <div style="margin-top:14px;display:flex;gap:10px;justify-content:center">
     <button class="btn btn-dark" id="btn-2psel-back" style="padding:12px 24px">← Back</button>
-    <button class="btn btn-green" id="btn-2psel-go" style="padding:12px 28px;display:none">▶ Let's Go!</button>
+    <button class="btn btn-green" id="btn-2psel-go" style="padding:12px 28px">▶ Let's Go!</button>
   </div>
 </div>
 
@@ -873,7 +881,6 @@ function spawnGame(mode, p1CarId, p2CarId){
     const m2=createCarMesh(carId2);
     scene.add(m2); activeMeshes.push(m2);
     const p2=new CarCtrl(carId2,m2,4,P2_KEYS);
-    p2.maxSpd=60; p2.accel=40; p2.turn=3.5; p2.boostMult=3; p2.boostMax=5;
     players.push(p2);
     camInit[1]=false;
   }
@@ -1109,56 +1116,44 @@ function updateMenuCoins(){
 
 /* ── 2P Car Select ── */
 let pending2PMode=null;
-let sel2P={p1:null,p2:null};
+let sel2P={p1:'basic', p2:'muscle'};
 
-function open2PSelect(mode){
-  pending2PMode=mode;
-  sel2P={p1:null,p2:null};
-  document.getElementById('s2p-title').textContent='👥 Pick Your Cars';
-  document.getElementById('s2p-desc').textContent='Player 1 — choose your car';
-  document.getElementById('btn-2psel-go').style.display='none';
-  build2PCarList();
-  showScreen('s-2pselect');
+function carPickRow(id, cfg, isSelected, accentColor, onclick){
+  const d=document.createElement('div');
+  d.style.cssText=`background:${isSelected?'rgba(255,255,255,0.14)':'rgba(255,255,255,0.05)'};
+    border:2px solid ${isSelected?accentColor:'rgba(255,255,255,0.12)'};
+    border-radius:12px;padding:10px 12px;cursor:pointer;
+    display:flex;align-items:center;gap:10px;transition:border-color 0.15s`;
+  d.innerHTML=`
+    <div style="font-size:1.8rem;flex-shrink:0">${cfg.emoji}</div>
+    <div style="flex:1;min-width:0">
+      <div style="color:#fff;font-weight:800;font-size:0.9rem">${cfg.name}</div>
+      <div style="display:flex;gap:4px;margin-top:3px;flex-wrap:wrap">
+        <span style="font-size:0.65rem;background:rgba(255,255,255,0.1);border-radius:4px;padding:2px 5px;color:rgba(255,255,255,0.7)">⚡ Spd ${cfg.maxSpd}</span>
+        <span style="font-size:0.65rem;background:rgba(255,255,255,0.1);border-radius:4px;padding:2px 5px;color:rgba(255,255,255,0.7)">🚀 Acc ${cfg.accel}</span>
+      </div>
+    </div>
+    ${isSelected?`<span style="color:${accentColor};font-size:1.2rem">✔</span>`:''}
+  `;
+  d.onclick=onclick;
+  return d;
 }
 
 function build2PCarList(){
-  const list=document.getElementById('s2p-carlist');
-  list.innerHTML='';
+  const l1=document.getElementById('s2p-p1list');
+  const l2=document.getElementById('s2p-p2list');
+  l1.innerHTML=''; l2.innerHTML='';
   Object.entries(CARS).forEach(([id,cfg])=>{
-    const p1sel=sel2P.p1===id, p2sel=sel2P.p2===id;
-    const card=document.createElement('div');
-    card.style.cssText='background:rgba(255,255,255,0.06);border:2px solid '+(p1sel?'#ff6b35':p2sel?'#3b82f6':'rgba(255,255,255,0.15)')+';border-radius:14px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;min-width:220px;flex:1;transition:border-color 0.15s';
-    card.innerHTML=`
-      <div style="font-size:2rem;flex-shrink:0">${cfg.emoji}</div>
-      <div style="flex:1;min-width:0">
-        <div style="color:#fff;font-weight:800;font-size:0.95rem">${cfg.name}</div>
-        <div style="font-size:0.7rem;color:rgba(255,255,255,0.5);margin:2px 0 4px">${cfg.desc}</div>
-        <div style="display:flex;gap:4px;flex-wrap:wrap">
-          <span style="font-size:0.65rem;background:rgba(255,255,255,0.1);border-radius:4px;padding:2px 5px;color:rgba(255,255,255,0.7)">⚡${cfg.maxSpd}</span>
-          <span style="font-size:0.65rem;background:rgba(255,255,255,0.1);border-radius:4px;padding:2px 5px;color:rgba(255,255,255,0.7)">🚀${cfg.accel}</span>
-        </div>
-      </div>
-      ${p1sel?'<span style="color:#ff6b35;font-size:0.75rem;font-weight:800">P1 🟠</span>':''}
-      ${p2sel?'<span style="color:#3b82f6;font-size:0.75rem;font-weight:800">P2 🔵</span>':''}
-    `;
-    card.onclick=()=>{
-      if(!sel2P.p1){
-        sel2P.p1=id;
-        document.getElementById('s2p-desc').textContent='Player 2 — choose your car';
-      } else if(!sel2P.p2 && id!==sel2P.p1){
-        sel2P.p2=id;
-        document.getElementById('s2p-desc').textContent='Both cars selected — ready!';
-        document.getElementById('btn-2psel-go').style.display='inline-block';
-      } else if(id===sel2P.p1){
-        // deselect p1 if clicked again
-        sel2P.p1=null; sel2P.p2=null;
-        document.getElementById('s2p-desc').textContent='Player 1 — choose your car';
-        document.getElementById('btn-2psel-go').style.display='none';
-      }
-      build2PCarList();
-    };
-    list.appendChild(card);
+    l1.appendChild(carPickRow(id,cfg,sel2P.p1===id,'#ff6b35',()=>{ sel2P.p1=id; build2PCarList(); }));
+    l2.appendChild(carPickRow(id,cfg,sel2P.p2===id,'#3b82f6',()=>{ sel2P.p2=id; build2PCarList(); }));
   });
+}
+
+function open2PSelect(mode){
+  pending2PMode=mode;
+  sel2P={p1:'basic',p2:'muscle'};
+  build2PCarList();
+  showScreen('s-2pselect');
 }
 
 document.getElementById('btn-2psel-back').onclick=()=>{
@@ -1166,7 +1161,6 @@ document.getElementById('btn-2psel-back').onclick=()=>{
   else showScreen('s-racing');
 };
 document.getElementById('btn-2psel-go').onclick=()=>{
-  if(!sel2P.p1||!sel2P.p2) return;
   if(rafId)cancelAnimationFrame(rafId);
   spawnGame(pending2PMode, sel2P.p1, sel2P.p2);
   rafId=requestAnimationFrame(loop); lastTs=performance.now();
