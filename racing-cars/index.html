@@ -1141,13 +1141,12 @@ function buildShop(){
         </div>
       </div>
       <div class="car-action">
-        ${owned
-          ? (sel ? '<span style="color:#ffd700;font-size:0.8rem;font-weight:800;">SELECTED</span>'
-                 : `<button class="btn btn-teal" onclick="selectCar('${id}')">SELECT</button>`)
-          : `<button class="btn ${canAfford?'btn-orange':'btn-dark'}" ${canAfford?'':'disabled'}
-               onclick="buyCar('${id}',${cfg.price})" style="font-size:0.75rem">
-               ${canAfford?`BUY<br>💰${cfg.price.toLocaleString()}`:`💰${cfg.price.toLocaleString()}`}
-             </button>`
+        ${sel
+          ? '<span style="color:#ffd700;font-size:0.8rem;font-weight:800;">⭐ SELECTED</span>'
+          : `<div style="text-align:center">
+               <div style="color:#22c55e;font-size:0.75rem;font-weight:800;letter-spacing:0.1em;margin-bottom:4px">FREE</div>
+               <button class="btn btn-teal" onclick="selectCar('${id}');buildShop()" style="padding:8px 14px;font-size:0.8rem;border-radius:10px;min-width:80px">SELECT</button>
+             </div>`
         }
       </div>`;
     list.appendChild(card);
