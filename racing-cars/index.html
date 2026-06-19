@@ -247,6 +247,19 @@ canvas{display:block;width:100vw;height:100vh}
   </div>
 </div>
 
+<!-- ── 2P CAR SELECT ── -->
+<div class="screen submenu-bg" id="s-2pselect">
+  <div style="text-align:center;margin-bottom:1rem">
+    <div class="menu-title" style="font-size:2rem;margin-bottom:0.2em" id="s2p-title">👥 Pick Your Cars</div>
+    <div style="color:rgba(255,255,255,0.5);font-size:0.9rem" id="s2p-desc">Player 1 — choose your car</div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:560px;width:95vw;max-height:65vh;overflow-y:auto;padding:4px" id="s2p-carlist"></div>
+  <div style="margin-top:14px;display:flex;gap:10px">
+    <button class="btn btn-dark" id="btn-2psel-back" style="padding:12px 24px">← Back</button>
+    <button class="btn btn-green" id="btn-2psel-go" style="padding:12px 28px;display:none">▶ Let's Go!</button>
+  </div>
+</div>
+
 <!-- ── CAR SHOP ── -->
 <div class="screen" id="s-shop">
   <div class="shop-scroll">
@@ -845,25 +858,21 @@ function clearGame(){
   raceStarted=false; raceTime=0;
 }
 
-function spawnGame(mode){
+function spawnGame(mode, p1CarId, p2CarId){
   clearGame(); gameMode=mode;
-  const carId=STATE.selectedCar;
-
-  // P2 color is always a contrasting colour so players can tell each other apart
-  const P2_COLORS=[0xff4500,0x00ccff,0x00ee44,0xff00cc,0xffcc00,0xff6600];
-  const p1Color=CARS[carId]?CARS[carId].color:0x3b82f6;
-  const p2Color=P2_COLORS.find(c=>c!==p1Color)||0xff4500;
+  const carId1=p1CarId||STATE.selectedCar;
+  const carId2=p2CarId||carId1;
 
   if(mode==='fd1'||mode==='fd2'||mode==='race1'||mode==='race2'){
-    const m1=createCarMesh(carId);
+    const m1=createCarMesh(carId1);
     scene.add(m1); activeMeshes.push(m1);
-    players.push(new CarCtrl(carId,m1,0,P1_KEYS));
+    players.push(new CarCtrl(carId1,m1,0,P1_KEYS));
     camInit[0]=false;
   }
   if(mode==='fd2'||mode==='race2'){
-    const m2=createCarMesh(carId, p2Color);
+    const m2=createCarMesh(carId2);
     scene.add(m2); activeMeshes.push(m2);
-    const p2=new CarCtrl(carId,m2,4,P2_KEYS);
+    const p2=new CarCtrl(carId2,m2,4,P2_KEYS);
     p2.maxSpd=60; p2.accel=40; p2.turn=3.5; p2.boostMult=3; p2.boostMax=5;
     players.push(p2);
     camInit[1]=false;
@@ -1098,6 +1107,71 @@ function updateMenuCoins(){
   document.getElementById('shop-coins-hdr').textContent='💰 '+STATE.coins.toLocaleString()+' coins';
 }
 
+/* ── 2P Car Select ── */
+let pending2PMode=null;
+let sel2P={p1:null,p2:null};
+
+function open2PSelect(mode){
+  pending2PMode=mode;
+  sel2P={p1:null,p2:null};
+  document.getElementById('s2p-title').textContent='👥 Pick Your Cars';
+  document.getElementById('s2p-desc').textContent='Player 1 — choose your car';
+  document.getElementById('btn-2psel-go').style.display='none';
+  build2PCarList();
+  showScreen('s-2pselect');
+}
+
+function build2PCarList(){
+  const list=document.getElementById('s2p-carlist');
+  list.innerHTML='';
+  Object.entries(CARS).forEach(([id,cfg])=>{
+    const p1sel=sel2P.p1===id, p2sel=sel2P.p2===id;
+    const card=document.createElement('div');
+    card.style.cssText='background:rgba(255,255,255,0.06);border:2px solid '+(p1sel?'#ff6b35':p2sel?'#3b82f6':'rgba(255,255,255,0.15)')+';border-radius:14px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;min-width:220px;flex:1;transition:border-color 0.15s';
+    card.innerHTML=`
+      <div style="font-size:2rem;flex-shrink:0">${cfg.emoji}</div>
+      <div style="flex:1;min-width:0">
+        <div style="color:#fff;font-weight:800;font-size:0.95rem">${cfg.name}</div>
+        <div style="font-size:0.7rem;color:rgba(255,255,255,0.5);margin:2px 0 4px">${cfg.desc}</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+          <span style="font-size:0.65rem;background:rgba(255,255,255,0.1);border-radius:4px;padding:2px 5px;color:rgba(255,255,255,0.7)">⚡${cfg.maxSpd}</span>
+          <span style="font-size:0.65rem;background:rgba(255,255,255,0.1);border-radius:4px;padding:2px 5px;color:rgba(255,255,255,0.7)">🚀${cfg.accel}</span>
+        </div>
+      </div>
+      ${p1sel?'<span style="color:#ff6b35;font-size:0.75rem;font-weight:800">P1 🟠</span>':''}
+      ${p2sel?'<span style="color:#3b82f6;font-size:0.75rem;font-weight:800">P2 🔵</span>':''}
+    `;
+    card.onclick=()=>{
+      if(!sel2P.p1){
+        sel2P.p1=id;
+        document.getElementById('s2p-desc').textContent='Player 2 — choose your car';
+      } else if(!sel2P.p2 && id!==sel2P.p1){
+        sel2P.p2=id;
+        document.getElementById('s2p-desc').textContent='Both cars selected — ready!';
+        document.getElementById('btn-2psel-go').style.display='inline-block';
+      } else if(id===sel2P.p1){
+        // deselect p1 if clicked again
+        sel2P.p1=null; sel2P.p2=null;
+        document.getElementById('s2p-desc').textContent='Player 1 — choose your car';
+        document.getElementById('btn-2psel-go').style.display='none';
+      }
+      build2PCarList();
+    };
+    list.appendChild(card);
+  });
+}
+
+document.getElementById('btn-2psel-back').onclick=()=>{
+  if(pending2PMode==='fd2') showScreen('s-freedrive');
+  else showScreen('s-racing');
+};
+document.getElementById('btn-2psel-go').onclick=()=>{
+  if(!sel2P.p1||!sel2P.p2) return;
+  if(rafId)cancelAnimationFrame(rafId);
+  spawnGame(pending2PMode, sel2P.p1, sel2P.p2);
+  rafId=requestAnimationFrame(loop); lastTs=performance.now();
+};
+
 /* ── Button wiring ── */
 document.getElementById('btn-freedrive').onclick=()=>showScreen('s-freedrive');
 document.getElementById('btn-racing').onclick=()=>showScreen('s-racing');
@@ -1106,11 +1180,11 @@ document.getElementById('btn-garage').onclick=()=>{ buildGarage(); showScreen('s
 
 document.getElementById('btn-fd-back').onclick=()=>showScreen('s-menu');
 document.getElementById('btn-fd-1p').onclick=()=>{ if(rafId)cancelAnimationFrame(rafId); spawnGame('fd1'); rafId=requestAnimationFrame(loop); lastTs=performance.now(); };
-document.getElementById('btn-fd-2p').onclick=()=>{ if(rafId)cancelAnimationFrame(rafId); spawnGame('fd2'); rafId=requestAnimationFrame(loop); lastTs=performance.now(); };
+document.getElementById('btn-fd-2p').onclick=()=>open2PSelect('fd2');
 
 document.getElementById('btn-r-back').onclick=()=>showScreen('s-menu');
 document.getElementById('btn-r-1p').onclick=()=>{ if(rafId)cancelAnimationFrame(rafId); spawnGame('race1'); rafId=requestAnimationFrame(loop); lastTs=performance.now(); };
-document.getElementById('btn-r-2p').onclick=()=>{ if(rafId)cancelAnimationFrame(rafId); spawnGame('race2'); rafId=requestAnimationFrame(loop); lastTs=performance.now(); };
+document.getElementById('btn-r-2p').onclick=()=>open2PSelect('race2');
 
 document.getElementById('btn-shop-back').onclick=()=>showScreen('s-menu');
 document.getElementById('btn-garage-back').onclick=()=>showScreen('s-menu');
