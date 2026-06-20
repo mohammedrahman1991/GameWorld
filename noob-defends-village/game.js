@@ -1002,50 +1002,112 @@ function handleShopClick() {
 
 // ── DRAW: Inventory ─────────────────────────────────────────────
 function drawInventory() {
-  ctx.fillStyle='rgba(0,0,0,0.75)'; ctx.fillRect(0,0,W,H);
-  const px=230,py=80,pw=440,ph=440;
-  ctx.fillStyle='#888'; rr(px,py,pw,ph,8); ctx.fill();
-  ctx.strokeStyle='#666'; ctx.lineWidth=3; rr(px,py,pw,ph,8); ctx.stroke();
+  ctx.fillStyle='rgba(0,0,0,0.52)'; ctx.fillRect(0,0,W,H);
 
-  ctx.fillStyle='#aaa'; rr(px+10,py+10,pw-20,40,6); ctx.fill();
-  ctx.fillStyle='#222'; ctx.font='bold 16px "Press Start 2P",monospace'; ctx.textAlign='center';
-  ctx.fillText('INVENTORY',px+pw/2,py+36); ctx.textAlign='left';
+  const px=152, py=76, pw=548, ph=448;
 
-  // Close
-  ctx.fillStyle=hovering(px+pw-44,py-4,44,44)?'#f44':'#c22'; rr(px+pw-44,py-4,44,44,8); ctx.fill();
-  ctx.fillStyle='#fff'; ctx.font='bold 20px monospace'; ctx.textAlign='center';
-  ctx.fillText('✕',px+pw-22,py+24); ctx.textAlign='left';
+  // Panel
+  ctx.fillStyle='#aaaaaa'; rr(px,py,pw,ph,4); ctx.fill();
+  ctx.strokeStyle='#888'; ctx.lineWidth=2; rr(px,py,pw,ph,4); ctx.stroke();
 
-  const sw=WEAPONS[player.weaponIdx];
-  ctx.fillStyle='#555'; rr(px+20,py+65,pw-40,90,6); ctx.fill();
-  ctx.fillStyle='#ffd700'; ctx.font='bold 11px monospace';
-  ctx.fillText('WEAPON: '+sw.name,px+30,py+92);
-  ctx.fillStyle=sw.color; ctx.fillText('DAMAGE: '+sw.dmg,px+30,py+112);
-  ctx.fillStyle='#fff'; ctx.fillText('RANGE: '+sw.range+'px',px+30,py+132);
+  // Title bar
+  ctx.fillStyle='#999'; ctx.fillRect(px,py,pw,52);
+  ctx.strokeStyle='#888'; ctx.lineWidth=1; ctx.strokeRect(px,py,pw,52);
+  ctx.fillStyle='#fff';
+  ctx.font='bold 18px "Press Start 2P",monospace'; ctx.textAlign='center';
+  ctx.fillText('INVENTORY',px+pw/2,py+33); ctx.textAlign='left';
 
-  ctx.fillStyle='#555'; rr(px+20,py+170,pw-40,140,6); ctx.fill();
-  ctx.fillStyle='#ffd700'; ctx.font='bold 11px monospace';
-  ctx.fillText('ARMOR:',px+30,py+196);
-  SLOTS.forEach((s,i)=>{
-    const a=player.armor[i];
-    const name=a>=0?ARMOR_TIERS[a].name+' '+s:'None';
-    const col=a>=0?ARMOR_TIERS[a].color:'#888';
-    ctx.fillStyle=col; ctx.fillText(s+': '+name,px+30,py+218+i*22);
-  });
-  ctx.fillStyle='#fff'; ctx.font='bold 13px monospace';
-  ctx.fillText('Total Defense: +'+player.defense,px+30,py+310);
+  // X button — outside panel, top-right
+  const xbx=px+pw+6, xby=py-6, xbw=78, xbh=72;
+  ctx.fillStyle=hovering(xbx,xby,xbw,xbh)?'#aaa':'#888';
+  rr(xbx,xby,xbw,xbh,4); ctx.fill();
+  ctx.strokeStyle='#666'; ctx.lineWidth=2; rr(xbx,xby,xbw,xbh,4); ctx.stroke();
+  ctx.fillStyle='#fff'; ctx.font='bold 34px monospace'; ctx.textAlign='center';
+  ctx.fillText('✕',xbx+xbw/2,xby+xbh*0.72); ctx.textAlign='left';
 
-  ctx.fillStyle='#555'; rr(px+20,py+325,pw-40,55,6); ctx.fill();
-  ctx.fillStyle='#ffd700'; ctx.font='bold 13px monospace';
-  ctx.fillText('Gold: ⬤ '+player.gold,px+30,py+353);
-  ctx.fillStyle='#fff'; ctx.fillText('Wave: '+wave,px+180,py+353);
+  // Item grid (5 cols × 4 rows)
+  const CELL=66, GAP=5;
+  const COLS=5, ROWS=4;
+  const gx=px+12, gy=py+58;
+  const gridW=COLS*(CELL+GAP)+GAP;
+  const gridH=ROWS*(CELL+GAP)+GAP;
 
-  // Press E to close
-  ctx.fillStyle='#aaa'; ctx.font='10px monospace'; ctx.textAlign='center';
-  ctx.fillText('Press E to close',px+pw/2,py+ph-15); ctx.textAlign='left';
+  ctx.fillStyle='#b8b8b8'; ctx.fillRect(gx,gy,gridW,gridH);
 
-  if (clickFrame && hovering(px+pw-44,py-4,44,44)) STATE='HUB';
-  if (eFrame) STATE='HUB';
+  for(let row=0;row<ROWS;row++){
+    for(let col=0;col<COLS;col++){
+      const sx=gx+GAP+col*(CELL+GAP);
+      const sy=gy+GAP+row*(CELL+GAP);
+      ctx.fillStyle='#636363'; ctx.fillRect(sx,sy,CELL,CELL);
+      ctx.strokeStyle='#484848'; ctx.lineWidth=1; ctx.strokeRect(sx,sy,CELL,CELL);
+    }
+  }
+
+  // Current weapon in slot (0,0)
+  {
+    const sx=gx+GAP, sy=gy+GAP;
+    const sw=WEAPONS[player.weaponIdx];
+    ctx.save(); ctx.translate(sx+CELL/2,sy+CELL/2); ctx.rotate(Math.PI/4);
+    if(sw.enc){ ctx.fillStyle='rgba(180,80,255,0.35)'; ctx.fillRect(-6,-22,12,42); }
+    ctx.fillStyle=sw.color; ctx.fillRect(-4,-20,8,36);
+    ctx.fillStyle='#8B5E3C'; ctx.fillRect(-8,-4,16,8);
+    ctx.restore();
+    ctx.fillStyle='#fff'; ctx.font='bold 12px monospace';
+    ctx.fillText('1',sx+CELL-16,sy+CELL-4);
+  }
+
+  // Scrollbar (right edge of grid)
+  const sbx=gx+gridW+4, sby=gy, sbw=12, sbh=gridH;
+  ctx.fillStyle='#c2c2c2'; ctx.fillRect(sbx,sby,sbw,sbh);
+  ctx.fillStyle='#44cc44'; ctx.fillRect(sbx+2,sby+sbh*0.07,sbw-4,sbh*0.36);
+
+  // Armor slots column (right side of panel)
+  const ax=sbx+sbw+8, ay=gy;
+  const ASIZE=74, AGAP=5;
+
+  for(let i=0;i<4;i++){
+    const asx=ax, asy=ay+i*(ASIZE+AGAP);
+    ctx.fillStyle='#727272'; rr(asx,asy,ASIZE,ASIZE,4); ctx.fill();
+    ctx.strokeStyle='#4f4f4f'; ctx.lineWidth=1; rr(asx,asy,ASIZE,ASIZE,4); ctx.stroke();
+
+    const tier=player.armor[i];
+    if(tier>=0){
+      const col=ARMOR_TIERS[tier].color;
+      ctx.fillStyle=col;
+      const cx2=asx+ASIZE/2, cy2=asy+ASIZE/2;
+      if(i===0){ // helmet
+        ctx.fillRect(cx2-17,cy2-18,34,22);
+        ctx.fillRect(cx2-21,cy2-6,10,16); ctx.fillRect(cx2+11,cy2-6,10,16);
+      } else if(i===1){ // chestplate
+        ctx.fillRect(cx2-20,cy2-18,40,30);
+        ctx.fillRect(cx2-26,cy2-8,11,24); ctx.fillRect(cx2+15,cy2-8,11,24);
+      } else if(i===2){ // leggings
+        ctx.fillRect(cx2-19,cy2-18,38,18);
+        ctx.fillRect(cx2-19,cy2-2,16,24); ctx.fillRect(cx2+3,cy2-2,16,24);
+      } else { // boots
+        ctx.fillRect(cx2-21,cy2-6,17,22); ctx.fillRect(cx2+4,cy2-6,17,22);
+        ctx.fillRect(cx2-25,cy2+12,21,10); ctx.fillRect(cx2+4,cy2+12,25,10);
+      }
+      ctx.fillStyle='#fff'; ctx.font='bold 12px monospace';
+      ctx.fillText('1',asx+ASIZE-16,asy+ASIZE-5);
+    }
+  }
+
+  // Trash slot (below grid, center-right)
+  const trx=gx+gridW/2-28, try2=gy+gridH+8;
+  ctx.fillStyle='#717171'; rr(trx,try2,62,54,4); ctx.fill();
+  ctx.strokeStyle='#4a4a4a'; ctx.lineWidth=1; rr(trx,try2,62,54,4); ctx.stroke();
+  ctx.fillStyle='#888';
+  ctx.fillRect(trx+9,try2+13,44,8);        // lid
+  ctx.fillRect(trx+18,try2+8,26,7);         // handle
+  ctx.fillStyle='#717171';
+  ctx.fillRect(trx+11,try2+23,40,26);       // body
+  ctx.fillStyle='#888';
+  for(let tl=0;tl<3;tl++) ctx.fillRect(trx+18+tl*10,try2+27,4,17); // lines
+
+  // Interactions
+  if(clickFrame && hovering(xbx,xby,xbw,xbh)){ STATE='HUB'; }
+  if(eFrame){ STATE='HUB'; }
 }
 
 // ── DRAW: Title Screen ──────────────────────────────────────────
@@ -1238,6 +1300,7 @@ function gameLoop() {
       drawHubRoom();
       villagers.forEach(drawVillager);
       drawNightOverlay();
+      drawHUD(); drawCrosshair();
       drawInventory();
       break;
     case 'BATTLE':
