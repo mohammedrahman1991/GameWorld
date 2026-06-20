@@ -218,10 +218,10 @@ function spawnEnemy(type) {
     default: x=-20;           y=rnd(50,H-50); break;
   }
   const T = {
-    zombie:   { hp:8,  maxHp:8,  spd:1.0, dmg:1,  gold:2, sz:14, col:'#3a7a3a' },
-    skeleton: { hp:12, maxHp:12, spd:1.3, dmg:2,  gold:3, sz:13, col:'#cccccc' },
-    spider:   { hp:6,  maxHp:6,  spd:2.0, dmg:1,  gold:1, sz:11, col:'#1a1a1a' },
-    creeper:  { hp:10, maxHp:10, spd:1.0, dmg:15, gold:5, sz:14, col:'#2d7a2d', exploding:false, explodeTimer:0 },
+    zombie:   { hp:8,  maxHp:8,  spd:2.2, dmg:1,  gold:2, sz:14, col:'#3a7a3a' },
+    skeleton: { hp:12, maxHp:12, spd:2.8, dmg:2,  gold:3, sz:13, col:'#cccccc' },
+    spider:   { hp:6,  maxHp:6,  spd:4.0, dmg:1,  gold:1, sz:11, col:'#1a1a1a' },
+    creeper:  { hp:10, maxHp:10, spd:2.2, dmg:15, gold:5, sz:14, col:'#2d7a2d', exploding:false, explodeTimer:0 },
   };
   return { x, y, type, ...T[type], vx:0, vy:0, atkTimer:0, id:Math.random() };
 }
