@@ -1342,7 +1342,7 @@ function drawGameOver() {
   ctx.fillStyle='#fff'; ctx.font='bold 16px "Press Start 2P",monospace';
   ctx.fillText('PLAY AGAIN',CX,H/2+90); ctx.textAlign='left';
   canvas.style.cursor=ph?'pointer':'default';
-  if (clickFrame&&ph) { STATE='LOADING'; loadPct=0; loadTmr=0; }
+  if (clickFrame&&ph) { localStorage.removeItem(SAVE_KEY); STATE='LOADING'; loadPct=0; loadTmr=0; tipIdx=0; }
 }
 
 // ── DRAW: Coins + Particles + Floats ───────────────────────────
@@ -1410,6 +1410,8 @@ function gameLoop() {
       drawNightOverlay();
       drawHUD(); drawCrosshair();
       drawInventory();
+      if (eFrame) { STATE='HUB'; eFrame=false; break; }
+      if (clickFrame && !hovering(152,76,548,448)) { STATE='HUB'; break; }
       break;
     case 'BATTLE':
       drawBattleArena();
