@@ -287,6 +287,16 @@
   <p class="section-label">⭐ Featured Games</p>
   <div class="grid">
 
+    <div class="card" data-game="noob-defends-village">
+      <div class="card-thumb g3">⚔️</div>
+      <div class="card-body">
+        <h2>Noob Defends The Village</h2>
+        <p>Minecraft-style village defense! Fight waves of zombies, skeletons &amp; spiders. Buy swords &amp; armor. Day/night cycle. Place blocks to defend!</p>
+        <span class="badge badge-live">New</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
     <div class="card" data-game="going-balls">
       <div class="card-thumb g9">⚽</div>
       <div class="card-body">
@@ -812,6 +822,21 @@
 
   /* ── GAME DATABASE ── */
   var GAMES = {
+    'noob-defends-village': {
+      title: 'Noob Defends The Village', emoji: '⚔️', grad: 'g3',
+      href: 'noob-defends-village/index.html',
+      cat: 'Action · Defense', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.8,
+      tags: ['minecraft', 'defense', 'waves', 'rpg', 'sword', 'shop', 'survival'],
+      about: 'Defend your Minecraft village from waves of mobs! Start in the village hub, walk to the LEFT yellow carpet to enter the battle arena and fight zombies, skeletons, and spiders. Visit the RIGHT yellow carpet to shop for powerful swords and armor. Buy gear, survive waves, watch your villagers come back alive after each round. Day/night cycle adds an extra challenge!',
+      controls: [
+        ['WASD / Arrows', 'Move'],
+        ['Mouse', 'Aim / Look around'],
+        ['Left Click', 'Swing sword / attack'],
+        ['Right Click', 'Place or break blocks'],
+        ['E', 'Open inventory / interact'],
+      ]
+    },
     'buckman': {
       title: 'BuckMan', emoji: '🦇', grad: 'g1',
       href: 'BuckMan/index.html',
