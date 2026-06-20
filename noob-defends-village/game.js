@@ -288,7 +288,7 @@ function updateHub() {
   if (eFrame || isOnCarpetCenter(RCARPET)) {
     if (isNearCarpet(RCARPET)) { STATE = 'SHOP'; return; }
   }
-  if (eFrame && STATE === 'HUB') STATE = 'INVENTORY';
+  if (eFrame && STATE === 'HUB') { STATE = 'INVENTORY'; eFrame = false; }
 }
 
 function isNearCarpet(c) {
