@@ -918,10 +918,11 @@ function drawShop() {
   ctx.fillStyle='#ffd700'; ctx.font='bold 15px monospace'; ctx.textAlign='center';
   ctx.fillText('⬤ '+player.gold,px+pw-64,py+37); ctx.textAlign='left';
 
-  // Close X
-  ctx.fillStyle=hovering(px+pw-48,py-4,48,48)?'#ff4444':'#cc2222'; rr(px+pw-48,py-4,48,48,8); ctx.fill();
-  ctx.fillStyle='#fff'; ctx.font='bold 22px monospace'; ctx.textAlign='center';
-  ctx.fillText('✕',px+pw-24,py+26); ctx.textAlign='left';
+  // Close X — large hit area so it's easy to tap
+  const _xbx=px+pw-68,_xby=py-8,_xbw=72,_xbh=60;
+  ctx.fillStyle=hovering(_xbx,_xby,_xbw,_xbh)?'#ff4444':'#cc2222'; rr(_xbx,_xby,_xbw,_xbh,10); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.font='bold 28px monospace'; ctx.textAlign='center';
+  ctx.fillText('✕',_xbx+_xbw/2,_xby+_xbh*0.68); ctx.textAlign='left';
 
   // Item grid
   const gx=px+12,gy=py+64,cs=54,cols=5;
@@ -975,7 +976,10 @@ function drawShop() {
 
 function handleShopClick() {
   const px=175,py=45,pw=550;
-  if (hovering(px+pw-48,py-4,48,48)) { STATE='HUB'; return; }
+  // Large close button area + E key
+  if (hovering(px+pw-68,py-8,72,60) || eFrame) { STATE='HUB'; eFrame=false; return; }
+  // Click outside the shop panel also closes it
+  if (!hovering(px,py,pw,510)) { STATE='HUB'; return; }
   const gx=px+12,gy=py+64,cs=54,cols=5;
   SHOP_ITEMS.forEach((item,i)=>{
     const c=i%cols,r=Math.floor(i/cols),ix=gx+c*cs,iy=gy+r*cs;
@@ -1227,6 +1231,7 @@ function gameLoop() {
       villagers.forEach(drawVillager);
       drawNightOverlay();
       drawShop();
+      if (eFrame) { STATE='HUB'; eFrame=false; break; }
       if (clickFrame) handleShopClick();
       break;
     case 'INVENTORY':
