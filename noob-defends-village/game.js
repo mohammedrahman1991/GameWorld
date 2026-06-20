@@ -226,6 +226,42 @@ function spawnEnemy(type) {
   return { x, y, type, ...T[type], vx:0, vy:0, atkTimer:0, id:Math.random() };
 }
 
+// ── Save / Load ─────────────────────────────────────────────────
+const SAVE_KEY = 'noob_village_v1';
+
+function saveProgress() {
+  localStorage.setItem(SAVE_KEY, JSON.stringify({
+    gold: player.gold,
+    hp: player.maxHp,
+    maxHp: player.maxHp,
+    weaponIdx: player.weaponIdx,
+    armor: [...player.armor],
+    wave: wave,
+  }));
+}
+
+function hasSave() {
+  return !!localStorage.getItem(SAVE_KEY);
+}
+
+function continueGame() {
+  let d = {};
+  try { d = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}'); } catch(e) {}
+  player.x = CX; player.y = 460;
+  player.maxHp = d.maxHp ?? 20;
+  player.hp = player.maxHp;
+  player.gold = d.gold ?? 15;
+  player.weaponIdx = d.weaponIdx ?? 0;
+  player.armor = d.armor ?? [-1,-1,-1,-1];
+  player.attackCD = 0; player.isAttacking = false; player.invincible = 0;
+  enemies=[]; coins=[]; particles=[]; floatTexts=[];
+  wave = d.wave ?? 1;
+  waveMobs=[]; waveSpawnTimer=0; waveState='idle';
+  shopSel=0; clearTimer=0; placedBlocks=new Set();
+  initVillagers();
+  STATE = 'HUB';
+}
+
 // ── Start game ─────────────────────────────────────────────────
 function startGame() {
   player.x = CX; player.y = 460;
@@ -310,10 +346,12 @@ function startBattle() {
 function returnToHub() {
   STATE = 'HUB';
   player.x = CX; player.y = 460;
+  player.hp = player.maxHp;
   villagers.forEach(v => { v.alive=true; v.downTimer=0; });
   wave++;
   clearTimer = 0;
   enemies = []; placedBlocks=new Set();
+  saveProgress();
 }
 
 function updateBattle() {
@@ -1024,6 +1062,7 @@ function handleShopClick() {
         if (ti>=0) player.armor[sel.slot]=ti;
       }
       addFloat(CX,CY-30,'Equipped!','#0f0');
+      saveProgress();
     }
   }
 }
@@ -1182,25 +1221,59 @@ function drawTitle() {
   ctx.fillStyle=g2; ctx.fillText('THE VILLAGE',CX,134);
   ctx.textAlign='left';
 
-  ctx.fillStyle='#aaa'; rr(CX-215,178,430,220,14); ctx.fill();
-  ctx.strokeStyle='#888'; ctx.lineWidth=3; rr(CX-215,178,430,220,14); ctx.stroke();
+  const _hs = hasSave();
+  const _panH = _hs ? 282 : 220;
+  ctx.fillStyle='#aaa'; rr(CX-215,178,430,_panH,14); ctx.fill();
+  ctx.strokeStyle='#888'; ctx.lineWidth=3; rr(CX-215,178,430,_panH,14); ctx.stroke();
 
-  const ph1=hovering(CX-195,196,390,70);
-  ctx.fillStyle=ph1?'#5dd450':'#4bc942'; rr(CX-195,196,390,70,10); ctx.fill();
-  ctx.strokeStyle='#2a9928'; ctx.lineWidth=3; rr(CX-195,196,390,70,10); ctx.stroke();
-  ctx.fillStyle='#fff'; ctx.font='bold 20px "Press Start 2P",monospace'; ctx.textAlign='center';
-  ctx.fillText('PLAY GAME',CX,240); ctx.textAlign='left';
+  if (_hs) {
+    let _sd = {}; try { _sd=JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'); } catch(e){}
+    ctx.fillStyle='#666'; ctx.font='10px monospace'; ctx.textAlign='center';
+    ctx.fillText('Wave '+(_sd.wave??1)+' — Gold: '+(_sd.gold??0), CX, 196);
+    ctx.textAlign='left';
 
-  const ph2=hovering(CX-195,288,390,70);
-  ctx.fillStyle=ph2?'#5bbfe8':'#4ab0e8'; rr(CX-195,288,390,70,10); ctx.fill();
-  ctx.strokeStyle='#2880b8'; ctx.lineWidth=3; rr(CX-195,288,390,70,10); ctx.stroke();
-  ctx.fillStyle='#fff'; ctx.font='bold 18px "Press Start 2P",monospace'; ctx.textAlign='center';
-  ctx.fillText('COMMUNITY ✈',CX,332); ctx.textAlign='left';
+    const ph1=hovering(CX-195,204,390,64);
+    ctx.fillStyle=ph1?'#5dd450':'#4bc942'; rr(CX-195,204,390,64,10); ctx.fill();
+    ctx.strokeStyle='#2a9928'; ctx.lineWidth=3; rr(CX-195,204,390,64,10); ctx.stroke();
+    ctx.fillStyle='#fff'; ctx.font='bold 18px "Press Start 2P",monospace'; ctx.textAlign='center';
+    ctx.fillText('CONTINUE',CX,244); ctx.textAlign='left';
 
-  canvas.style.cursor=(ph1||ph2)?'pointer':'default';
-  if (clickFrame) {
-    if (ph1) { STATE='LOADING'; loadPct=0; loadTmr=0; tipIdx=0; }
-    if (ph2) window.open('https://t.me/wackybrains','_blank');
+    const ph2=hovering(CX-195,280,390,64);
+    ctx.fillStyle=ph2?'#ff9944':'#e07728'; rr(CX-195,280,390,64,10); ctx.fill();
+    ctx.strokeStyle='#b05500'; ctx.lineWidth=3; rr(CX-195,280,390,64,10); ctx.stroke();
+    ctx.fillStyle='#fff'; ctx.font='bold 18px "Press Start 2P",monospace'; ctx.textAlign='center';
+    ctx.fillText('NEW GAME',CX,320); ctx.textAlign='left';
+
+    const ph3=hovering(CX-195,356,390,64);
+    ctx.fillStyle=ph3?'#5bbfe8':'#4ab0e8'; rr(CX-195,356,390,64,10); ctx.fill();
+    ctx.strokeStyle='#2880b8'; ctx.lineWidth=3; rr(CX-195,356,390,64,10); ctx.stroke();
+    ctx.fillStyle='#fff'; ctx.font='bold 16px "Press Start 2P",monospace'; ctx.textAlign='center';
+    ctx.fillText('COMMUNITY ✈',CX,396); ctx.textAlign='left';
+
+    canvas.style.cursor=(ph1||ph2||ph3)?'pointer':'default';
+    if (clickFrame) {
+      if (ph1) continueGame();
+      if (ph2) { localStorage.removeItem(SAVE_KEY); STATE='LOADING'; loadPct=0; loadTmr=0; tipIdx=0; }
+      if (ph3) window.open('https://t.me/wackybrains','_blank');
+    }
+  } else {
+    const ph1=hovering(CX-195,196,390,70);
+    ctx.fillStyle=ph1?'#5dd450':'#4bc942'; rr(CX-195,196,390,70,10); ctx.fill();
+    ctx.strokeStyle='#2a9928'; ctx.lineWidth=3; rr(CX-195,196,390,70,10); ctx.stroke();
+    ctx.fillStyle='#fff'; ctx.font='bold 20px "Press Start 2P",monospace'; ctx.textAlign='center';
+    ctx.fillText('PLAY GAME',CX,240); ctx.textAlign='left';
+
+    const ph2=hovering(CX-195,288,390,70);
+    ctx.fillStyle=ph2?'#5bbfe8':'#4ab0e8'; rr(CX-195,288,390,70,10); ctx.fill();
+    ctx.strokeStyle='#2880b8'; ctx.lineWidth=3; rr(CX-195,288,390,70,10); ctx.stroke();
+    ctx.fillStyle='#fff'; ctx.font='bold 18px "Press Start 2P",monospace'; ctx.textAlign='center';
+    ctx.fillText('COMMUNITY ✈',CX,332); ctx.textAlign='left';
+
+    canvas.style.cursor=(ph1||ph2)?'pointer':'default';
+    if (clickFrame) {
+      if (ph1) { STATE='LOADING'; loadPct=0; loadTmr=0; tipIdx=0; }
+      if (ph2) window.open('https://t.me/wackybrains','_blank');
+    }
   }
 }
 
