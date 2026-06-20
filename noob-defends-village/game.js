@@ -706,16 +706,44 @@ function drawPlayer() {
   ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(x,y+12,10,5,0,0,Math.PI*2); ctx.fill();
   // Legs
   ctx.fillStyle='#555'; ctx.fillRect(x-7,y+6,6,10); ctx.fillRect(x+1,y+6,6,10);
+  // Leggings
+  if (player.armor[2]>=0) {
+    ctx.fillStyle=ARMOR_TIERS[player.armor[2]].color;
+    ctx.fillRect(x-7,y+6,6,10); ctx.fillRect(x+1,y+6,6,10);
+    ctx.fillStyle='rgba(0,0,0,0.2)'; ctx.fillRect(x,y+6,1,10);
+  }
+  // Boots
+  if (player.armor[3]>=0) {
+    ctx.fillStyle=ARMOR_TIERS[player.armor[3]].color;
+    ctx.fillRect(x-8,y+12,7,4); ctx.fillRect(x+1,y+12,7,4);
+  }
   // Body (blue noob shirt)
   ctx.fillStyle='#3355bb'; ctx.fillRect(x-8,y-5,16,13);
   ctx.fillStyle='#2244aa'; ctx.fillRect(x-8,y-5,16,4);
   // Arms
   ctx.fillStyle='#3355bb'; ctx.fillRect(x-13,y-4,6,10); ctx.fillRect(x+7,y-4,6,10);
+  // Chestplate
+  if (player.armor[1]>=0) {
+    ctx.fillStyle=ARMOR_TIERS[player.armor[1]].color;
+    ctx.fillRect(x-8,y-5,16,13);
+    ctx.fillRect(x-13,y-4,6,10); ctx.fillRect(x+7,y-4,6,10);
+    ctx.fillStyle='rgba(0,0,0,0.22)';
+    ctx.fillRect(x-8,y-5,16,3); ctx.fillRect(x-1,y-5,2,13);
+  }
   // Head
   ctx.fillStyle='#f5c89a'; ctx.fillRect(x-8,y-20,16,16);
   // Hair
   ctx.fillStyle='#5a3010'; ctx.fillRect(x-8,y-20,16,5);
-  // Eyes
+  // Helmet
+  if (player.armor[0]>=0) {
+    ctx.fillStyle=ARMOR_TIERS[player.armor[0]].color;
+    ctx.fillRect(x-10,y-23,20,10);       // top cap (wider than head)
+    ctx.fillRect(x-11,y-15,5,7);         // left cheek guard
+    ctx.fillRect(x+6, y-15,5,7);         // right cheek guard
+    ctx.fillStyle='rgba(0,0,0,0.25)';
+    ctx.fillRect(x-10,y-14,20,2);         // rim shadow
+  }
+  // Eyes (always visible on top of armor)
   ctx.fillStyle='#222'; ctx.fillRect(x-5,y-13,3,3); ctx.fillRect(x+2,y-13,3,3);
 
   // Sword
