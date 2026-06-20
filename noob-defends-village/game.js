@@ -984,11 +984,12 @@ function drawShop() {
   ctx.fillStyle='#ffd700'; ctx.font='bold 15px monospace'; ctx.textAlign='center';
   ctx.fillText('⬤ '+player.gold,px+pw-64,py+37); ctx.textAlign='left';
 
-  // Close X — large hit area so it's easy to tap
-  const _xbx=px+pw-68,_xby=py-8,_xbw=72,_xbh=60;
-  ctx.fillStyle=hovering(_xbx,_xby,_xbw,_xbh)?'#ff4444':'#cc2222'; rr(_xbx,_xby,_xbw,_xbh,10); ctx.fill();
-  ctx.fillStyle='#fff'; ctx.font='bold 28px monospace'; ctx.textAlign='center';
-  ctx.fillText('✕',_xbx+_xbw/2,_xby+_xbh*0.68); ctx.textAlign='left';
+  // Close X — positioned clearly outside the panel to the right
+  const _xbx=px+pw+6,_xby=py-6,_xbw=86,_xbh=76;
+  ctx.fillStyle=hovering(_xbx,_xby,_xbw,_xbh)?'#ff5555':'#cc2222'; rr(_xbx,_xby,_xbw,_xbh,12); ctx.fill();
+  ctx.strokeStyle='#aa1111'; ctx.lineWidth=2; rr(_xbx,_xby,_xbw,_xbh,12); ctx.stroke();
+  ctx.fillStyle='#fff'; ctx.font='bold 36px monospace'; ctx.textAlign='center';
+  ctx.fillText('✕',_xbx+_xbw/2,_xby+_xbh*0.7); ctx.textAlign='left';
 
   // Item grid
   const gx=px+12,gy=py+64,cs=54,cols=5;
@@ -1042,9 +1043,7 @@ function drawShop() {
 
 function handleShopClick() {
   const px=175,py=45,pw=550;
-  // Large close button area + E key
-  if (hovering(px+pw-68,py-8,72,60) || eFrame) { STATE='HUB'; eFrame=false; return; }
-  // Click outside the shop panel also closes it
+  // Click outside the shop panel closes it
   if (!hovering(px,py,pw,510)) { STATE='HUB'; return; }
   const gx=px+12,gy=py+64,cs=54,cols=5;
   SHOP_ITEMS.forEach((item,i)=>{
@@ -1395,7 +1394,11 @@ function gameLoop() {
       drawNightOverlay();
       drawShop();
       if (eFrame) { STATE='HUB'; eFrame=false; break; }
-      if (clickFrame) handleShopClick();
+      if (clickFrame) {
+        // X button: px+pw+6=731, py-6=39, 86×76
+        if (hovering(175+550+6,45-6,86,76)) { STATE='HUB'; break; }
+        handleShopClick();
+      }
       break;
     case 'INVENTORY':
       drawHubRoom();
