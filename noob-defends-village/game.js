@@ -302,7 +302,7 @@ function movePlayer(spd) {
 }
 
 function updateHub() {
-  movePlayer(3.0);
+  movePlayer(5.0);
   player.x = clamp(player.x, 70, W-70);
   player.y = clamp(player.y, 250, H-40);
 
@@ -355,7 +355,7 @@ function returnToHub() {
 }
 
 function updateBattle() {
-  movePlayer(3.2);
+  movePlayer(5.5);
   player.x = clamp(player.x, 20, W-20);
   player.y = clamp(player.y, 20, H-20);
 
