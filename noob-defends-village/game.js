@@ -319,10 +319,10 @@ function updateHub() {
   });
 
   if (eFrame || isOnCarpetCenter(LCARPET)) {
-    if (isNearCarpet(LCARPET)) { startBattle(); return; }
+    if (isNearCarpet(LCARPET)) { eFrame=false; startBattle(); return; }
   }
   if (eFrame || isOnCarpetCenter(RCARPET)) {
-    if (isNearCarpet(RCARPET)) { STATE = 'SHOP'; return; }
+    if (isNearCarpet(RCARPET)) { eFrame=false; STATE = 'SHOP'; return; }
   }
   if (eFrame && STATE === 'HUB') { STATE = 'INVENTORY'; eFrame = false; }
 }
@@ -1043,8 +1043,6 @@ function drawShop() {
 
 function handleShopClick() {
   const px=175,py=45,pw=550;
-  // Click outside the shop panel closes it
-  if (!hovering(px,py,pw,510)) { STATE='HUB'; return; }
   const gx=px+12,gy=py+64,cs=54,cols=5;
   SHOP_ITEMS.forEach((item,i)=>{
     const c=i%cols,r=Math.floor(i/cols),ix=gx+c*cs,iy=gy+r*cs;
@@ -1053,16 +1051,22 @@ function handleShopClick() {
   const dx=px+292,dy=py+64,dw=232,dh=310;
   if (hovering(dx+20,dy+dh-64,dw-40,44)) {
     const sel=SHOP_ITEMS[shopSel];
-    if (sel && player.gold>=sel.cost) {
+    if (!sel || player.gold<sel.cost) return;
+    // Guard: don't buy something already equipped at same or better tier
+    if (sel.type==='weapon' && player.weaponIdx===sel.wi) return;
+    if (sel.type==='armor') {
+      const ti=ARMOR_TIERS.findIndex(t=>t.id===sel.tier);
+      if (ti<0 || player.armor[sel.slot]>=ti) return;
       player.gold-=sel.cost;
-      if (sel.type==='weapon') player.weaponIdx=sel.wi;
-      else {
-        const ti=ARMOR_TIERS.findIndex(t=>t.id===sel.tier);
-        if (ti>=0) player.armor[sel.slot]=ti;
-      }
+      player.armor[sel.slot]=ti;
       addFloat(CX,CY-30,'Equipped!','#0f0');
       saveProgress();
+      return;
     }
+    player.gold-=sel.cost;
+    player.weaponIdx=sel.wi;
+    addFloat(CX,CY-30,'Equipped!','#0f0');
+    saveProgress();
   }
 }
 
@@ -1395,8 +1399,8 @@ function gameLoop() {
       drawShop();
       if (eFrame) { STATE='HUB'; eFrame=false; break; }
       if (clickFrame) {
-        // X button: px+pw+6=731, py-6=39, 86×76
-        if (hovering(175+550+6,45-6,86,76)) { STATE='HUB'; break; }
+        // any click outside the panel (incl. X button at x>725) closes shop
+        if (!hovering(175,45,550,510)) { STATE='HUB'; break; }
         handleShopClick();
       }
       break;
