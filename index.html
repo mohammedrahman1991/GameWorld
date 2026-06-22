@@ -287,6 +287,16 @@
   <p class="section-label">⭐ Featured Games</p>
   <div class="grid">
 
+    <div class="card" data-game="capybara-shooting">
+      <div class="card-thumb g2">🦫</div>
+      <div class="card-body">
+        <h2>Capybara Shooting</h2>
+        <p>2-player deathmatch! Pick your hat, grab an SMG or rocket launcher, and blast your capybara rival. 10 maps, 1 bullet = 1 kill. First to 10 wins!</p>
+        <span class="badge badge-live">New</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
     <div class="card" data-game="noob-defends-village">
       <div class="card-thumb g3">⚔️</div>
       <div class="card-body">
@@ -822,6 +832,22 @@
 
   /* ── GAME DATABASE ── */
   var GAMES = {
+    'capybara-shooting': {
+      title: 'Capybara Shooting', emoji: '🦫', grad: 'g2',
+      href: 'capybara-shooting/index.html',
+      cat: 'Action · Multiplayer', dev: 'Wacky Brains',
+      players: '2 Players', platform: 'Desktop', age: '0+', rating: 4.7,
+      tags: ['2player', 'shooting', 'platformer', 'capybara', 'local multiplayer', 'deathmatch'],
+      about: 'Two capybaras battle it out across 10 wildly different arenas — from candy land to outer space! Pick your hat, grab a gun, and blast your opponent. One bullet = one kill. First capybara to 10 kills wins. Features SMG, AK-47, and rocket launcher pickups, red jump pads, and a dynamic zoom camera that tracks both players.',
+      controls: [
+        ['W / ↑', 'Jump'],
+        ['A D / ← →', 'Move left / right'],
+        ['R / K', 'Shoot'],
+        ['E / L', 'Use'],
+        ['M', 'Toggle music'],
+        ['ESC', 'Back to menu'],
+      ]
+    },
     'noob-defends-village': {
       title: 'Noob Defends The Village', emoji: '⚔️', grad: 'g3',
       href: 'noob-defends-village/index.html',
@@ -1503,7 +1529,7 @@
   var AI_CATS = {
     relaxing:      { label: '🌴 Relaxing',          ids: ['farming','braincrate','goofy-house','resell','spelling','paintball'] },
     concentration: { label: '🧠 For Concentration', ids: ['braincrate','82-and-0','find-word','blackjack','tictactoe','marbles','paintball'] },
-    action:        { label: '⚡ Action & Combat',    ids: ['fight-arrows','castle-man','sniper','shootpoint','space-invasion','capaw','turtles','blob-eating'] },
+    action:        { label: '⚡ Action & Combat',    ids: ['capybara-shooting','fight-arrows','castle-man','sniper','shootpoint','space-invasion','capaw','turtles','blob-eating'] },
     racing:        { label: '🏎️ Racing & Speed',    ids: ['racing-cars','buckman','moto-island','bike-rider','monster-truck','drone-zayn','going-balls'] },
     adventure:     { label: '🌍 Adventure',          ids: ['packaging','farming','hide-seek','obstacle','goofy-house','swing-man'] },
     multiplayer:   { label: '👥 Multiplayer',        ids: Object.keys(GAMES).filter(function(id){ return GAMES[id].players !== '1 Player'; }) },
@@ -1513,6 +1539,7 @@
 
   /* Mood/vibe keywords per game — used only to make AI search smarter */
   var GAME_VIBES = {
+    'capybara-shooting': 'action shooting platformer 2player pvp deathmatch capybara hats guns smg rocket multiplayer intense',
     'racing-cars':    'racing 3d cars multiplayer 2player split-screen shop coins boost fast paced',
     'buckman':        'racing fast paced arcade solo',
     'drone-zayn':     'relaxing flying exploration simulation casual solo',
