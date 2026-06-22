@@ -209,12 +209,12 @@ function updateGame() {
         player.shieldT=0;
         spawnPfx(player.x,player.y,'#ffd700',18,7);
         balls=balls.filter(bb=>bb!==b);
-        sfxShield(); shakeT=6;
+        sfxShield(); shakeT=0;
         addFloat(player.x,player.y-30,'SHIELD BROKE!','#ffd700');
       } else {
         spawnPfx(player.x,player.y,'#ff4444',28,8);
         spawnPfx(player.x,player.y,'#ffaa22',14,5);
-        sfxDie(); shakeT=22;
+        sfxDie(); shakeT=0;
         flashCol='#ff0000'; flashT=12;
         const final=Math.floor(score);
         if(final>best){ best=final; localStorage.setItem('db_best',String(best)); }
@@ -508,7 +508,7 @@ function loop(){
   frame++;
   if(shakeT>0){
     ctx.save();
-    const s=shakeT*1.8;
+    const s=shakeT*0.8;
     ctx.translate(Math.random()*s-s/2, Math.random()*s-s/2);
   }
   ctx.clearRect(-20,-20,W+40,H+40);
