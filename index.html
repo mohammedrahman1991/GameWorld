@@ -287,6 +287,16 @@
   <p class="section-label">⭐ Featured Games</p>
   <div class="grid">
 
+    <div class="card" data-game="neon-runner">
+      <div class="card-thumb g2">🏃</div>
+      <div class="card-body">
+        <h2>Neon Runner</h2>
+        <p>Run through a neon city! Jump and double-jump over glowing red obstacles, collect gold coins, and survive as long as you can. Gets faster!</p>
+        <span class="badge badge-live">New</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
     <div class="card" data-game="block-stack">
       <div class="card-thumb g6">🧱</div>
       <div class="card-body">
@@ -882,6 +892,17 @@
 
   /* ── GAME DATABASE ── */
   var GAMES = {
+    'neon-runner': {
+      title: 'Neon Runner', emoji: '🏃', grad: 'g2',
+      href: 'neon-runner/index.html',
+      cat: 'Action · Endless', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.8,
+      tags: ['endless runner', 'jump', 'neon', 'solo', 'highscore', 'coins', 'fast paced'],
+      about: 'Race through a glowing neon city that never ends! Your runner sprints automatically — click or press Space to jump, and press again mid-air for a double jump. Dodge the deadly red pillars, collect gold coins for bonus score, and survive as long as you can. The speed ramps up the longer you last!',
+      controls: [
+        ['Click / Space', 'Jump (press twice to double jump)'],
+      ]
+    },
     'block-stack': {
       title: 'Block Stack', emoji: '🧱', grad: 'g6',
       href: 'block-stack/index.html',
@@ -1612,6 +1633,7 @@
 
   /* Mood/vibe keywords per game — used only to make AI search smarter */
   var GAME_VIBES = {
+    'neon-runner':       'endless runner jump dodge neon solo highscore coins fast paced survival arcade',
     'block-stack':       'stacking precision arcade solo highscore casual addictive one button tower builder',
     'dodge-blitz':       'survival dodge solo arcade highscore neon balls fast paced shield powerup intense',
     'capybara-shooting': 'action shooting platformer 2player pvp deathmatch capybara hats guns smg rocket multiplayer intense',
