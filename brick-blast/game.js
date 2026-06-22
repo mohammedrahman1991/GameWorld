@@ -34,7 +34,7 @@ function sfxLevelUp(){ [523,587,659,784].forEach((f,i)=>tone(f,0.08,'triangle',0
 function sfxPaddle(){ tone(320,0.03,'sine',0.05); }
 
 // ---------------------------------------------------------------- Constants
-const PADDLE_W=100, PADDLE_H=14, PADDLE_Y=H-55, PADDLE_SPD=7.5;
+const PADDLE_W=100, PADDLE_H=14, PADDLE_Y=H-55, PADDLE_SPD=12;
 const BALL_R=7;
 const ROWS=7, COLS=10, BRICK_W=54, BRICK_H=20, BRICK_GAP=2;
 const BRICK_AREA_X=(W-(COLS*BRICK_W+(COLS-1)*BRICK_GAP))/2;
@@ -141,7 +141,8 @@ function update(){
   // Paddle movement
   if(keys['ArrowLeft']||keys['KeyA']) pux=Math.max(0,pux-PADDLE_SPD);
   if(keys['ArrowRight']||keys['KeyD']) pux=Math.min(W-pwx,pux+PADDLE_SPD);
-  pux+=(mX-pwx/2-pux)*0.14;
+  // Mouse: snap directly to cursor
+  if(!keys['ArrowLeft']&&!keys['ArrowRight']&&!keys['KeyA']&&!keys['KeyD']) pux=mX-pwx/2;
   pux=Math.max(0,Math.min(W-pwx,pux));
 
   // Lasers
