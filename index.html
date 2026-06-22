@@ -287,6 +287,16 @@
   <p class="section-label">⭐ Featured Games</p>
   <div class="grid">
 
+    <div class="card" data-game="snake-neon">
+      <div class="card-thumb g3">🐍</div>
+      <div class="card-body">
+        <h2>Snake Neon</h2>
+        <p>Classic snake supercharged with neon glow! Eat gold for +5, blue for +3 — but dodge the red bombs or shrink! Gets faster the longer you survive.</p>
+        <span class="badge badge-live">New</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
     <div class="card" data-game="neon-runner">
       <div class="card-thumb g2">🏃</div>
       <div class="card-body">
@@ -892,6 +902,18 @@
 
   /* ── GAME DATABASE ── */
   var GAMES = {
+    'snake-neon': {
+      title: 'Snake Neon', emoji: '🐍', grad: 'g3',
+      href: 'snake-neon/index.html',
+      cat: 'Arcade · Puzzle', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.9,
+      tags: ['snake', 'arcade', 'neon', 'solo', 'highscore', 'classic', 'addictive'],
+      about: 'Classic snake reimagined with neon visuals and special food types! Eat the green food for +1, blue crystals for +3, and rare gold stars for +5 points. But watch out for the red bomb food — eating it shrinks your snake and costs 3 points! The snake speeds up as your score grows.',
+      controls: [
+        ['WASD / ↑↓←→', 'Change direction'],
+        ['ESC', 'Back to menu'],
+      ]
+    },
     'neon-runner': {
       title: 'Neon Runner', emoji: '🏃', grad: 'g2',
       href: 'neon-runner/index.html',
@@ -1633,6 +1655,7 @@
 
   /* Mood/vibe keywords per game — used only to make AI search smarter */
   var GAME_VIBES = {
+    'snake-neon':        'snake classic arcade neon solo highscore grow eat food addictive retro',
     'neon-runner':       'endless runner jump dodge neon solo highscore coins fast paced survival arcade',
     'block-stack':       'stacking precision arcade solo highscore casual addictive one button tower builder',
     'dodge-blitz':       'survival dodge solo arcade highscore neon balls fast paced shield powerup intense',
