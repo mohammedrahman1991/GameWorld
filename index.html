@@ -287,6 +287,16 @@
   <p class="section-label">⭐ Featured Games</p>
   <div class="grid">
 
+    <div class="card" data-game="dodge-blitz">
+      <div class="card-thumb g7">💥</div>
+      <div class="card-body">
+        <h2>Dodge Blitz</h2>
+        <p>Solo survival madness! Dodge an endless storm of neon balls. Grab shields, slow-mo, and score multipliers. How long can you last?</p>
+        <span class="badge badge-live">New</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
     <div class="card" data-game="capybara-shooting">
       <div class="card-thumb g2">🦫</div>
       <div class="card-body">
@@ -401,6 +411,16 @@
 
   <p class="section-label">🎯 Action &amp; Combat</p>
   <div class="grid">
+
+    <div class="card" data-game="dodge-blitz">
+      <div class="card-thumb g7">💥</div>
+      <div class="card-body">
+        <h2>Dodge Blitz</h2>
+        <p>Solo survival madness! Dodge an endless storm of neon balls. Grab shields, slow-mo, and score multipliers. How long can you last?</p>
+        <span class="badge badge-live">New</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
 
     <div class="card" data-game="capybara-shooting">
       <div class="card-thumb g2">🦫</div>
@@ -842,6 +862,18 @@
 
   /* ── GAME DATABASE ── */
   var GAMES = {
+    'dodge-blitz': {
+      title: 'Dodge Blitz', emoji: '💥', grad: 'g7',
+      href: 'dodge-blitz/index.html',
+      cat: 'Action · Survival', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop', age: '0+', rating: 4.8,
+      tags: ['survival', 'dodge', 'solo', 'highscore', 'neon', 'fast paced', 'arcade'],
+      about: 'An endless neon ball storm is coming for you! Dodge coloured balls that fly in from every direction. Collect power-ups — a golden Shield, an ❄ Slow-Mo freeze, a ★ 2× Score multiplier, and a ⊕ Magnet that pulls power-ups to you. The longer you survive, the faster and wilder it gets. Beat your best score!',
+      controls: [
+        ['WASD / ↑↓←→', 'Move'],
+        ['ESC', 'Back to menu'],
+      ]
+    },
     'capybara-shooting': {
       title: 'Capybara Shooting', emoji: '🦫', grad: 'g2',
       href: 'capybara-shooting/index.html',
@@ -1549,6 +1581,7 @@
 
   /* Mood/vibe keywords per game — used only to make AI search smarter */
   var GAME_VIBES = {
+    'dodge-blitz':       'survival dodge solo arcade highscore neon balls fast paced shield powerup intense',
     'capybara-shooting': 'action shooting platformer 2player pvp deathmatch capybara hats guns smg rocket multiplayer intense',
     'racing-cars':    'racing 3d cars multiplayer 2player split-screen shop coins boost fast paced',
     'buckman':        'racing fast paced arcade solo',
