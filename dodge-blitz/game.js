@@ -214,7 +214,7 @@ function updateGame() {
       } else {
         spawnPfx(player.x,player.y,'#ff4444',28,8);
         spawnPfx(player.x,player.y,'#ffaa22',14,5);
-        sfxDie(); shakeT=0;
+        sfxDie(); shakeT=18;
         flashCol='#ff0000'; flashT=12;
         const final=Math.floor(score);
         if(final>best){ best=final; localStorage.setItem('db_best',String(best)); }
@@ -506,24 +506,26 @@ function drawGameOver() {
 let frame=0;
 function loop(){
   frame++;
-  if(shakeT>0){
+  const doShake = shakeT>0 && STATE!=='TITLE';
+  if(doShake){
     ctx.save();
-    const s=shakeT*0.8;
+    const s=shakeT*0.9;
     ctx.translate(Math.random()*s-s/2, Math.random()*s-s/2);
   }
   ctx.clearRect(-20,-20,W+40,H+40);
 
   if(STATE==='TITLE'){
+    shakeT=0;
     drawTitle();
   } else if(STATE==='GAME'){
     drawBg(); drawPwups(); drawBalls(); drawFX(); drawPlayer(); drawHUD();
     updateGame();
-    if(keys['Escape']){ STATE='TITLE'; }
+    if(keys['Escape']){ shakeT=0; STATE='TITLE'; }
   } else if(STATE==='GAMEOVER'){
     drawGameOver();
   }
 
-  if(shakeT>0) ctx.restore();
+  if(doShake) ctx.restore();
   clickFrame=false;
   requestAnimationFrame(loop);
 }
