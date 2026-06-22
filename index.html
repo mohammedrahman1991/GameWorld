@@ -287,6 +287,16 @@
   <p class="section-label">⭐ Featured Games</p>
   <div class="grid">
 
+    <div class="card" data-game="block-stack">
+      <div class="card-thumb g6">🧱</div>
+      <div class="card-body">
+        <h2>Block Stack</h2>
+        <p>Drop the block. Build the tower. The block swings faster the higher you go — land it perfectly for bonus points. How high can you stack?</p>
+        <span class="badge badge-live">New</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
     <div class="card" data-game="dodge-blitz">
       <div class="card-thumb g7">💥</div>
       <div class="card-body">
@@ -411,6 +421,16 @@
 
   <p class="section-label">🎯 Action &amp; Combat</p>
   <div class="grid">
+
+    <div class="card" data-game="block-stack">
+      <div class="card-thumb g6">🧱</div>
+      <div class="card-body">
+        <h2>Block Stack</h2>
+        <p>Drop the block. Build the tower. The block swings faster the higher you go — land it perfectly for bonus points. How high can you stack?</p>
+        <span class="badge badge-live">New</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
 
     <div class="card" data-game="dodge-blitz">
       <div class="card-thumb g7">💥</div>
@@ -862,6 +882,17 @@
 
   /* ── GAME DATABASE ── */
   var GAMES = {
+    'block-stack': {
+      title: 'Block Stack', emoji: '🧱', grad: 'g6',
+      href: 'block-stack/index.html',
+      cat: 'Puzzle · Arcade', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.9,
+      tags: ['stacking', 'arcade', 'solo', 'highscore', 'precision', 'casual', 'addictive'],
+      about: 'A block swings back and forth on a rope. Click or press Space to drop it onto the tower. The part that doesn\'t land gets cut off — so the longer you play, the narrower your target gets! Land perfectly (within 5px) for a PERFECT bonus and score multiplier. Stack as high as you can and beat your best!',
+      controls: [
+        ['Click / Space', 'Drop the block'],
+      ]
+    },
     'dodge-blitz': {
       title: 'Dodge Blitz', emoji: '💥', grad: 'g7',
       href: 'dodge-blitz/index.html',
@@ -1581,6 +1612,7 @@
 
   /* Mood/vibe keywords per game — used only to make AI search smarter */
   var GAME_VIBES = {
+    'block-stack':       'stacking precision arcade solo highscore casual addictive one button tower builder',
     'dodge-blitz':       'survival dodge solo arcade highscore neon balls fast paced shield powerup intense',
     'capybara-shooting': 'action shooting platformer 2player pvp deathmatch capybara hats guns smg rocket multiplayer intense',
     'racing-cars':    'racing 3d cars multiplayer 2player split-screen shop coins boost fast paced',
