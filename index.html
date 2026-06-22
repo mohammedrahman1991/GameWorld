@@ -287,6 +287,26 @@
   <p class="section-label">⭐ Featured Games</p>
   <div class="grid">
 
+    <div class="card" data-game="star-catcher">
+      <div class="card-thumb g4">⭐</div>
+      <div class="card-body">
+        <h2>Star Catcher</h2>
+        <p>Stars rain from the sky — catch them in your basket! Rainbow stars score 10×, but red bombs cost you a life. How high can you score?</p>
+        <span class="badge badge-live">New</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
+    <div class="card" data-game="brick-blast">
+      <div class="card-thumb g2">🧱</div>
+      <div class="card-body">
+        <h2>Brick Blast</h2>
+        <p>Classic Breakout — supercharged! Smash brick walls with a bouncing ball. Grab power-ups: wide paddle, multi-ball, laser cannon, slow-mo. Survive every level!</p>
+        <span class="badge badge-live">New</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
     <div class="card" data-game="snake-neon">
       <div class="card-thumb g3">🐍</div>
       <div class="card-body">
@@ -902,6 +922,31 @@
 
   /* ── GAME DATABASE ── */
   var GAMES = {
+    'star-catcher': {
+      title: 'Star Catcher', emoji: '⭐', grad: 'g4',
+      href: 'star-catcher/index.html',
+      cat: 'Arcade · Casual', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.8,
+      tags: ['catching', 'casual', 'arcade', 'solo', 'highscore', 'stars', 'colorful'],
+      about: 'Stars of every color fall from the night sky — move your basket left and right to catch them! Blue stars give +2, orange +3, gold +5, and rare rainbow stars give a whopping +10 AND activate 3× score multiplier for a few seconds. But watch out for red bombs — catch one and you lose a life! You start with 3 lives. The stars fall faster as your score climbs.',
+      controls: [
+        ['← → / Mouse', 'Move basket'],
+        ['Space/Enter', 'Start game'],
+      ]
+    },
+    'brick-blast': {
+      title: 'Brick Blast', emoji: '🧱', grad: 'g2',
+      href: 'brick-blast/index.html',
+      cat: 'Arcade · Classic', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.9,
+      tags: ['breakout', 'arcade', 'classic', 'solo', 'highscore', 'powerups', 'bricks', 'ball'],
+      about: 'Classic Breakout / Arkanoid reimagined with neon visuals and wild power-ups! Smash a full 7-row grid of bricks every level. Cyan bricks are soft (1 hit), orange and pink are hard (2 hits), purple and red require 3 hits, and gold bricks are worth 100 points! Power-ups drop from broken bricks: wide paddle, slow ball, multi-ball (3 balls!), laser cannon, or bonus life. Reaches harder levels with more steel and tough bricks!',
+      controls: [
+        ['← → / Mouse', 'Move paddle'],
+        ['Space', 'Fire laser (when armed)'],
+        ['ESC', 'Back to menu'],
+      ]
+    },
     'snake-neon': {
       title: 'Snake Neon', emoji: '🐍', grad: 'g3',
       href: 'snake-neon/index.html',
@@ -1643,8 +1688,8 @@
   var aiClose  = document.getElementById('ai-close');
 
   var AI_CATS = {
-    relaxing:      { label: '🌴 Relaxing',          ids: ['farming','braincrate','goofy-house','resell','spelling','paintball'] },
-    concentration: { label: '🧠 For Concentration', ids: ['braincrate','82-and-0','find-word','blackjack','tictactoe','marbles','paintball'] },
+    relaxing:      { label: '🌴 Relaxing',          ids: ['star-catcher','farming','braincrate','goofy-house','resell','spelling','paintball'] },
+    concentration: { label: '🧠 For Concentration', ids: ['brick-blast','braincrate','82-and-0','find-word','blackjack','tictactoe','marbles','paintball'] },
     action:        { label: '⚡ Action & Combat',    ids: ['capybara-shooting','fight-arrows','castle-man','sniper','shootpoint','space-invasion','capaw','turtles','blob-eating'] },
     racing:        { label: '🏎️ Racing & Speed',    ids: ['racing-cars','buckman','moto-island','bike-rider','monster-truck','drone-zayn','going-balls'] },
     adventure:     { label: '🌍 Adventure',          ids: ['packaging','farming','hide-seek','obstacle','goofy-house','swing-man'] },
@@ -1655,6 +1700,8 @@
 
   /* Mood/vibe keywords per game — used only to make AI search smarter */
   var GAME_VIBES = {
+    'star-catcher':      'catching stars casual arcade solo highscore colorful family bombs powerup easy fun',
+    'brick-blast':       'breakout arkanoid bricks ball paddle classic arcade solo highscore powerup retro',
     'snake-neon':        'snake classic arcade neon solo highscore grow eat food addictive retro',
     'neon-runner':       'endless runner jump dodge neon solo highscore coins fast paced survival arcade',
     'block-stack':       'stacking precision arcade solo highscore casual addictive one button tower builder',
