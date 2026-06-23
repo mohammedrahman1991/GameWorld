@@ -248,7 +248,7 @@ function loop(){
     if(doShake){ ctx.save(); const s=shakeT; ctx.translate(Math.random()*s-s/2,Math.random()*s-s/2); }
     drawBg(); drawGrid(); drawNext(); drawFX(); drawHUD();
     if(doShake) ctx.restore();
-    update();
+    clickFrame=click; update(); clickFrame=false;
   }
   else if(STATE==='GAMEOVER'){ clickFrame=click; drawGameOver(); clickFrame=false; }
   requestAnimationFrame(loop);
