@@ -231,7 +231,7 @@ function loop(){
     balloons.forEach(drawBalloon);
     drawFX(); drawHUD();
     if(doShake) ctx.restore();
-    update();
+    clickFrame=click; update(); clickFrame=false;
   }
   else if(STATE==='GAMEOVER'){ clickFrame=click; drawGameOver(); clickFrame=false; }
   requestAnimationFrame(loop);
