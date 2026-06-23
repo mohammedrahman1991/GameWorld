@@ -287,6 +287,36 @@
   <p class="section-label">⭐ Featured Games</p>
   <div class="grid">
 
+    <div class="card" data-game="fruit-slash">
+      <div class="card-thumb g5">🍉</div>
+      <div class="card-body">
+        <h2>Fruit Slash</h2>
+        <p>Swipe to slash flying fruit! Watermelons, pineapples, star fruit — slash them all. But dodge the bombs or it's game over. Combos multiply your score!</p>
+        <span class="badge badge-live">New</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
+    <div class="card" data-game="space-blaster">
+      <div class="card-thumb g7">🚀</div>
+      <div class="card-body">
+        <h2>Space Blaster</h2>
+        <p>Defend the galaxy! Shoot waves of alien drones, zigzaggers, and tanks. Grab spread shot, rapid fire, and shield power-ups. Boss every 5 waves!</p>
+        <span class="badge badge-live">New</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
+    <div class="card" data-game="sky-bounce">
+      <div class="card-thumb g3">🏀</div>
+      <div class="card-body">
+        <h2>Sky Bounce</h2>
+        <p>Bounce your way to the clouds! Jump from platform to platform — spring pads blast you sky-high, breaking platforms crumble fast. How high can you go?</p>
+        <span class="badge badge-live">New</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
     <div class="card" data-game="star-catcher">
       <div class="card-thumb g4">⭐</div>
       <div class="card-body">
@@ -922,6 +952,45 @@
 
   /* ── GAME DATABASE ── */
   var GAMES = {
+    'fruit-slash': {
+      title: 'Fruit Slash', emoji: '🍉', grad: 'g5',
+      href: 'fruit-slash/index.html',
+      cat: 'Arcade · Action', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.9,
+      tags: ['slashing', 'arcade', 'action', 'solo', 'highscore', 'fruit', 'swipe', 'combo'],
+      about: 'Slice flying fruit with your mouse like a ninja! Watermelons, oranges, pineapples, strawberries, grapes, and rare star fruit fly across the screen from both sides. Swipe through multiple fruits in one move to build combo multipliers — 3+ combo doubles your points! But watch out for bombs — slash one and it\'s instant game over. Miss 3 fruits and it\'s also over. Gets faster and more chaotic as you go!',
+      controls: [
+        ['Mouse drag', 'Swipe to slash fruit'],
+        ['Touch drag', 'Swipe on mobile'],
+      ]
+    },
+    'space-blaster': {
+      title: 'Space Blaster', emoji: '🚀', grad: 'g7',
+      href: 'space-blaster/index.html',
+      cat: 'Action · Shooter', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.9,
+      tags: ['space', 'shooter', 'arcade', 'solo', 'highscore', 'waves', 'boss', 'powerup'],
+      about: 'Classic top-down space shooter! Your ship auto-fires — move left/right/up/down to dodge alien bullets and enemy ships. Face 4 enemy types: drones (straight), zigzaggers (sine wave), tanks (3 hits), and kamikazes (dive at you). A massive boss appears every 5 waves! Power-ups drop from kills: spread shot (3 bullets), rapid fire, shield, screen-clearing nuke, and extra life. How many waves can you survive?',
+      controls: [
+        ['↑↓←→ / WASD', 'Move ship'],
+        ['Auto-fires', 'No shoot button needed'],
+        ['Space', 'Extra fire burst'],
+        ['ESC', 'Back to menu'],
+      ]
+    },
+    'sky-bounce': {
+      title: 'Sky Bounce', emoji: '🏀', grad: 'g3',
+      href: 'sky-bounce/index.html',
+      cat: 'Arcade · Platformer', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.8,
+      tags: ['jumping', 'platformer', 'endless', 'arcade', 'solo', 'highscore', 'bounce', 'doodle'],
+      about: 'Bounce your way endlessly into the sky! Your character auto-bounces on every platform — your job is to guide them left and right so they keep landing on platforms. Normal (green) platforms are safe, moving (blue) platforms slide back and forth, breaking (orange) platforms crumble after one bounce, and spring (yellow) platforms launch you super high! Collect star pickups for +5 bonus points. The platforms get narrower and faster the higher you climb!',
+      controls: [
+        ['← → / WASD', 'Move left and right'],
+        ['Mouse', 'Guide towards cursor'],
+        ['ESC', 'Back to menu'],
+      ]
+    },
     'star-catcher': {
       title: 'Star Catcher', emoji: '⭐', grad: 'g4',
       href: 'star-catcher/index.html',
@@ -1688,9 +1757,9 @@
   var aiClose  = document.getElementById('ai-close');
 
   var AI_CATS = {
-    relaxing:      { label: '🌴 Relaxing',          ids: ['star-catcher','farming','braincrate','goofy-house','resell','spelling','paintball'] },
-    concentration: { label: '🧠 For Concentration', ids: ['brick-blast','braincrate','82-and-0','find-word','blackjack','tictactoe','marbles','paintball'] },
-    action:        { label: '⚡ Action & Combat',    ids: ['capybara-shooting','fight-arrows','castle-man','sniper','shootpoint','space-invasion','capaw','turtles','blob-eating'] },
+    relaxing:      { label: '🌴 Relaxing',          ids: ['sky-bounce','star-catcher','farming','braincrate','goofy-house','resell','spelling','paintball'] },
+    concentration: { label: '🧠 For Concentration', ids: ['fruit-slash','brick-blast','braincrate','82-and-0','find-word','blackjack','tictactoe','marbles','paintball'] },
+    action:        { label: '⚡ Action & Combat',    ids: ['space-blaster','capybara-shooting','fight-arrows','castle-man','sniper','shootpoint','space-invasion','capaw','turtles','blob-eating'] },
     racing:        { label: '🏎️ Racing & Speed',    ids: ['racing-cars','buckman','moto-island','bike-rider','monster-truck','drone-zayn','going-balls'] },
     adventure:     { label: '🌍 Adventure',          ids: ['packaging','farming','hide-seek','obstacle','goofy-house','swing-man'] },
     multiplayer:   { label: '👥 Multiplayer',        ids: Object.keys(GAMES).filter(function(id){ return GAMES[id].players !== '1 Player'; }) },
@@ -1700,6 +1769,9 @@
 
   /* Mood/vibe keywords per game — used only to make AI search smarter */
   var GAME_VIBES = {
+    'fruit-slash':       'slicing fruit ninja swipe arcade solo highscore combo action satisfying mobile casual',
+    'space-blaster':     'space shooter waves boss enemies arcade solo highscore powerup intense retro classic',
+    'sky-bounce':        'bouncing platformer doodle jump endless climbing arcade solo highscore casual mobile fun',
     'star-catcher':      'catching stars casual arcade solo highscore colorful family bombs powerup easy fun',
     'brick-blast':       'breakout arkanoid bricks ball paddle classic arcade solo highscore powerup retro',
     'snake-neon':        'snake classic arcade neon solo highscore grow eat food addictive retro',
