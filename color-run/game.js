@@ -23,7 +23,7 @@ const COLORS=['#ff4444','#44aaff','#44ff88','#ffd700','#cc44ff'];
 const CNAMES=['RED','BLUE','GREEN','YELLOW','PURPLE'];
 const LANE_W=100,LANES=4,LANE_X0=(W-LANES*LANE_W)/2;
 const PLAYER_W=44,PLAYER_H=44,PLAYER_Y=H-120;
-const GAP=140,WALL_H=40,SPEED_BASE=4;
+const GAP=140,WALL_H=40,SPEED_BASE=2.5;
 
 let STATE='TITLE',playerX,playerLane,colorIdx,walls,score,best=+(localStorage.getItem('cr_best')||0),frame,speed,particles=[],shake=0,tf=0;
 
@@ -32,7 +32,7 @@ function laneX(l){return LANE_X0+l*LANE_W+LANE_W/2;}
 function startGame(){
   playerLane=Math.floor(LANES/2);playerX=laneX(playerLane);colorIdx=0;walls=[];score=0;frame=0;speed=SPEED_BASE;particles=[];shake=0;
   // Seed initial walls
-  for(let i=0;i<4;i++)spawnWall(-(i+1)*300-100);
+  for(let i=0;i<4;i++)spawnWall(-(i+1)*420-150);
 }
 
 function spawnWall(startY){
@@ -42,7 +42,7 @@ function spawnWall(startY){
 }
 
 function update(){
-  frame++;speed=Math.min(14,SPEED_BASE+frame/400);score=Math.floor(frame/30);
+  frame++;speed=Math.min(10,SPEED_BASE+frame/700);score=Math.floor(frame/30);
   if(score>best){best=score;localStorage.setItem('cr_best',String(best));}
 
   // Move player toward target lane
@@ -62,7 +62,7 @@ function update(){
       const px=playerX,py=PLAYER_Y;
       const ly=w.y-WALL_H;
       if(py+PLAYER_H>ly&&py<w.y+WALL_H){
-        const inOpen=Math.abs(px-laneX(w.openLane))<LANE_W*0.5-4;
+        const inOpen=Math.abs(px-laneX(w.openLane))<LANE_W*0.5+6;
         if(inOpen&&colorIdx===w.ci){sfxPass();score+=5;shake=0;}
         else{sfxDie();shake=10;if(score>best){best=score;localStorage.setItem('cr_best',String(best));}STATE='GAMEOVER';}
       }
@@ -72,7 +72,7 @@ function update(){
   walls=walls.filter(w=>w.y<H+80);
   // Spawn new walls
   const lastY=walls.length?Math.min(...walls.map(w=>w.y)):0;
-  if(lastY>-(H*0.4))spawnWall();
+  if(lastY>-(H*0.55))spawnWall();
 
   particles=particles.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.2;return --p.life>0;});
   if(shake>0)shake--;
