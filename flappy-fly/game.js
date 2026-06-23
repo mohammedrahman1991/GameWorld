@@ -19,7 +19,7 @@ function sfxFlap(){tone(500,0.05,'sine',0.06);}
 function sfxScore(){tone(660,0.05,'triangle',0.08);tone(880,0.05,'triangle',0.07,0.06);}
 function sfxDie(){tone(200,0.15,'sawtooth',0.12);tone(100,0.3,'sawtooth',0.1,0.1);}
 
-const BIRD_X=90,GAP=145,PIPE_W=58,GRAV=0.5,FLAP=-9;
+const BIRD_X=90,GAP=195,PIPE_W=58,GRAV=0.35,FLAP=-8;
 let STATE='TITLE',bird,pipes,score,best=+(localStorage.getItem('ff_best')||0),frame,tf=0,bgX=0;
 
 const BGSTARS=Array.from({length:60},()=>({x:Math.random()*W,y:Math.random()*H*0.7,s:0.5+Math.random()*2,sp:0.3+Math.random()*0.5}));
@@ -33,13 +33,13 @@ function update(){
   BGSTARS.forEach(s=>{s.x-=s.sp;if(s.x<0)s.x=W+2;});
   bird.vy+=GRAV;bird.y+=bird.vy;bird.rot=Math.max(-0.4,Math.min(1.2,bird.vy*0.08));bird.wing=(bird.wing+0.3)%Math.PI;
 
-  if(frame%80===0){
+  if(frame%100===0){
     const top=80+Math.random()*(H-GAP-160);
     pipes.push({x:W+10,top,bot:top+GAP,scored:false});
   }
 
   pipes=pipes.filter(p=>{
-    p.x-=3.2;
+    p.x-=2.4;
     if(!p.scored&&p.x+PIPE_W<BIRD_X){p.scored=true;score++;sfxScore();if(score>best){best=score;localStorage.setItem('ff_best',String(best));}}
     if(BIRD_X+14>p.x&&BIRD_X-14<p.x+PIPE_W&&(bird.y-14<p.top||bird.y+14>p.bot)){sfxDie();STATE='GAMEOVER';}
     return p.x>-PIPE_W-10;
