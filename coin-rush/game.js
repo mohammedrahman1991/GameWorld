@@ -58,17 +58,17 @@ let tf=0;
 function startGame(){
   playerLane=1; targetLane=1; playerX=LANES[1]; laneT=0;
   obstacles=[]; coins=[]; powerups=[]; particles=[]; floats=[];
-  score=0; lives=3; frame=0; speed=5; dist=0; magnetT=0; shieldT=0; shakeT=0;
+  score=0; lives=5; frame=0; speed=3; dist=0; magnetT=0; shieldT=0; shakeT=0;
 }
 
 function spawnSegment(baseX){
   // Random lane obstacle pattern
   const patterns=[
-    [0,0,1,0], [1,0,0,0], [0,1,0,0], [0,0,0,1], [1,0,1,0],
-    [0,1,0,1], [0,0,0,0], [0,0,0,0], // empty segment (double weight)
+    [0,0,1,0], [1,0,0,0], [0,1,0,0], [0,0,0,1],
+    [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], // mostly empty
   ];
   const pat=patterns[Math.floor(Math.random()*patterns.length)];
-  [0,1,2].forEach(l=>{ if(Math.random()<0.15+pat[l]*0.5) obstacles.push({x:LANES[l],y:-40-baseX,w:40,h:44,type:'box',lane:l}); });
+  [0,1,2].forEach(l=>{ if(Math.random()<0.08+pat[l]*0.4) obstacles.push({x:LANES[l],y:-40-baseX,w:40,h:44,type:'box',lane:l}); });
   // Coins
   const coinLane=Math.floor(Math.random()*3);
   for(let i=0;i<3;i++) coins.push({x:LANES[coinLane],y:-20-baseX-i*26,r:10,val:1,collected:false});
@@ -86,7 +86,7 @@ function addFloat(x,y,txt,col){ floats.push({x,y,txt,col,life:46}); }
 // ---------------------------------------------------------------- Update
 function update(){
   frame++;
-  speed=Math.min(13,5+frame/400);
+  speed=Math.min(10,3+frame/700);
   dist+=speed;
   if(shakeT>0) shakeT--;
   if(magnetT>0) magnetT--;
