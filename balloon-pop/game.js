@@ -91,7 +91,7 @@ function update(){
     let hit=false;
     for(let i=balloons.length-1;i>=0;i--){
       const b=balloons[i];
-      if(Math.hypot(mX-b.x,mY-b.y)<b.r*b.scale){
+      if(Math.hypot(mX-b.x,mY-b.y)<(b.r+18)*b.scale){
         if(b.type==='bomb'){ sfxBomb(); shakeT=18; spawnPfx(b.x,b.y,'#ff4444',20); addFloat(b.x,b.y,'BOOM!','#ff4444'); lives--; if(lives<=0){ if(score>best){best=score;localStorage.setItem('bp_best',String(best));} STATE='GAMEOVER'; } balloons.splice(i,1); hit=true; break; }
         else {
           combo++; comboT=22;
