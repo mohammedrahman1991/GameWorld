@@ -4,12 +4,15 @@ const W=700,H=520;canvas.width=W;canvas.height=H;
 function resize(){const s=Math.min(innerWidth/W,innerHeight/H);canvas.style.width=Math.floor(W*s)+'px';canvas.style.height=Math.floor(H*s)+'px';}
 window.addEventListener('resize',resize);resize();
 
-let mX=W/2,mY=H/2,clickFrame=false;
+const keys={};
+let mX=null,mY=null,clickFrame=false;
 function getPos(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*(W/r.width),y:(e.clientY-r.top)*(H/r.height)};}
 canvas.addEventListener('mousemove',e=>{const p=getPos(e);mX=p.x;mY=p.y;});
 canvas.addEventListener('click',e=>{const p=getPos(e);mX=p.x;mY=p.y;clickFrame=true;});
 canvas.addEventListener('touchmove',e=>{e.preventDefault();const p=getPos(e.touches[0]);mX=p.x;mY=p.y;},{passive:false});
 canvas.addEventListener('touchend',e=>{e.preventDefault();const p=getPos(e.changedTouches[0]);mX=p.x;mY=p.y;clickFrame=true;},{passive:false});
+window.addEventListener('keydown',e=>{keys[e.code]=true;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault();});
+window.addEventListener('keyup',e=>{keys[e.code]=false;});
 
 let AC=null;
 function getAC(){if(!AC)AC=new(AudioContext||webkitAudioContext)();return AC;}
@@ -48,9 +51,19 @@ function addFloat(x,y,t){floats.push({x,y,txt:t,col:'#ffd700',life:44});}
 
 function update(){
   frame++;
-  const dx=mX-player.x,dy=mY-player.y,d=Math.hypot(dx,dy);
-  if(d>2){const spd=Math.min(d*0.1,6.5);player.vx=dx/d*spd;player.vy=dy/d*spd;}
-  else{player.vx*=0.85;player.vy*=0.85;}
+  const KSP=5;
+  let usedKeys=false;
+  if(keys['ArrowLeft']||keys['KeyA']){player.vx=Math.max(player.vx-1,-KSP);usedKeys=true;}
+  else if(keys['ArrowRight']||keys['KeyD']){player.vx=Math.min(player.vx+1,KSP);usedKeys=true;}
+  else player.vx*=0.82;
+  if(keys['ArrowUp']||keys['KeyW']){player.vy=Math.max(player.vy-1,-KSP);usedKeys=true;}
+  else if(keys['ArrowDown']||keys['KeyS']){player.vy=Math.min(player.vy+1,KSP);usedKeys=true;}
+  else player.vy*=0.82;
+  if(!usedKeys&&mX!==null){
+    const dx=mX-player.x,dy=mY-player.y,d=Math.hypot(dx,dy);
+    if(d>4){const spd=Math.min(d*0.1,6.5);player.vx=dx/d*spd;player.vy=dy/d*spd;}
+    else{player.vx*=0.85;player.vy*=0.85;}
+  }
   player.x=Math.max(player.size,Math.min(W-player.size,player.x+player.vx));
   player.y=Math.max(player.size,Math.min(H-player.size,player.y+player.vy));
   if(player.vx>0.2)player.facing=1;else if(player.vx<-0.2)player.facing=-1;
@@ -130,7 +143,7 @@ function drawOverlay(title,sc,nb){
   if(nb){ctx.fillStyle='#ffd700';ctx.font='9px "Press Start 2P",monospace';ctx.fillText('✦ NEW BEST! ✦',W/2,H/2+36);}
   else if(best>0&&sc!==undefined){ctx.fillStyle='rgba(255,215,0,0.6)';ctx.font='8px "Press Start 2P",monospace';ctx.fillText('BEST: '+best,W/2,H/2+36);}
   if(sc===undefined){ctx.fillStyle='rgba(255,255,255,0.2)';ctx.font='7px "Press Start 2P",monospace';ctx.fillText('EAT SMALLER FISH TO GROW!',W/2,H/2+20);ctx.fillText('AVOID BIGGER ONES!',W/2,H/2+38);}
-  ctx.fillStyle='rgba(255,255,255,0.25)';ctx.font='7px "Press Start 2P",monospace';ctx.fillText('MOVE: MOUSE / TAP   CLICK to '+(title==='GAME OVER'?'restart':'play'),W/2,H/2+72);
+  ctx.fillStyle='rgba(255,255,255,0.25)';ctx.font='7px "Press Start 2P",monospace';ctx.fillText('WASD / ARROWS or MOUSE to move',W/2,H/2+60);ctx.fillText('CLICK to '+(title==='GAME OVER'?'restart':'play'),W/2,H/2+76);
 }
 
 function loop(){
