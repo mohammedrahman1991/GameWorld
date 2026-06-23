@@ -22,12 +22,12 @@ function sfxTick(){tone(440,0.03,'square',0.04);}
 
 // Target types: {col, r, pts, speed, wobble, label}
 const T_TYPES=[
-  {col:'#ff4444',r:28,pts:10,spd:0,label:''},           // big red — easy
-  {col:'#ffd700',r:20,pts:25,spd:1.5,label:''},         // gold — moving
-  {col:'#44aaff',r:16,pts:40,spd:2.5,label:''},         // blue small — fast
-  {col:'#44ff88',r:12,pts:60,spd:0,label:'★'},          // tiny green — bonus
-  {col:'#cc44ff',r:22,pts:30,spd:2,label:''},           // purple — moving
-  {col:'#ff8833',r:18,pts:20,spd:3,label:''},           // orange — fast mover
+  {col:'#ff4444',r:36,pts:10,spd:0,label:''},           // big red — easy
+  {col:'#ffd700',r:28,pts:25,spd:1.0,label:''},         // gold — moving
+  {col:'#44aaff',r:22,pts:40,spd:1.5,label:''},         // blue — fast
+  {col:'#44ff88',r:18,pts:60,spd:0,label:'★'},          // green — bonus
+  {col:'#cc44ff',r:30,pts:30,spd:1.2,label:''},         // purple — moving
+  {col:'#ff8833',r:24,pts:20,spd:1.8,label:''},         // orange — mover
 ];
 
 const ROWS=[120,200,290,380];
@@ -48,7 +48,7 @@ function spawnTarget(){
   const x=margin+Math.random()*(W-margin*2);
   const y=randRow();
   const dir=(Math.random()<0.5?1:-1);
-  const life=Math.floor(90+Math.random()*80);
+  const life=Math.floor(160+Math.random()*100);
   targets.push({x,y,r:t.r,col:t.col,pts:t.pts,spd:t.spd,dir,label:t.label,life,maxLife:life,appear:12,hit:false,hitAnim:0});
 }
 
@@ -63,7 +63,7 @@ function tryShoot(){
   for(let i=targets.length-1;i>=0;i--){
     const t=targets[i];
     if(t.hit||t.appear>0) continue;
-    if(Math.hypot(mX-t.x,mY-t.y)<t.r+4){
+    if(Math.hypot(mX-t.x,mY-t.y)<t.r+14){
       t.hit=true;t.hitAnim=16;
       combo++;if(combo>maxCombo)maxCombo=combo;
       const pts=t.pts*(combo>=5?3:combo>=3?2:1);
