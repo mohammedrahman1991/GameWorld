@@ -287,6 +287,56 @@
   <p class="section-label">⭐ Featured Games</p>
   <div class="grid">
 
+    <div class="card" data-game="balloon-pop">
+      <div class="card-thumb g6">🎈</div>
+      <div class="card-body">
+        <h2>Balloon Pop</h2>
+        <p>Colorful balloons float up — click to pop them before they escape! Gold and rainbow balloons score big. Hit a bomb balloon and lose a life!</p>
+        <span class="badge badge-live">New</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
+    <div class="card" data-game="meteor-shield">
+      <div class="card-thumb g7">☄️</div>
+      <div class="card-body">
+        <h2>Meteor Shield</h2>
+        <p>Meteors are falling on your cities! Click to launch counter-missiles and blast them out of the sky. Protect all 3 cities — survive every wave!</p>
+        <span class="badge badge-live">New</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
+    <div class="card" data-game="whack-mole">
+      <div class="card-thumb g3">🐹</div>
+      <div class="card-body">
+        <h2>Whack-A-Mole</h2>
+        <p>Moles are popping up everywhere — whack them fast! 60 seconds, 9 holes. Golden moles score 50 points, speedy moles are hard to catch, bomb moles hurt!</p>
+        <span class="badge badge-live">New</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
+    <div class="card" data-game="coin-rush">
+      <div class="card-thumb g4">🪙</div>
+      <div class="card-body">
+        <h2>Coin Rush</h2>
+        <p>Auto-runner with 3 lanes! Dodge crates, collect gold coins, grab magnet and shield power-ups. Gets faster every second — how many coins can you collect?</p>
+        <span class="badge badge-live">New</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
+    <div class="card" data-game="color-drop">
+      <div class="card-thumb g2">🔵</div>
+      <div class="card-body">
+        <h2>Color Drop</h2>
+        <p>Drop colored balls into the grid and match 4 in a row — horizontal, vertical, or diagonal. Chain big matches for bonus points before the grid fills up!</p>
+        <span class="badge badge-live">New</span>
+        <button class="play-btn play-btn-active">▶ Play</button>
+      </div>
+    </div>
+
     <div class="card" data-game="fruit-slash">
       <div class="card-thumb g5">🍉</div>
       <div class="card-body">
@@ -952,6 +1002,51 @@
 
   /* ── GAME DATABASE ── */
   var GAMES = {
+    'balloon-pop': {
+      title: 'Balloon Pop', emoji: '🎈', grad: 'g6',
+      href: 'balloon-pop/index.html',
+      cat: 'Arcade · Casual', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.8,
+      tags: ['clicking', 'casual', 'arcade', 'solo', 'highscore', 'balloons', 'combo', 'colorful'],
+      about: 'Balloons drift upward from the bottom — click them before they float away! Red (1pt), Blue (2pt), Green (2pt), Purple (3pt), Gold (5pt), and rare Rainbow balloons (10pt). Chain rapid pops together for 2× and 3× combo multipliers. But watch out for bomb balloons — clicking one costs a life! Miss 3 balloons (let them escape) and it\'s game over.',
+      controls: [['Click / Tap', 'Pop the balloon']]
+    },
+    'meteor-shield': {
+      title: 'Meteor Shield', emoji: '☄️', grad: 'g7',
+      href: 'meteor-shield/index.html',
+      cat: 'Action · Strategy', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.9,
+      tags: ['missile command', 'strategy', 'action', 'solo', 'highscore', 'defense', 'waves', 'clicking'],
+      about: 'Classic Missile Command! Meteors hurtle toward your 3 cities at the bottom. Click anywhere above to launch a counter-missile — it flies to that point and explodes in a wide blast radius, destroying all meteors caught in the blast. Each city can absorb 3 hits before it\'s destroyed. Waves get bigger and faster — some later meteors need 2 hits. You score +10 per meteor destroyed plus a wave clear bonus!',
+      controls: [['Click / Tap', 'Launch missile to that point']]
+    },
+    'whack-mole': {
+      title: 'Whack-A-Mole', emoji: '🐹', grad: 'g3',
+      href: 'whack-mole/index.html',
+      cat: 'Arcade · Casual', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.8,
+      tags: ['whack', 'mole', 'casual', 'arcade', 'solo', 'highscore', 'timer', 'clicking', 'family'],
+      about: 'The classic party game! A 3×3 grid of holes — moles pop up and retreat. Whack as many as you can in 60 seconds! Normal moles give 10pts, speedy moles are fast (15pts), golden moles are worth 50pts, and bomb moles subtract 20pts and shake the screen. Combos multiply your points. The moles pop faster as time ticks down!',
+      controls: [['Click / Tap', 'Whack the mole']]
+    },
+    'coin-rush': {
+      title: 'Coin Rush', emoji: '🪙', grad: 'g4',
+      href: 'coin-rush/index.html',
+      cat: 'Action · Endless', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.8,
+      tags: ['runner', 'lanes', 'coins', 'endless', 'arcade', 'solo', 'highscore', 'dodge', 'powerup'],
+      about: 'Infinite 3-lane auto-runner! Your character dashes forward automatically — switch lanes left and right to dodge red crates and collect coins. Gold coins are worth 3x! Grab the magnet power-up to attract nearby coins automatically, or the shield to survive one crash. Speed ramps up continuously — the longer you survive, the faster it gets!',
+      controls: [['← → Arrows / A D', 'Switch lanes'], ['Swipe left/right', 'Switch lanes on mobile']]
+    },
+    'color-drop': {
+      title: 'Color Drop', emoji: '🔵', grad: 'g2',
+      href: 'color-drop/index.html',
+      cat: 'Puzzle · Arcade', dev: 'Wacky Brains',
+      players: '1 Player', platform: 'Desktop & Mobile', age: '0+', rating: 4.8,
+      tags: ['puzzle', 'matching', 'connect four', 'arcade', 'solo', 'highscore', 'colorful', 'strategy'],
+      about: 'Connect Four meets color matching! Click a column to drop the current ball into it. Match 4 or more balls of the same color in any direction — horizontal, vertical, or diagonal — to clear them and score. Bigger matches score more. If any column fills to the top, the game is over! Plan ahead: you can see the upcoming ball color.',
+      controls: [['Click column / Tap', 'Drop ball into that column']]
+    },
     'fruit-slash': {
       title: 'Fruit Slash', emoji: '🍉', grad: 'g5',
       href: 'fruit-slash/index.html',
@@ -1757,9 +1852,9 @@
   var aiClose  = document.getElementById('ai-close');
 
   var AI_CATS = {
-    relaxing:      { label: '🌴 Relaxing',          ids: ['sky-bounce','star-catcher','farming','braincrate','goofy-house','resell','spelling','paintball'] },
-    concentration: { label: '🧠 For Concentration', ids: ['fruit-slash','brick-blast','braincrate','82-and-0','find-word','blackjack','tictactoe','marbles','paintball'] },
-    action:        { label: '⚡ Action & Combat',    ids: ['space-blaster','capybara-shooting','fight-arrows','castle-man','sniper','shootpoint','space-invasion','capaw','turtles','blob-eating'] },
+    relaxing:      { label: '🌴 Relaxing',          ids: ['balloon-pop','whack-mole','sky-bounce','star-catcher','farming','braincrate','goofy-house','resell','spelling','paintball'] },
+    concentration: { label: '🧠 For Concentration', ids: ['color-drop','coin-rush','fruit-slash','brick-blast','braincrate','82-and-0','find-word','blackjack','tictactoe','marbles'] },
+    action:        { label: '⚡ Action & Combat',    ids: ['meteor-shield','space-blaster','capybara-shooting','fight-arrows','castle-man','sniper','shootpoint','space-invasion','capaw','turtles'] },
     racing:        { label: '🏎️ Racing & Speed',    ids: ['racing-cars','buckman','moto-island','bike-rider','monster-truck','drone-zayn','going-balls'] },
     adventure:     { label: '🌍 Adventure',          ids: ['packaging','farming','hide-seek','obstacle','goofy-house','swing-man'] },
     multiplayer:   { label: '👥 Multiplayer',        ids: Object.keys(GAMES).filter(function(id){ return GAMES[id].players !== '1 Player'; }) },
@@ -1769,6 +1864,11 @@
 
   /* Mood/vibe keywords per game — used only to make AI search smarter */
   var GAME_VIBES = {
+    'balloon-pop':       'balloons clicking casual arcade solo highscore colorful pop combo family fun mobile',
+    'meteor-shield':     'missile command defense meteors cities strategy clicking arcade solo highscore waves',
+    'whack-mole':        'whack mole clicking casual arcade solo highscore timer family fun golden bomb combo',
+    'coin-rush':         'runner lanes coins dodge obstacles endless arcade solo highscore powerup magnet shield',
+    'color-drop':        'connect four puzzle matching colors strategy arcade solo highscore grid colorful',
     'fruit-slash':       'slicing fruit ninja swipe arcade solo highscore combo action satisfying mobile casual',
     'space-blaster':     'space shooter waves boss enemies arcade solo highscore powerup intense retro classic',
     'sky-bounce':        'bouncing platformer doodle jump endless climbing arcade solo highscore casual mobile fun',
