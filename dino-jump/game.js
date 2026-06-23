@@ -23,7 +23,7 @@ function sfxDie(){tone(200,0.1,'sawtooth',0.1);tone(100,0.3,'sawtooth',0.12);}
 function sfxPoint(){tone(660,0.04,'triangle',0.06);}
 
 const GROUND=H-60,DINO_X=110,DINO_W=44,DINO_H=52;
-let STATE='TITLE',dino,obs,clouds,score,best=+(localStorage.getItem('dj_best')||0),frame,speed,tf=0;
+let STATE='TITLE',dino,obs=[],clouds=[{x:600,y:50,w:90},{x:900,y:30,w:120},{x:1100,y:65,w:80}],score=0,best=+(localStorage.getItem('dj_best')||0),frame=0,speed=5,tf=0;
 
 function startGame(){
   dino={y:GROUND-DINO_H,vy:0,duck:false,frame:0};
