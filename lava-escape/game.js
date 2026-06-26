@@ -43,7 +43,7 @@ function update(){
   frame++;
   // Scroll world left, raise lava
   plats.forEach(p=>p.x-=SCROLL+frame/2000);
-  lavaY=Math.max(GROUND,lavaY-(0.4+frame/1000));
+  lavaY=Math.max(H-20,lavaY-(0.4+frame/1000));
 
   // Spawn new platforms on right
   if(plats.length<10||Math.max(...plats.map(p=>p.x+p.w))<W+20){
