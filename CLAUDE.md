@@ -2,23 +2,19 @@
 ## Project Memory (auto-managed by Cortex)
 
 ### Last Session
-tags: ['clicking', 'casual', 'arcade', 'solo', 'highscore', 'balloons', 'combo', 'colorful'],
-      title: 'Ice Dash', emoji: '🐧', grad: 'g7',
-      . |emoji:" /Users/mohammedrahman/Desktop/GameOfficial/Gam...`]. title: 'Ice Dash', emoji: '🐧', grad: 'g7',
-      title: 'Whack-A-Mole', emoji: '🐹', grad: 'g3',
-      title: 'Coin Rush', emoji: '🪙', grad: 'g4',
+Inspect         https://vercel.com/rahmancodetests-4423s-projects/game-world/Ce7u4T3oX4RM72cyU18yYBzpmVsL
+  Production      https://game-world-qovkfky. Live on wackybrains.com. Fresh Vercel deployment done — do a **Cmd+Shift+R** hard refresh in your browser to get the latest version.. can you make a game called noob defending from village mobs and this is the first of the gme
 
 ### Recent Decisions
-- **going with a 3D perspective camera positioned behind each car for that immersive racing feel, and for 2-player mode I'll split the screen side-by-side so both players get their own viewport.**: a 3D perspective camera positioned behind each car for that immersive racing fee — )_ _(
+_No decisions recorded yet._
 
 ### Current Context
 _No context available._
 
 ### Open Problems
-- racing cars the 2 player both. fix car speed for player 2. it should be same speed as player 1. also the car selection does not work. it does not chan
 - Tool permission request failed: Error: Tool permission stream closed before response received
 
-_Last updated: 2026-06-26T23:12:58.656Z | Tokens: 256/800_
+_Last updated: 2026-06-26T23:16:41.306Z | Tokens: 143/800_
 <!-- CORTEX:END -->
 
 
