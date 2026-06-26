@@ -23,7 +23,7 @@ function sfxGem(){tone(880,0.05,'sine',0.06);}
 function sfxBomb(){tone(150,0.2,'sawtooth',0.1);}
 function sfxJump(){tone(440,0.06,'sine',0.06);}
 
-const GROUND=H-60,GRAV=0.6,JUMP=-12,SCROLL=2.2;
+const GROUND=H-60,GRAV=0.45,JUMP=-14,SCROLL=1.4;
 const COLS=['#ff4488','#44ffaa','#ffcc00','#44aaff','#ff8844','#cc44ff'];
 let STATE='TITLE',player,plats,gems,bombs,particles,score,best=+(localStorage.getItem('gr_best')||0),frame,tf=0;
 
@@ -38,7 +38,7 @@ function startGame(){
 function spawnPfx(x,y,col){for(let i=0;i<8;i++){const a=Math.random()*Math.PI*2,s=2+Math.random()*5;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-2,col,r:4+Math.random()*3,life:22});}}
 
 function update(){
-  frame++;const spd=SCROLL+frame/500;
+  frame++;const spd=SCROLL+frame/1000;
   plats.forEach(p=>{p.x-=spd;});gems.forEach(g=>{g.x-=spd;});bombs.forEach(b=>{b.x-=spd;});
 
   // Spawn new platform
@@ -49,7 +49,7 @@ function update(){
     plats.push({x:maxX+gap,y:py,w:pw,col:COLS[Math.floor(Math.random()*COLS.length)]+'88'});
     const gx=maxX+gap+Math.random()*pw;
     if(Math.random()<0.7)gems.push({x:gx,y:py-22,r:10,col:COLS[Math.floor(Math.random()*COLS.length)],rot:0});
-    if(Math.random()<0.25+frame/3000)bombs.push({x:gx+20,y:py-22,r:12});
+    if(Math.random()<0.12+frame/6000)bombs.push({x:gx+20,y:py-22,r:12});
   }
   plats=plats.filter(p=>p.x+p.w>-20);
   gems=gems.filter(g=>g.x>-20);bombs=bombs.filter(b=>b.x>-20);

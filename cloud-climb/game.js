@@ -26,7 +26,7 @@ function sfxStar(){tone(880,0.05,'sine',0.06);}
 function sfxDie(){tone(180,0.2,'sawtooth',0.1);}
 
 const GRAV=0.5,JUMP=-13;
-let STATE='TITLE',player,clouds,stars,score,best=+(localStorage.getItem('cc_best')||0),frame,height,tf=0;
+let STATE='TITLE',player,clouds=[],stars=[],score=0,best=+(localStorage.getItem('cc_best')||0),frame=0,height=0,tf=0;
 
 function makeClouds(){
   const cs=[];for(let i=0;i<8;i++)cs.push({x:Math.random()*(W-80),y:H-60-i*75,w:70+Math.random()*60,moving:Math.random()<0.3,vx:(Math.random()<0.5?1:-1)*(0.5+Math.random())});

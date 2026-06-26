@@ -127,6 +127,7 @@ function loop(){
     ctx.fillStyle='#fff';ctx.font='bold 10px "Press Start 2P",monospace';ctx.textAlign='center';ctx.fillText(score,W/2,22);
     ctx.textAlign='left';for(let i=0;i<player.hp;i++){ctx.fillStyle='#44ff88';ctx.fillRect(8+i*16,10,12,14);}
     ctx.textAlign='right';ctx.fillStyle='#88cc44';ctx.font='7px "Press Start 2P",monospace';ctx.fillText('WAVE '+wave,W-8,22);ctx.textAlign='left';
+    if(click&&fireT===0){fireT=FIRE_CD;sfxShoot();bullets.push({x:player.x+Math.cos(player.angle)*TANK_R,y:player.y+Math.sin(player.angle)*TANK_R,vx:Math.cos(player.angle)*BULLET_SPD,vy:Math.sin(player.angle)*BULLET_SPD});}
     update();
   } else {
     ctx.fillStyle='rgba(0,0,0,0.7)';ctx.fillRect(0,0,W,H);

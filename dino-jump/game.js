@@ -142,29 +142,29 @@ function startGame(){
 function dirToVec(d){return d==='U'?[-1,0]:d==='D'?[1,0]:d==='L'?[0,-1]:d==='R'?[0,1]:[0,0];}
 
 function movePlayer(){
-  const SPEED=0.12;
-  // Check next dir first
-  if(lastKey){
-    const m={'U':[-1,0],'D':[1,0],'L':[0,-1],'R':[0,1]}[lastKey];
-    if(m){
-      const nr=player.r+m[0],nc=player.c+m[1];
-      if(cellWalkable(grid,nr,nc)||(lastKey===player.dir)){player.nextDir=lastKey;}
-    }
-    lastKey='';
+  const DM={'U':[-1,0],'D':[1,0],'L':[0,-1],'R':[0,1]};
+  // Read held keys OR swipe as wanted direction
+  let want=lastKey||'';lastKey='';
+  if(!want){
+    if(keys['ArrowUp']||keys['KeyW'])want='U';
+    else if(keys['ArrowDown']||keys['KeyS'])want='D';
+    else if(keys['ArrowLeft']||keys['KeyA'])want='L';
+    else if(keys['ArrowRight']||keys['KeyD'])want='R';
   }
-  // Try applying nextDir
+  // Queue wanted direction if it's not immediately walkable
+  if(want)player.nextDir=want;
+  // Try to switch to queued direction
   if(player.nextDir){
-    const m={'U':[-1,0],'D':[1,0],'L':[0,-1],'R':[0,1]}[player.nextDir];
-    const nr=player.r+m[0],nc=player.c+m[1];
-    if(cellWalkable(grid,nr,nc)){player.dir=player.nextDir;player.nextDir='';}
+    const m=DM[player.nextDir];
+    if(m){const nr=(player.r+m[0]+MAZE_H)%MAZE_H,nc=(player.c+m[1]+MAZE_W)%MAZE_W;
+      if(cellWalkable(grid,nr,nc)){player.dir=player.nextDir;player.nextDir='';}}
   }
-  // Move in current dir
+  // Move in current direction
   if(player.dir){
-    const [dr,dc]={'U':[-1,0],'D':[1,0],'L':[0,-1],'R':[0,1]}[player.dir];
-    const nr=player.r+dr,nc=player.c+dc;
-    // Wrap tunnel
-    const wr=(nr+MAZE_H)%MAZE_H,wc=(nc+MAZE_W)%MAZE_W;
-    if(cellWalkable(grid,wr,wc)){player.r=wr;player.c=wc;}
+    const m=DM[player.dir];
+    const nr=(player.r+m[0]+MAZE_H)%MAZE_H,nc=(player.c+m[1]+MAZE_W)%MAZE_W;
+    if(cellWalkable(grid,nr,nc)){player.r=nr;player.c=nc;}
+    else{player.dir='';}
   }
   player.px=player.c*CS+OX+CS/2;
   player.py=player.r*CS+OY+CS/2;
