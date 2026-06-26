@@ -25,11 +25,11 @@ function sfxJump(){tone(440,0.07,'sine',0.06);}
 function sfxStar(){tone(880,0.05,'sine',0.06);}
 function sfxDie(){tone(180,0.2,'sawtooth',0.1);}
 
-const GRAV=0.4,JUMP=-11;
+const GRAV=0.25,JUMP=-14;
 let STATE='TITLE',player,clouds=[],stars=[],score=0,best=+(localStorage.getItem('cc_best')||0),frame=0,height=0,tf=0;
 
 function makeClouds(){
-  const cs=[];for(let i=0;i<8;i++)cs.push({x:Math.random()*(W-80),y:H-60-i*75,w:70+Math.random()*60,moving:Math.random()<0.3,vx:(Math.random()<0.5?1:-1)*(0.5+Math.random())});
+  const cs=[];for(let i=0;i<10;i++)cs.push({x:Math.random()*(W-100),y:H-60-i*55,w:90+Math.random()*70,moving:Math.random()<0.15,vx:(Math.random()<0.5?1:-1)*(0.4+Math.random()*0.5)});
   return cs;
 }
 
@@ -41,7 +41,7 @@ function startGame(){
 
 function update(){
   frame++;
-  const SPD=2.5;
+  const SPD=4.5;
   if(keys['ArrowLeft']||keys['KeyA'])player.x-=SPD;
   if(keys['ArrowRight']||keys['KeyD'])player.x+=SPD;
   if((keys['ArrowUp']||keys['KeyW']||keys['Space'])&&player.onCloud){player.vy=JUMP;player.onCloud=false;sfxJump();}
@@ -51,7 +51,7 @@ function update(){
 
   clouds.forEach(c=>{
     if(c.moving){c.x+=c.vx;if(c.x<0||c.x+c.w>W)c.vx*=-1;}
-    if(player.vy>=0&&player.x>c.x+8&&player.x<c.x+c.w-8&&player.y+14>=c.y&&player.y+14<=c.y+12+player.vy){
+    if(player.vy>=0&&player.x>c.x+4&&player.x<c.x+c.w-4&&player.y+14>=c.y&&player.y+14<=c.y+14+player.vy){
       player.y=c.y-14;player.vy=0;player.onCloud=true;
     }
   });
@@ -65,8 +65,8 @@ function update(){
 
   // Spawn clouds at top
   if(clouds.length===0||Math.min(...clouds.map(c=>c.y))>50){
-    const topY=clouds.length?Math.min(...clouds.map(c=>c.y))-70:-30;
-    clouds.push({x:Math.random()*(W-80),y:topY,w:70+Math.random()*60,moving:Math.random()<0.3,vx:(Math.random()<0.5?1:-1)*(0.5+Math.random())});
+    const topY=clouds.length?Math.min(...clouds.map(c=>c.y))-55:-30;
+    clouds.push({x:Math.random()*(W-100),y:topY,w:90+Math.random()*70,moving:Math.random()<0.15,vx:(Math.random()<0.5?1:-1)*(0.4+Math.random()*0.5)});
     if(Math.random()<0.5)stars.push({x:Math.random()*(W-20)+10,y:topY-25,collected:false});
   }
   clouds=clouds.filter(c=>c.y<H+20);
