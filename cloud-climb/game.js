@@ -29,7 +29,8 @@ const GRAV=0.25,JUMP=-14;
 let STATE='TITLE',player,clouds=[],stars=[],score=0,best=+(localStorage.getItem('cc_best')||0),frame=0,height=0,tf=0;
 
 function makeClouds(){
-  const cs=[];for(let i=0;i<10;i++)cs.push({x:Math.random()*(W-100),y:H-60-i*55,w:90+Math.random()*70,moving:Math.random()<0.15,vx:(Math.random()<0.5?1:-1)*(0.4+Math.random()*0.5)});
+  const cs=[{x:W/2-90,y:H-106,w:180,moving:false,vx:0}];
+  for(let i=1;i<10;i++)cs.push({x:Math.random()*(W-100),y:H-106-i*55,w:90+Math.random()*70,moving:Math.random()<0.15,vx:(Math.random()<0.5?1:-1)*(0.4+Math.random()*0.5)});
   return cs;
 }
 
