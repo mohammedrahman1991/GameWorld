@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8332361685144393" crossorigin="anonymous"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <link rel="icon" type="image/svg+xml" href="/logo.svg">
   <title>Wacky Brains – Free Online Games | Play Instantly, No Download</title>
   <meta name="description" content="Play 25+ free browser games instantly at Wacky Brains — action, sports, racing, puzzle, and adventure games. No downloads, no sign-ups required. 1 and 2 player games for all ages." />
@@ -2876,94 +2877,63 @@
 
 <!-- Login Modal -->
 <div id="login-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.75);align-items:center;justify-content:center;">
-  <div style="background:#13132a;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:36px 32px;width:100%;max-width:380px;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.6);">
+  <div style="background:#13132a;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:40px 32px;width:100%;max-width:360px;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.6);text-align:center;">
     <button onclick="closeLogin()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#94a3b8;font-size:1.4rem;cursor:pointer;">✕</button>
-    <div style="text-align:center;margin-bottom:24px;">
-      <div style="font-size:2.2rem;margin-bottom:8px;">🧠</div>
-      <h2 id="login-title" style="color:#f1f5f9;font-size:1.3rem;margin-bottom:4px;">Welcome Back</h2>
-      <p id="login-sub" style="color:#94a3b8;font-size:.85rem;">Log in to save your scores</p>
-    </div>
-    <div id="login-form">
-      <input id="login-username" type="text" placeholder="Username or Email" style="width:100%;background:#1e1e3a;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;color:#f1f5f9;font-size:.95rem;margin-bottom:12px;outline:none;box-sizing:border-box;"/>
-      <input id="login-password" type="password" placeholder="Password" style="width:100%;background:#1e1e3a;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;color:#f1f5f9;font-size:.95rem;margin-bottom:18px;outline:none;box-sizing:border-box;"/>
-      <button onclick="doLogin()" style="width:100%;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;border:none;border-radius:10px;padding:13px;font-weight:700;font-size:1rem;cursor:pointer;margin-bottom:12px;">Log In</button>
-      <p style="text-align:center;color:#94a3b8;font-size:.85rem;">Don't have an account? <a href="#" onclick="showSignup();return false;" style="color:#a78bfa;text-decoration:none;font-weight:600;">Sign Up</a></p>
-    </div>
-    <div id="signup-form" style="display:none;">
-      <input id="signup-name" type="text" placeholder="Username" style="width:100%;background:#1e1e3a;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;color:#f1f5f9;font-size:.95rem;margin-bottom:12px;outline:none;box-sizing:border-box;"/>
-      <input id="signup-email" type="email" placeholder="Email" style="width:100%;background:#1e1e3a;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;color:#f1f5f9;font-size:.95rem;margin-bottom:12px;outline:none;box-sizing:border-box;"/>
-      <input id="signup-password" type="password" placeholder="Password" style="width:100%;background:#1e1e3a;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;color:#f1f5f9;font-size:.95rem;margin-bottom:18px;outline:none;box-sizing:border-box;"/>
-      <button onclick="doSignup()" style="width:100%;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;border:none;border-radius:10px;padding:13px;font-weight:700;font-size:1rem;cursor:pointer;margin-bottom:12px;">Create Account</button>
-      <p style="text-align:center;color:#94a3b8;font-size:.85rem;">Already have an account? <a href="#" onclick="showLogin();return false;" style="color:#a78bfa;text-decoration:none;font-weight:600;">Log In</a></p>
-    </div>
-    <p id="login-msg" style="text-align:center;color:#f87171;font-size:.85rem;margin-top:8px;display:none;"></p>
+    <div style="font-size:2.4rem;margin-bottom:10px;">🧠</div>
+    <h2 style="color:#f1f5f9;font-size:1.3rem;margin-bottom:6px;">Welcome to WackyBrains</h2>
+    <p style="color:#94a3b8;font-size:.88rem;margin-bottom:28px;">Sign in to save your scores and stats</p>
+    <div id="google-btn-container" style="display:flex;justify-content:center;margin-bottom:16px;"></div>
+    <p style="color:#64748b;font-size:.78rem;">By signing in you agree to our <a href="/terms.html" style="color:#a78bfa;">Terms</a> and <a href="/privacy-policy.html" style="color:#a78bfa;">Privacy Policy</a></p>
   </div>
 </div>
 
 <script>
 (function(){
+  // ⚠️ REPLACE THIS WITH YOUR GOOGLE CLIENT ID
+  var GOOGLE_CLIENT_ID = 'PASTE_YOUR_CLIENT_ID_HERE';
+
   var modal = document.getElementById('login-modal');
   var loginBtn = document.getElementById('login-btn');
 
-  function getUsers(){ try{ return JSON.parse(localStorage.getItem('wb_users')||'{}'); }catch(e){ return {}; } }
-  function saveUsers(u){ localStorage.setItem('wb_users', JSON.stringify(u)); }
-  function getSession(){ return localStorage.getItem('wb_session')||''; }
-  function setSession(u){ localStorage.setItem('wb_session', u); }
+  function getUser(){ try{ return JSON.parse(localStorage.getItem('wb_guser')||'null'); }catch(e){ return null; } }
+  function saveUser(u){ localStorage.setItem('wb_guser', JSON.stringify(u)); }
+  function clearUser(){ localStorage.removeItem('wb_guser'); }
 
   function updateBtn(){
-    var s = getSession();
-    if(s){ loginBtn.textContent = '👤 ' + s; loginBtn.onclick = openProfile; }
-    else { loginBtn.textContent = 'Log In'; loginBtn.onclick = openLogin; }
+    var u = getUser();
+    if(u){
+      loginBtn.innerHTML = (u.picture ? '<img src="'+u.picture+'" style="width:22px;height:22px;border-radius:50%;vertical-align:middle;margin-right:6px;">' : '👤 ') + u.name.split(' ')[0];
+      loginBtn.onclick = openProfile;
+    } else {
+      loginBtn.textContent = 'Log In';
+      loginBtn.onclick = openLogin;
+    }
   }
 
-  function openLogin(){ modal.style.display='flex'; showLogin(); }
-  function closeLogin(){ modal.style.display='none'; }
+  function handleCredentialResponse(response){
+    var parts = response.credential.split('.');
+    var payload = JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));
+    var user = { name: payload.name, email: payload.email, picture: payload.picture };
+    saveUser(user);
+    updateBtn();
+    closeLogin();
+  }
+
+  function openLogin(){
+    modal.style.display='flex';
+    if(window.google && GOOGLE_CLIENT_ID !== 'PASTE_YOUR_CLIENT_ID_HERE'){
+      google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleCredentialResponse });
+      google.accounts.id.renderButton(document.getElementById('google-btn-container'), { theme:'outline', size:'large', text:'signin_with', shape:'pill', width:260 });
+    } else {
+      document.getElementById('google-btn-container').innerHTML = '<p style="color:#f87171;font-size:.85rem;">Google Sign-In not configured yet.<br>Check setup instructions.</p>';
+    }
+  }
   window.closeLogin = closeLogin;
-
-  function showMsg(m){ var el=document.getElementById('login-msg'); el.textContent=m; el.style.display='block'; }
-  function hideMsg(){ document.getElementById('login-msg').style.display='none'; }
-
-  window.showLogin = function(){
-    document.getElementById('login-title').textContent='Welcome Back';
-    document.getElementById('login-sub').textContent='Log in to save your scores';
-    document.getElementById('login-form').style.display='block';
-    document.getElementById('signup-form').style.display='none';
-    hideMsg();
-  };
-  window.showSignup = function(){
-    document.getElementById('login-title').textContent='Create Account';
-    document.getElementById('login-sub').textContent='Join WackyBrains for free';
-    document.getElementById('login-form').style.display='none';
-    document.getElementById('signup-form').style.display='block';
-    hideMsg();
-  };
-
-  window.doLogin = function(){
-    var u = document.getElementById('login-username').value.trim();
-    var p = document.getElementById('login-password').value;
-    if(!u||!p){ showMsg('Please fill in all fields.'); return; }
-    var users = getUsers();
-    var found = users[u.toLowerCase()];
-    if(!found){ showMsg('Account not found. Sign up first!'); return; }
-    if(found.password !== p){ showMsg('Wrong password.'); return; }
-    setSession(found.name); updateBtn(); closeLogin();
-  };
-
-  window.doSignup = function(){
-    var name = document.getElementById('signup-name').value.trim();
-    var email = document.getElementById('signup-email').value.trim();
-    var pass = document.getElementById('signup-password').value;
-    if(!name||!email||!pass){ showMsg('Please fill in all fields.'); return; }
-    if(pass.length < 4){ showMsg('Password must be at least 4 characters.'); return; }
-    var users = getUsers();
-    if(users[name.toLowerCase()]){ showMsg('Username already taken.'); return; }
-    users[name.toLowerCase()] = { name: name, email: email, password: pass };
-    saveUsers(users); setSession(name); updateBtn(); closeLogin();
-  };
+  function closeLogin(){ modal.style.display='none'; }
 
   function openProfile(){
-    var s = getSession();
-    if(confirm('Logged in as ' + s + '.\n\nClick OK to log out.')){ setSession(''); updateBtn(); }
+    var u = getUser();
+    if(u && confirm('Logged in as ' + u.name + '\n' + u.email + '\n\nClick OK to log out.')){ clearUser(); updateBtn(); }
   }
 
   loginBtn.onclick = openLogin;
