@@ -2,15 +2,8 @@
 ## Project Memory (auto-managed by Cortex)
 
 ### Last Session
-1 file changed, 29 insertions(+), 4 deletions(-)
-To https://github.com/mohammedrahman1991/GameWorld.git
-   e2c690e..7e22edf  first-push -> first-push. Pushed. Three fixes in this update:
-
-**Black line gone** — The ground plane was at exactly `y=0`, same as the top of the house floor slab. Two surfaces sharing the same depth causes z-fighting (dark f. Make a MD file to make it organized and create game orderly and smooth
-
-Make a new game called castle man battles
-
-Make a game that everything is p
+Session covered: 54:.floor-indicator{position:fixed;bottom:50px;right:20px;background:rgba(0,0,0,0.7);padding:6px 14px;border-radius:6px;font-size:.85em;z-index:70;display:none;}
+278:  scene.background = new THREE.Col; The file /Users/mohammedrahman/Desktop/GameOfficial/GameWorld/Hide and Seek Game/index.html has been updated successfully. (file state is current in your context — no need to Read it back); 556:  const roofL = new THREE.Mesh(new THREE.BoxGeometry(W/2+2,0.35,D+2), new THREE.Mesh...
 
 ### Recent Decisions
 _No decisions recorded yet._
@@ -20,9 +13,8 @@ _No context available._
 
 ### Open Problems
 - Tool permission request failed: Error: Tool permission stream closed before response received
-- <tool_use_error>File has not been read yet. Read it first before writing to it.</tool_use_error>
 
-_Last updated: 2026-06-07T07:21:39.770Z | Tokens: 198/800_
+_Last updated: 2026-06-26T23:06:48.855Z | Tokens: 174/800_
 <!-- CORTEX:END -->
 
 
