@@ -43,7 +43,7 @@ function update(){
   frame++;
   // Scroll world left, raise lava
   plats.forEach(p=>p.x-=SCROLL+frame/2000);
-  lavaY=Math.max(-50,lavaY-(0.04+frame/6000));
+  lavaY=Math.max(GROUND,lavaY-(0.4+frame/1000));
 
   // Spawn new platforms on right
   if(plats.length<10||Math.max(...plats.map(p=>p.x+p.w))<W+20){
@@ -68,8 +68,6 @@ function update(){
   // Keep player on screen horizontally
   player.x=Math.max(player.w/2,Math.min(W-player.w/2,player.x));
 
-  // Die from lava
-  if(player.y+player.h>=lavaY){sfxDie();STATE='GAMEOVER';}
   // Die from falling off left
   if(player.x<-20){sfxDie();STATE='GAMEOVER';}
 
