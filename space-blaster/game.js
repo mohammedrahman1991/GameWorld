@@ -36,7 +36,7 @@ function sfxDie(){ tone(180,0.2,'sawtooth',0.15); tone(90,0.5,'sawtooth',0.18,0.
 function sfxLevelUp(){ [440,550,660,880].forEach((f,i)=>tone(f,0.09,'triangle',0.11,i*0.08)); }
 
 // ---------------------------------------------------------------- Constants
-const PLAYER_SPD=5.5, PLAYER_R=14, SHOOT_CD=14, BULLET_SPD=13;
+const PLAYER_SPD=5.5, PLAYER_R=14, SHOOT_CD=8, BULLET_SPD=14;
 const STARS=[];
 for(let i=0;i<120;i++) STARS.push({x:Math.random()*W,y:Math.random()*H,s:0.5+Math.random()*2,speed:0.3+Math.random()*0.8,bright:Math.random()});
 
@@ -53,7 +53,7 @@ function rr(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
 function startGame(){
   player={x:W/2,y:H-70,r:PLAYER_R,invT:0};
   bullets=[]; enemies=[]; enemyBullets=[]; particles=[]; floats=[]; powerups=[];
-  score=0; lives=3; wave=0; frame=0; waveState='between'; waveTimer=60;
+  score=0; lives=5; wave=0; frame=0; waveState='between'; waveTimer=60;
   shootTimer=0; spreadT=0; shieldT=0; rapidT=0;
 }
 
@@ -67,14 +67,14 @@ function spawnWave(){
   wave++;
   const isBoss=wave%5===0;
   if(isBoss){
-    bossMaxHp=20+wave*5; bossHp=bossMaxHp;
+    bossMaxHp=12+wave*3; bossHp=bossMaxHp;
     enemies.push({x:W/2,y:-60,vx:1.5,vy:0.7,r:44,hp:bossMaxHp,maxHp:bossMaxHp,type:'boss',shootT:0,phase:0,pts:200+wave*50});
   } else {
-    const count=4+wave*2;
+    const count=3+wave;
     const types=['drone','zigzag','tank','kamikaze'];
     for(let i=0;i<count;i++){
       const t=types[Math.min(Math.floor(wave/2),types.length-1)<=1?Math.floor(Math.random()*(Math.floor(wave/2)+1)):Math.floor(Math.random()*Math.min(wave,types.length))];
-      enemies.push({x:30+Math.random()*(W-60),y:-40-i*45,vx:(Math.random()-0.5)*2.5,vy:1.2+Math.random()*1+wave*0.15,r:18,hp:t==='tank'?3:1,maxHp:t==='tank'?3:1,type:t,shootT:Math.random()*80,pts:10+wave*5,wobble:0,wobbleSpd:0.04+Math.random()*0.04});
+      enemies.push({x:30+Math.random()*(W-60),y:-40-i*45,vx:(Math.random()-0.5)*2.5,vy:0.7+Math.random()*0.5+wave*0.07,r:18,hp:t==='tank'?3:1,maxHp:t==='tank'?3:1,type:t,shootT:Math.random()*80,pts:10+wave*5,wobble:0,wobbleSpd:0.04+Math.random()*0.04});
     }
   }
   waveState='fighting';
