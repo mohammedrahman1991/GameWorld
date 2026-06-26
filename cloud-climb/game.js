@@ -25,7 +25,7 @@ function sfxJump(){tone(440,0.07,'sine',0.06);}
 function sfxStar(){tone(880,0.05,'sine',0.06);}
 function sfxDie(){tone(180,0.2,'sawtooth',0.1);}
 
-const GRAV=0.5,JUMP=-13;
+const GRAV=0.4,JUMP=-11;
 let STATE='TITLE',player,clouds=[],stars=[],score=0,best=+(localStorage.getItem('cc_best')||0),frame=0,height=0,tf=0;
 
 function makeClouds(){
@@ -41,7 +41,7 @@ function startGame(){
 
 function update(){
   frame++;
-  const SPD=4;
+  const SPD=2.5;
   if(keys['ArrowLeft']||keys['KeyA'])player.x-=SPD;
   if(keys['ArrowRight']||keys['KeyD'])player.x+=SPD;
   if((keys['ArrowUp']||keys['KeyW']||keys['Space'])&&player.onCloud){player.vy=JUMP;player.onCloud=false;sfxJump();}
