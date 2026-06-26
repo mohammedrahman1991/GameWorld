@@ -2,19 +2,23 @@
 ## Project Memory (auto-managed by Cortex)
 
 ### Last Session
-Session covered: 54:.floor-indicator{position:fixed;bottom:50px;right:20px;background:rgba(0,0,0,0.7);padding:6px 14px;border-radius:6px;font-size:.85em;z-index:70;display:none;}
-278:  scene.background = new THREE.Col; The file /Users/mohammedrahman/Desktop/GameOfficial/GameWorld/Hide and Seek Game/index.html has been updated successfully. (file state is current in your context — no need to Read it back); 556:  const roofL = new THREE.Mesh(new THREE.BoxGeometry(W/2+2,0.35,D+2), new THREE.Mesh...
+tags: ['clicking', 'casual', 'arcade', 'solo', 'highscore', 'balloons', 'combo', 'colorful'],
+      title: 'Ice Dash', emoji: '🐧', grad: 'g7',
+      . |emoji:" /Users/mohammedrahman/Desktop/GameOfficial/Gam...`]. title: 'Ice Dash', emoji: '🐧', grad: 'g7',
+      title: 'Whack-A-Mole', emoji: '🐹', grad: 'g3',
+      title: 'Coin Rush', emoji: '🪙', grad: 'g4',
 
 ### Recent Decisions
-_No decisions recorded yet._
+- **going with a 3D perspective camera positioned behind each car for that immersive racing feel, and for 2-player mode I'll split the screen side-by-side so both players get their own viewport.**: a 3D perspective camera positioned behind each car for that immersive racing fee — )_ _(
 
 ### Current Context
 _No context available._
 
 ### Open Problems
+- racing cars the 2 player both. fix car speed for player 2. it should be same speed as player 1. also the car selection does not work. it does not chan
 - Tool permission request failed: Error: Tool permission stream closed before response received
 
-_Last updated: 2026-06-26T23:06:48.855Z | Tokens: 174/800_
+_Last updated: 2026-06-26T23:12:58.656Z | Tokens: 256/800_
 <!-- CORTEX:END -->
 
 
