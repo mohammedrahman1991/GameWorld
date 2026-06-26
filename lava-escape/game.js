@@ -24,46 +24,46 @@ function tone(f,d,type,vol){try{const a=getAC(),o=a.createOscillator(),g=a.creat
 function sfxJump(){tone(440,0.07,'sine',0.06);}
 function sfxDie(){tone(180,0.2,'sawtooth',0.1);}
 
-const GROUND=H-50,GRAV=0.6,JUMP=-13,SCROLL=1.4;
+const GROUND=H-50,GRAV=0.4,JUMP=-14,SCROLL=0.8;
 let STATE='TITLE',player,plats,score,best=+(localStorage.getItem('le_best')||0),lavaY,frame,tf=0;
 
 function makePlats(){
   const ps=[];
-  // Starting platforms
-  for(let i=0;i<8;i++)ps.push({x:i*90+Math.random()*30,y:GROUND-Math.floor(i/3)*60,w:80+Math.random()*40,col:'#8B5E3C'});
+  ps.push({x:0,y:GROUND,w:200,col:'#8B5E3C'});
+  for(let i=1;i<10;i++)ps.push({x:i*85+Math.random()*15,y:GROUND-Math.floor(i/3)*50,w:100+Math.random()*50,col:'#8B5E3C'});
   return ps;
 }
 
 function startGame(){
-  player={x:60,y:GROUND-36,vy:0,onGround:true,w:20,h:32};
+  player={x:60,y:GROUND-36,vy:0,onGround:true,w:20,h:32,jumps:2};
   plats=makePlats();lavaY=H+40;score=0;frame=0;STATE='GAME';
 }
 
 function update(){
   frame++;
   // Scroll world left, raise lava
-  plats.forEach(p=>p.x-=SCROLL+frame/800);
-  lavaY=Math.max(-50,lavaY-(0.3+frame/1200));
+  plats.forEach(p=>p.x-=SCROLL+frame/2000);
+  lavaY=Math.max(-50,lavaY-(0.1+frame/3000));
 
   // Spawn new platforms on right
   if(plats.length<10||Math.max(...plats.map(p=>p.x+p.w))<W+20){
     const lx=Math.max(...plats.map(p=>p.x+p.w));
-    plats.push({x:lx+20+Math.random()*40,y:GROUND-Math.floor(Math.random()*3)*55-Math.random()*20,w:70+Math.random()*50,col:'#8B5E3C'});
+    plats.push({x:lx+10+Math.random()*20,y:GROUND-Math.floor(Math.random()*3)*50-Math.random()*10,w:100+Math.random()*60,col:'#8B5E3C'});
   }
   plats=plats.filter(p=>p.x+p.w>-20);
 
   const SPD=4.5;
   if(keys['ArrowLeft']||keys['KeyA'])player.x-=SPD;
   if(keys['ArrowRight']||keys['KeyD'])player.x+=SPD;
-  if((keys['Space']||keys['ArrowUp']||keys['KeyW'])&&player.onGround){player.vy=JUMP;player.onGround=false;sfxJump();}
+  if((keys['Space']||keys['ArrowUp']||keys['KeyW'])&&player.jumps>0){player.vy=JUMP;player.onGround=false;player.jumps--;sfxJump();}
   player.vy+=GRAV;player.y+=player.vy;player.onGround=false;
 
   plats.forEach(p=>{
     if(player.vy>=0&&player.x+player.w/2-4>p.x&&player.x-player.w/2+4<p.x+p.w&&player.y+player.h>=p.y&&player.y+player.h<=p.y+14+player.vy){
-      player.y=p.y-player.h;player.vy=0;player.onGround=true;
+      player.y=p.y-player.h;player.vy=0;player.onGround=true;player.jumps=2;
     }
   });
-  if(player.y+player.h>=GROUND){player.y=GROUND-player.h;player.vy=0;player.onGround=true;}
+  if(player.y+player.h>=GROUND){player.y=GROUND-player.h;player.vy=0;player.onGround=true;player.jumps=2;}
 
   // Keep player on screen horizontally
   player.x=Math.max(player.w/2,Math.min(W-player.w/2,player.x));
