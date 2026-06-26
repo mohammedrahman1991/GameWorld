@@ -36,14 +36,14 @@ function makePlats(){
 
 function startGame(){
   player={x:60,y:GROUND-36,vy:0,onGround:true,w:20,h:32,jumps:2};
-  plats=makePlats();lavaY=H+40;score=0;frame=0;STATE='GAME';
+  plats=makePlats();lavaY=H+200;score=0;frame=0;STATE='GAME';
 }
 
 function update(){
   frame++;
   // Scroll world left, raise lava
   plats.forEach(p=>p.x-=SCROLL+frame/2000);
-  lavaY=Math.max(-50,lavaY-(0.1+frame/3000));
+  lavaY=Math.max(-50,lavaY-(0.04+frame/6000));
 
   // Spawn new platforms on right
   if(plats.length<10||Math.max(...plats.map(p=>p.x+p.w))<W+20){
